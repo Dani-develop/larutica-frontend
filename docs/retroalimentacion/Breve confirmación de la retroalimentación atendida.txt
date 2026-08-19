@@ -1,0 +1,7 @@
+Breve confirmación de la retroalimentación atendida
+
+La retroalimentación fue atendida en el mockup de LaRutica. La propuesta ya no representa una solución destinada a una única empresa: ahora plantea una plataforma multiagencia en la que diferentes agencias turísticas pueden registrarse, acceder con el rol de Agencia y administrar sus propias publicaciones de excursiones o servicios de transporte.
+
+Cada agencia dispone de un panel independiente para crear, consultar y editar sus publicaciones. A la vez, el rol Administrador permite supervisar el conjunto de la plataforma, revisar publicaciones pendientes, aprobar contenido y visualizar la cantidad y actividad de las agencias registradas. El mockup incluye ejemplos de distintas empresas, como Arenal Viajes, Transportes Sol y Pacific Blue Tours, para hacer explícito que el sistema admite múltiples agencias dentro de una misma plataforma.
+
+La imagen incluida en esta carpeta conserva la evidencia de la tarea relacionada con el CRUD de publicaciones de agencias. Con estos cambios, el alcance queda orientado a un ecosistema de agencias registradas y no a la operación exclusiva de una sola empresa.

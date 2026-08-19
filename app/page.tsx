@@ -1,69 +1,190 @@
-import Image from "next/image";
+"use client";
+
+import { FormEvent, useEffect, useRef, useState } from "react";
+
+type View = "explore" | "detail" | "login" | "agency" | "publish" | "promotion" | "admin";
+type Role = "Viajero" | "Agencia" | "Administrador";
+
+const experiences = [
+  { id: 1, title: "Caminata al volcán Arenal", place: "La Fortuna, Alajuela", meta: "4 h · Español e inglés", price: "$58", rating: "4,9", badge: "Más reservado", image: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=900&q=82", alt: "Sendero verde entre montañas tropicales" },
+  { id: 2, title: "Bosque nuboso de Monteverde", place: "Monteverde, Puntarenas", meta: "3 h · Guía local", price: "$42", rating: "4,8", badge: "Cupos hoy", image: "https://images.unsplash.com/photo-1516026672322-bc52d61a55d5?auto=format&fit=crop&w=900&q=82", alt: "Bosque tropical cubierto de neblina" },
+  { id: 3, title: "Atardecer en catamarán", place: "Playas del Coco, Guanacaste", meta: "5 h · Incluye refrigerio", price: "$76", rating: "4,7", badge: "Patrocinado", image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=900&q=82", alt: "Playa tropical de arena clara y mar azul" },
+];
+
+const publications = [
+  { title: "Caminata al volcán Arenal", status: "Publicada", views: "1 284", bookings: "36", price: "$58" },
+  { title: "Termales y cena local", status: "En revisión", views: "—", bookings: "—", price: "$64" },
+  { title: "Traslado SJO → La Fortuna", status: "Borrador", views: "—", bookings: "—", price: "$42" },
+];
 
 export default function Home() {
+  const [view, setView] = useState<View>("explore");
+  const [role, setRole] = useState<Role>("Viajero");
+  const [status, setStatus] = useState("Explora opciones seleccionadas para ti.");
+  const [saved, setSaved] = useState<number[]>([]);
+  const [helpOpen, setHelpOpen] = useState(false);
+  const [accessOpen, setAccessOpen] = useState(false);
+  const [largeText, setLargeText] = useState(false);
+  const [highContrast, setHighContrast] = useState(false);
+  const [approved, setApproved] = useState<string[]>([]);
+  const mainHeading = useRef<HTMLHeadingElement>(null);
+  const searchInput = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "/" && view === "explore" && document.activeElement?.tagName !== "INPUT") {
+        event.preventDefault();
+        searchInput.current?.focus();
+      }
+      if (event.key === "Escape") {
+        setHelpOpen(false);
+        setAccessOpen(false);
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [view]);
+
+  useEffect(() => {
+    document.documentElement.classList.toggle("large-text", largeText);
+    document.documentElement.classList.toggle("high-contrast", highContrast);
+  }, [largeText, highContrast]);
+
+  function navigate(next: View, nextRole?: Role) {
+    if (nextRole) setRole(nextRole);
+    setView(next);
+    setStatus(`Pantalla ${screenName(next)} abierta.`);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    window.setTimeout(() => mainHeading.current?.focus(), 80);
+  }
+
+  function screenName(next: View) {
+    return ({ explore: "Explorar", detail: "Detalle de experiencia", login: "Ingreso", agency: "Panel de agencia", publish: "Nueva publicación", promotion: "Promoción", admin: "Administración" } as Record<View, string>)[next];
+  }
+
+  function switchRole(next: Role) {
+    setRole(next);
+    navigate(next === "Viajero" ? "explore" : next === "Agencia" ? "agency" : "admin");
+  }
+
+  function search(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setStatus("Búsqueda completada: 24 experiencias cerca de La Fortuna.");
+    document.getElementById("results")?.focus();
+  }
+
+  function toggleSaved(id: number, title: string) {
+    const exists = saved.includes(id);
+    setSaved(exists ? saved.filter((item) => item !== id) : [...saved, id]);
+    setStatus(exists ? `${title} se eliminó de tus guardados.` : `${title} se guardó en tu viaje.`);
+  }
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <>
+      <a className="skip-link" href="#main">Ir al contenido principal</a>
+      <header className="site-header">
+        <button className="brand brand-button" type="button" onClick={() => navigate("explore", "Viajero")} aria-label="LaRutica, volver al inicio">
+          <span className="brand-mark" aria-hidden="true">LR</span><span>LaRutica</span>
+        </button>
+        <nav aria-label="Navegación principal">
+          <button className={view === "explore" || view === "detail" ? "nav-active" : ""} onClick={() => navigate("explore", "Viajero")} aria-current={view === "explore" ? "page" : undefined}>Explorar</button>
+          <button onClick={() => { navigate("explore", "Viajero"); setStatus("Sección Destinos abierta: 18 destinos disponibles."); window.setTimeout(() => document.getElementById("destinos")?.scrollIntoView(), 100); }}>Destinos</button>
+          <button onClick={() => setHelpOpen(true)}>Ayuda</button>
+        </nav>
+        <div className="header-actions">
+          <label className="role-select"><span className="sr-only">Cambiar tipo de usuario</span><select value={role} onChange={(event) => switchRole(event.target.value as Role)}><option>Viajero</option><option>Agencia</option><option>Administrador</option></select></label>
+          <button className="button button-quiet access-button" type="button" onClick={() => setAccessOpen(true)}>Accesibilidad</button>
+          <button className="button button-outline" type="button" onClick={() => navigate("login")}>Ingresar</button>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
+      </header>
+      <p className="global-status sr-only" role="status" aria-live="polite">{status}</p>
+
+      <main id="main">
+        {view === "explore" && <ExploreView onSearch={search} searchInput={searchInput} status={status} saved={saved} onSave={toggleSaved} onDetail={() => navigate("detail")} headingRef={mainHeading} />}
+        {view === "detail" && <DetailView onBack={() => navigate("explore")} setStatus={setStatus} headingRef={mainHeading} />}
+        {view === "login" && <LoginView onBack={() => navigate("explore")} onSuccess={() => navigate(role === "Administrador" ? "admin" : role === "Agencia" ? "agency" : "explore")} headingRef={mainHeading} />}
+        {view === "agency" && <AgencyView onPublish={() => navigate("publish")} onPromote={() => navigate("promotion")} setStatus={setStatus} headingRef={mainHeading} />}
+        {view === "publish" && <PublishView onBack={() => navigate("agency")} onComplete={() => { setStatus("Publicación guardada y enviada a revisión."); navigate("agency"); }} headingRef={mainHeading} />}
+        {view === "promotion" && <PromotionView onBack={() => navigate("agency")} onComplete={() => { setStatus("Simulación completada: promoción activa por 7 días."); navigate("agency"); }} headingRef={mainHeading} />}
+        {view === "admin" && <AdminView approved={approved} setApproved={setApproved} setStatus={setStatus} headingRef={mainHeading} />}
       </main>
-    </div>
+
+      <button className="help-fab" type="button" onClick={() => setHelpOpen(true)}>¿Necesitas ayuda?</button>
+      {helpOpen && <HelpDialog onClose={() => setHelpOpen(false)} />}
+      {accessOpen && <AccessDialog largeText={largeText} setLargeText={setLargeText} highContrast={highContrast} setHighContrast={setHighContrast} onClose={() => setAccessOpen(false)} />}
+      <footer><button className="brand brand-button footer-brand" type="button" onClick={() => navigate("explore", "Viajero")}><span className="brand-mark" aria-hidden="true">LR</span>LaRutica</button><p>Prototipo académico · Costa Rica · 2026</p><button className="footer-link" type="button" onClick={() => setAccessOpen(true)}>Opciones de accesibilidad</button></footer>
+    </>
   );
 }
+
+function ExploreView({ onSearch, searchInput, status, saved, onSave, onDetail, headingRef }: { onSearch: (event: FormEvent<HTMLFormElement>) => void; searchInput: React.RefObject<HTMLInputElement | null>; status: string; saved: number[]; onSave: (id: number, title: string) => void; onDetail: () => void; headingRef: React.RefObject<HTMLHeadingElement | null> }) {
+  return <>
+    <section className="hero" aria-labelledby="hero-title">
+      <div className="hero-copy"><p className="eyebrow">Viaja a tu ritmo</p><h1 id="hero-title" ref={headingRef} tabIndex={-1}>Costa Rica, más cerca de lo que imaginas.</h1><p className="hero-lead">Encuentra tours, transporte y experiencias verificadas en un solo lugar.</p>
+        <form className="search-panel" onSubmit={onSearch} aria-label="Buscar experiencias">
+          <label><span>¿A dónde quieres ir?</span><input ref={searchInput} name="destination" defaultValue="La Fortuna" autoComplete="address-level2" /><small>Atajo: presiona /</small></label>
+          <label><span>Fecha</span><input name="date" type="date" defaultValue="2026-08-22" /></label>
+          <label><span>Personas</span><select name="people" defaultValue="2"><option value="1">1 persona</option><option value="2">2 personas</option><option value="3">3 personas</option><option value="4">4 o más</option></select></label>
+          <button className="button button-primary search-button" type="submit">Buscar</button>
+        </form><p className="status-line" role="status" aria-live="polite">{status}</p>
+      </div>
+      <div className="hero-visual" role="img" aria-label="Bosque tropical de Costa Rica"><div className="floating-note"><strong>120+ experiencias</strong><span>de proveedores locales</span></div></div>
+    </section>
+    <section className="section" aria-labelledby="results" id="destinos">
+      <div className="section-heading"><div><p className="eyebrow">Recomendado para ti</p><h2 id="results" tabIndex={-1}>Experiencias que valen el viaje</h2></div><button className="text-link" type="button">Ver las 24 opciones</button></div>
+      <div className="filter-row" aria-label="Filtros rápidos"><button className="chip chip-active" type="button">Todas</button><button className="chip" type="button">Aventura</button><button className="chip" type="button">Naturaleza</button><button className="chip" type="button">Transporte</button><button className="chip" type="button">Menos de $50</button></div>
+      <div className="card-grid">{experiences.map((item) => <article className="experience-card" key={item.id}>
+        <div className="card-image-wrap"><img src={item.image} alt={item.alt} /><span className="badge">{item.badge}</span><button className="save-button" type="button" aria-pressed={saved.includes(item.id)} onClick={() => onSave(item.id, item.title)}>{saved.includes(item.id) ? "Guardado" : "Guardar"}</button></div>
+        <div className="card-body"><p className="card-place">{item.place}</p><h3>{item.title}</h3><p>{item.meta} · <strong>{item.rating}</strong>/5</p><div className="card-footer"><span><strong>{item.price}</strong> por persona</span><button className="button button-small" type="button" onClick={onDetail}>Ver detalle</button></div></div>
+      </article>)}</div>
+    </section>
+    <section className="transport-section" aria-labelledby="transport-title"><div><p className="eyebrow eyebrow-light">Muévete con confianza</p><h2 id="transport-title">Transporte para conectar tu ruta.</h2><p>Compara recorridos, vehículos, precios y contactos antes de salir.</p><button className="button button-light" type="button">Buscar transporte</button></div><div className="route-card"><p className="card-place">Ruta disponible hoy</p><strong>San José → La Fortuna</strong><span>Microbús · 3 h 15 min · Salida 8:00 a. m.</span><div><b>$42</b><button className="button button-small" type="button">Ver servicio</button></div></div></section>
+    <section className="trust-strip" aria-label="Beneficios de LaRutica"><div><strong>Información clara</strong><span>Precio, duración y cupos visibles.</span></div><div><strong>Proveedores verificados</strong><span>Perfiles y servicios revisados.</span></div><div><strong>Ayuda cuando la necesites</strong><span>Soporte contextual y pasos sencillos.</span></div></section>
+  </>;
+}
+
+function DetailView({ onBack, setStatus, headingRef }: { onBack: () => void; setStatus: (value: string) => void; headingRef: React.RefObject<HTMLHeadingElement | null> }) {
+  const [people, setPeople] = useState("2");
+  return <div className="detail-page page-shell"><button className="back-link" onClick={onBack} type="button">← Volver a resultados</button><div className="detail-grid">
+    <div><div className="detail-image"><img src={experiences[0].image} alt={experiences[0].alt} /><span className="badge">Proveedor verificado</span></div><p className="eyebrow detail-eyebrow">La Fortuna, Alajuela</p><h1 className="detail-title" ref={headingRef} tabIndex={-1}>Caminata al volcán Arenal</h1><p className="detail-intro">Explora senderos de lava, bosque tropical y miradores del Arenal junto a una guía local certificada.</p><div className="facts" aria-label="Información de la experiencia"><div><strong>4 horas</strong><span>Duración</span></div><div><strong>Fácil–moderada</strong><span>Dificultad</span></div><div><strong>ES / EN</strong><span>Idiomas</span></div><div><strong>12 máx.</strong><span>Grupo</span></div></div><h2 className="subheading">Lo que incluye</h2><ul className="check-list"><li>Guía naturalista y entrada al sendero</li><li>Transporte desde el centro de La Fortuna</li><li>Agua y refrigerio de fruta local</li></ul><h2 className="subheading">Punto de encuentro</h2><p>Parque central de La Fortuna. Recibirás el contacto del proveedor al confirmar.</p></div>
+    <aside className="booking-card" aria-label="Seleccionar disponibilidad"><p><strong>$58</strong> por persona</p><p className="rating-line">4,9/5 · 128 opiniones</p><label><span>Fecha</span><input type="date" defaultValue="2026-08-22" /></label><label><span>Personas</span><select value={people} onChange={(event) => setPeople(event.target.value)}><option value="1">1 persona</option><option value="2">2 personas</option><option value="3">3 personas</option><option value="4">4 personas</option></select></label><div className="total-row"><span>Total estimado</span><strong>${58 * Number(people)}</strong></div><button className="button button-primary button-full" type="button" onClick={() => setStatus("Experiencia agregada a tu plan. Puedes modificarla o eliminarla en cualquier momento.")}>Agregar a mi plan</button><p className="fine-print">No se realiza ningún cobro en este prototipo.</p></aside>
+  </div></div>;
+}
+
+function LoginView({ onBack, onSuccess, headingRef }: { onBack: () => void; onSuccess: () => void; headingRef: React.RefObject<HTMLHeadingElement | null> }) {
+  const [error, setError] = useState("");
+  function submit(event: FormEvent<HTMLFormElement>) { event.preventDefault(); const data = new FormData(event.currentTarget); if (!String(data.get("email")).includes("@")) setError("Escribe un correo válido, por ejemplo nombre@correo.com."); else onSuccess(); }
+  return <div className="auth-layout"><div className="auth-visual" aria-hidden="true"><p>Tu próxima ruta comienza aquí.</p></div><section className="auth-card" aria-labelledby="login-title"><button className="back-link" onClick={onBack} type="button">← Volver al inicio</button><p className="eyebrow">Bienvenido</p><h1 className="auth-title" id="login-title" ref={headingRef} tabIndex={-1}>Ingresa a LaRutica</h1><p>Guarda experiencias, administra servicios o revisa la plataforma según tu perfil.</p><form onSubmit={submit} noValidate><label><span>Correo electrónico</span><input name="email" type="email" autoComplete="email" aria-describedby={error ? "email-error" : undefined} aria-invalid={Boolean(error)} /></label>{error && <p id="email-error" className="error-message" role="alert"><strong>Revisa el correo:</strong> {error}</p>}<label><span>Contraseña</span><input name="password" type="password" autoComplete="current-password" minLength={8} /><small>Mínimo 8 caracteres.</small></label><div className="form-between"><label className="check-control"><input type="checkbox" /> Recordarme</label><button className="text-link" type="button">Recuperar contraseña</button></div><button className="button button-primary button-full" type="submit">Ingresar</button></form><p className="auth-footer">¿Aún no tienes cuenta? <button className="text-link" type="button">Crear una cuenta</button></p></section></div>;
+}
+
+function AgencyView({ onPublish, onPromote, setStatus, headingRef }: { onPublish: () => void; onPromote: () => void; setStatus: (value: string) => void; headingRef: React.RefObject<HTMLHeadingElement | null> }) {
+  return <DashboardShell title="Panel de agencia" subtitle="Arenal Viajes · Perfil verificado" headingRef={headingRef} actions={<button className="button button-primary" onClick={onPublish}>Nueva publicación</button>}>
+    <div className="notice notice-success"><strong>Tu perfil está completo.</strong><span>Las personas pueden ver tus datos de contacto y servicios activos.</span></div>
+    <div className="metric-grid"><Metric value="3" label="Publicaciones" note="1 en revisión" /><Metric value="1 284" label="Vistas este mes" note="+18% frente a julio" /><Metric value="36" label="Consultas" note="8 esta semana" /><Metric value="4,8" label="Valoración" note="52 opiniones" /></div>
+    <section className="dashboard-section" aria-labelledby="pub-title"><div className="dashboard-heading"><div><h2 id="pub-title" className="dashboard-title">Mis publicaciones</h2><p>Administra excursiones y servicios de transporte.</p></div><button className="button button-outline" onClick={onPromote}>Promocionar</button></div><div className="table-scroll"><table><caption className="sr-only">Publicaciones de la agencia</caption><thead><tr><th>Servicio</th><th>Estado</th><th>Precio</th><th>Vistas</th><th>Consultas</th><th>Acciones</th></tr></thead><tbody>{publications.map((item) => <tr key={item.title}><td><strong>{item.title}</strong></td><td><span className={`status-pill status-${item.status.toLowerCase().replace(" ", "-")}`}>{item.status}</span></td><td>{item.price}</td><td>{item.views}</td><td>{item.bookings}</td><td><button className="text-link" type="button" onClick={() => setStatus(`${item.title} abierto para edición.`)}>Editar</button></td></tr>)}</tbody></table></div></section>
+    <section className="quick-grid" aria-labelledby="quick-title"><h2 id="quick-title" className="sr-only">Accesos rápidos</h2><button onClick={onPublish}><strong>Crear excursión</strong><span>Agrega precio, duración, ruta e imagen.</span></button><button onClick={onPublish}><strong>Publicar transporte</strong><span>Define recorrido, vehículo y contacto.</span></button><button onClick={onPromote}><strong>Destacar un servicio</strong><span>Simula una promoción de 7 días.</span></button></section>
+  </DashboardShell>;
+}
+
+function PublishView({ onBack, onComplete, headingRef }: { onBack: () => void; onComplete: () => void; headingRef: React.RefObject<HTMLHeadingElement | null> }) {
+  const [type, setType] = useState("Excursión"); const [error, setError] = useState("");
+  function submit(event: FormEvent<HTMLFormElement>) { event.preventDefault(); const data = new FormData(event.currentTarget); if (!String(data.get("title")).trim()) { setError("Escribe un nombre descriptivo para continuar."); document.getElementById("publication-title")?.focus(); } else onComplete(); }
+  return <div className="form-page page-shell"><button className="back-link" type="button" onClick={onBack}>← Volver a publicaciones</button><div className="form-header"><p className="eyebrow">Paso 1 de 3 · Información básica</p><h1 className="form-title" ref={headingRef} tabIndex={-1}>Nueva publicación</h1><p>Completa los datos que verá el viajero. Podrás revisar todo antes de enviar.</p><div className="progress-track" aria-label="Progreso: paso 1 de 3"><span style={{ width: "33%" }} /></div></div><form className="editor-form" onSubmit={submit} noValidate><fieldset><legend>Tipo de servicio</legend><div className="segmented"><label><input type="radio" name="type" value="Excursión" checked={type === "Excursión"} onChange={() => setType("Excursión")} /><span>Excursión</span></label><label><input type="radio" name="type" value="Transporte" checked={type === "Transporte"} onChange={() => setType("Transporte")} /><span>Transporte</span></label></div></fieldset><label><span>Nombre de la publicación</span><input id="publication-title" name="title" aria-invalid={Boolean(error)} aria-describedby={error ? "title-error" : "title-help"} /><small id="title-help">Ejemplo: Caminata al volcán Arenal al amanecer.</small></label>{error && <p className="error-message" id="title-error" role="alert">{error}</p>}<label><span>Descripción</span><textarea name="description" rows={5} maxLength={500} defaultValue="Recorrido guiado por senderos de bosque tropical con vistas al volcán." /><small>Describe qué hará la persona, qué incluye y qué debe llevar. Máximo 500 caracteres.</small></label><div className="field-grid"><label><span>Destino</span><select name="destination" defaultValue="La Fortuna"><option>La Fortuna</option><option>Monteverde</option><option>Guanacaste</option></select></label><label><span>Precio por persona (USD)</span><input name="price" inputMode="decimal" defaultValue="58" /></label></div><div className="field-grid"><label><span>Duración</span><input name="duration" defaultValue="4 horas" /></label><label><span>Idiomas</span><input name="languages" defaultValue="Español, inglés" /></label></div><div className="notice"><strong>Antes de publicar</strong><span>La administración revisará que la información sea clara y segura.</span></div><div className="form-actions"><button className="button button-quiet" type="button" onClick={onBack}>Cancelar</button><button className="button button-outline" type="button">Guardar borrador</button><button className="button button-primary" type="submit">Continuar</button></div></form></div>;
+}
+
+function PromotionView({ onBack, onComplete, headingRef }: { onBack: () => void; onComplete: () => void; headingRef: React.RefObject<HTMLHeadingElement | null> }) {
+  return <div className="form-page page-shell"><button className="back-link" type="button" onClick={onBack}>← Volver al panel</button><div className="form-header"><p className="eyebrow">Simulación de compra</p><h1 className="form-title" ref={headingRef} tabIndex={-1}>Destaca tu publicación</h1><p>Obtén mayor visibilidad en resultados y destinos durante 7 días.</p></div><div className="promotion-grid"><section className="editor-form" aria-labelledby="promo-options"><h2 id="promo-options" className="dashboard-title">Elige una publicación</h2><label className="select-card"><input type="radio" name="publication" defaultChecked /><span><strong>Caminata al volcán Arenal</strong><small>Publicada · $58 por persona</small></span></label><label className="select-card"><input type="radio" name="publication" /><span><strong>Termales y cena local</strong><small>Disponible cuando sea aprobada</small></span></label><h2 className="dashboard-title">Vista previa</h2><div className="sponsored-preview"><span className="badge static-badge">Patrocinado</span><strong>Caminata al volcán Arenal</strong><span>Aparecerá primero en búsquedas relacionadas con La Fortuna.</span></div></section><aside className="summary-card"><h2>Resumen</h2><div><span>Promoción de 7 días</span><strong>$12,00</strong></div><div><span>Impuestos</span><strong>$1,56</strong></div><div className="total-row"><span>Total simulado</span><strong>$13,56</strong></div><button className="button button-primary button-full" type="button" onClick={onComplete}>Simular compra</button><p className="fine-print">Demostración académica: no se solicitarán datos bancarios ni se realizará un cobro.</p></aside></div></div>;
+}
+
+function AdminView({ approved, setApproved, setStatus, headingRef }: { approved: string[]; setApproved: (value: string[]) => void; setStatus: (value: string) => void; headingRef: React.RefObject<HTMLHeadingElement | null> }) {
+  const pending = ["Termales y cena local", "Traslado Liberia → Tamarindo"];
+  function approve(title: string) { setApproved([...approved, title]); setStatus(`${title} fue aprobado. La agencia recibirá una notificación.`); }
+  return <DashboardShell title="Administración" subtitle="Resumen general de LaRutica" headingRef={headingRef} actions={<button className="button button-outline">Exportar resumen</button>}><div className="metric-grid"><Metric value="286" label="Usuarios" note="+24 este mes" /><Metric value="38" label="Agencias" note="32 verificadas" /><Metric value="124" label="Publicaciones" note="2 por revisar" /><Metric value="18" label="Destinos" note="3 provincias nuevas" /></div><div className="admin-grid"><section className="dashboard-section" aria-labelledby="review-title"><div className="dashboard-heading"><div><p className="eyebrow">Requiere atención</p><h2 id="review-title" className="dashboard-title">Publicaciones pendientes</h2></div><span className="count-badge">{pending.filter((item) => !approved.includes(item)).length}</span></div>{pending.map((title, index) => !approved.includes(title) && <article className="review-item" key={title}><div><strong>{title}</strong><span>{index === 0 ? "Arenal Viajes · Excursión" : "Transportes Sol · Transporte"}</span></div><div><button className="button button-quiet" type="button">Revisar</button><button className="button button-primary" type="button" onClick={() => approve(title)}>Aprobar</button></div></article>)}{pending.every((item) => approved.includes(item)) && <div className="empty-state"><strong>Todo al día</strong><span>No quedan publicaciones pendientes.</span></div>}</section><aside className="dashboard-section activity-panel"><h2 className="dashboard-title">Actividad reciente</h2><ol className="activity-list"><li><strong>Nueva agencia registrada</strong><span>Pacific Blue Tours · hace 12 min</span></li><li><strong>Destino actualizado</strong><span>Monteverde · hace 45 min</span></li><li><strong>Promoción activada</strong><span>Arenal Viajes · hace 2 h</span></li></ol></aside></div><section className="quick-grid admin-quick" aria-label="Gestión administrativa"><button><strong>Gestionar usuarios</strong><span>Revisa perfiles, roles y estado.</span></button><button><strong>Administrar destinos</strong><span>Crea y actualiza lugares.</span></button><button><strong>Ver promociones</strong><span>Consulta servicios destacados.</span></button></section></DashboardShell>;
+}
+
+function DashboardShell({ title, subtitle, headingRef, actions, children }: { title: string; subtitle: string; headingRef: React.RefObject<HTMLHeadingElement | null>; actions: React.ReactNode; children: React.ReactNode }) { return <div className="dashboard"><header className="dashboard-header"><div><p className="eyebrow">LaRutica</p><h1 ref={headingRef} tabIndex={-1}>{title}</h1><p>{subtitle}</p></div>{actions}</header>{children}</div>; }
+function Metric({ value, label, note }: { value: string; label: string; note: string }) { return <article className="metric-card"><span>{label}</span><strong>{value}</strong><small>{note}</small></article>; }
+
+function HelpDialog({ onClose }: { onClose: () => void }) { return <div className="dialog-backdrop" onMouseDown={(event) => { if (event.currentTarget === event.target) onClose(); }}><section className="dialog" role="dialog" aria-modal="true" aria-labelledby="help-title"><button className="dialog-close" aria-label="Cerrar ayuda" onClick={onClose}>Cerrar</button><p className="eyebrow">Ayuda contextual</p><h2 id="help-title">¿Qué quieres hacer?</h2><div className="help-options"><button><strong>Buscar una experiencia</strong><span>Usa destino, fecha y cantidad de personas.</span></button><button><strong>Publicar un servicio</strong><span>Cambia el perfil a Agencia y elige Nueva publicación.</span></button><button><strong>Revisar contenido</strong><span>Cambia el perfil a Administrador.</span></button></div><p className="help-note">Consejo: presiona <kbd>Esc</kbd> para cerrar cualquier panel.</p></section></div>; }
+
+function AccessDialog({ largeText, setLargeText, highContrast, setHighContrast, onClose }: { largeText: boolean; setLargeText: (value: boolean) => void; highContrast: boolean; setHighContrast: (value: boolean) => void; onClose: () => void }) { return <div className="dialog-backdrop" onMouseDown={(event) => { if (event.currentTarget === event.target) onClose(); }}><section className="dialog access-dialog" role="dialog" aria-modal="true" aria-labelledby="access-title"><button className="dialog-close" aria-label="Cerrar opciones de accesibilidad" onClick={onClose}>Cerrar</button><p className="eyebrow">Preferencias</p><h2 id="access-title">Accesibilidad visual</h2><p>Los cambios se aplican inmediatamente a todo el prototipo.</p><label className="toggle-row"><span><strong>Texto más grande</strong><small>Aumenta el tamaño de lectura.</small></span><input type="checkbox" role="switch" checked={largeText} onChange={(event) => setLargeText(event.target.checked)} /></label><label className="toggle-row"><span><strong>Contraste reforzado</strong><small>Oscurece textos y bordes.</small></span><input type="checkbox" role="switch" checked={highContrast} onChange={(event) => setHighContrast(event.target.checked)} /></label><div className="notice"><strong>Navegación por teclado</strong><span>Usa Tab para avanzar, Shift + Tab para volver y Enter para activar.</span></div></section></div>; }
