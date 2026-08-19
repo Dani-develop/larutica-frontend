@@ -10,11 +10,57 @@ Drizzle support.
 
 ## Quick Start
 
+No environment variables, database setup, or external credentials are required
+to run the site locally.
+
+1. Clone the repository and enter its directory:
+
+   ```bash
+   git clone <repository-url>
+   cd larutica-frontend
+   ```
+
+2. Confirm that Node.js meets the required version:
+
+   ```bash
+   node --version
+   ```
+
+   The project requires Node.js `22.13.0` or newer.
+
+3. Install the exact dependencies recorded in `package-lock.json`:
+
+   ```bash
+   npm install
+   ```
+
+4. Start the local development server:
+
+   ```bash
+   npm run dev
+   ```
+
+5. Open [http://localhost:3000](http://localhost:3000) in a browser.
+
+To verify a production build, run:
+
 ```bash
-npm install
-npm run dev
 npm run build
 ```
+
+### Windows PowerShell
+
+If PowerShell reports that `npm.ps1` is not digitally signed or that script
+execution is disabled, use the Windows command shim instead. This does not
+require changing the system execution policy:
+
+```powershell
+npm.cmd install
+npm.cmd run dev
+```
+
+If port `3000` is already in use, stop the process using that port and run the
+development command again.
 
 This starter does not use `wrangler.jsonc`.
 
