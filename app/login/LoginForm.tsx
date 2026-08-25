@@ -49,6 +49,12 @@ export default function LoginForm() {
           </Field>
         </FieldGroup>
 
+        <p className="-mt-2 text-right text-sm">
+          <Link href="/forgot-password" className="font-medium text-primary underline-offset-4 hover:underline">
+            ¿Olvidaste tu contraseña?
+          </Link>
+        </p>
+
         <Button type="submit" className="mt-1 w-full">
           Continuar al dashboard
         </Button>
