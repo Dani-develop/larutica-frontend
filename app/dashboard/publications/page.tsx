@@ -1,10 +1,7 @@
-import { DashboardSectionPage } from "@/components/dashboard/DashboardSectionPage";
+"use client";
+
+import { PublicationsList } from "@/modules/agency/publications/components/PublicationsList";
 
 export default function Page() {
-  return (
-    <DashboardSectionPage
-      title="Publicaciones"
-      description="Administra excursiones y servicios de transporte."
-    />
-  );
+  return <PublicationsList />;
 }

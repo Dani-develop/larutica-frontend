@@ -70,7 +70,7 @@ export default function Page() {
     <div className="mx-auto max-w-7xl space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-primary">
+          <h1 className="text-xl font-semibold tracking-tight text-primary">
             Panel de Control
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
@@ -104,7 +104,7 @@ export default function Page() {
                   <Icon className="size-5 text-primary" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{metric.value}</div>
+                  <div className="text-lg font-semibold">{metric.value}</div>
                   <p className="mt-1 text-xs text-muted-foreground">{metric.note}</p>
                 </CardContent>
               </Card>

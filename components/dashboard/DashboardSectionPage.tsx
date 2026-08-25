@@ -25,7 +25,7 @@ export function DashboardSectionPage({
           </Link>
           <span className="text-muted-foreground"> / {title}</span>
         </p>
-        <h1 className="mt-1 text-3xl font-bold tracking-tight">{title}</h1>
+        <h1 className="mt-1 text-xl font-semibold tracking-tight">{title}</h1>
         <p className="mt-1 text-sm text-muted-foreground">{description}</p>
       </div>
       <Card className="shadow-xs">
