@@ -1,9 +1,10 @@
 "use client";
 
+import Link from "next/link";
 import { FormEvent, useEffect, useRef, useState } from "react";
 
-type View = "explore" | "detail" | "login" | "agency" | "publish" | "promotion" | "admin";
-type Role = "Viajero" | "Agencia" | "Administrador";
+type View = "explore" | "detail" | "agency" | "transport" | "publish" | "promotion" | "admin";
+type Role = "Viajero" | "Agencia" | "Transporte";
 
 const experiences = [
   { id: 1, title: "Caminata al volcán Arenal", place: "La Fortuna, Alajuela", meta: "4 h · Español e inglés", price: "$58", rating: "4,9", badge: "Más reservado", image: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=900&q=82", alt: "Sendero verde entre montañas tropicales" },
@@ -59,12 +60,26 @@ export default function Home() {
   }
 
   function screenName(next: View) {
-    return ({ explore: "Explorar", detail: "Detalle de experiencia", login: "Ingreso", agency: "Panel de agencia", publish: "Nueva publicación", promotion: "Promoción", admin: "Administración" } as Record<View, string>)[next];
+    return ({
+      explore: "Explorar",
+      detail: "Detalle de experiencia",
+      agency: "Panel de agencia",
+      transport: "Panel de transporte",
+      publish: "Nueva publicación",
+      promotion: "Promoción",
+      admin: "Administración",
+    } as Record<View, string>)[next];
   }
 
   function switchRole(next: Role) {
     setRole(next);
-    navigate(next === "Viajero" ? "explore" : next === "Agencia" ? "agency" : "admin");
+    navigate(
+      next === "Viajero" ? "explore" : next === "Agencia" ? "agency" : "transport",
+    );
+  }
+
+  function providerHome(): View {
+    return role === "Transporte" ? "transport" : "agency";
   }
 
   function search(event: FormEvent<HTMLFormElement>) {
@@ -92,9 +107,16 @@ export default function Home() {
           <button onClick={() => setHelpOpen(true)}>Ayuda</button>
         </nav>
         <div className="header-actions">
-          <label className="role-select"><span className="sr-only">Cambiar tipo de usuario</span><select value={role} onChange={(event) => switchRole(event.target.value as Role)}><option>Viajero</option><option>Agencia</option><option>Administrador</option></select></label>
+          <label className="role-select">
+            <span className="sr-only">Cambiar tipo de usuario</span>
+            <select value={role} onChange={(event) => switchRole(event.target.value as Role)}>
+              <option>Viajero</option>
+              <option>Agencia</option>
+              <option>Transporte</option>
+            </select>
+          </label>
           <button className="button button-quiet access-button" type="button" onClick={() => setAccessOpen(true)}>Accesibilidad</button>
-          <button className="button button-outline" type="button" onClick={() => navigate("login")}>Ingresar</button>
+          <Link className="button button-outline" href="/login">Ingresar</Link>
         </div>
       </header>
       <p className="global-status sr-only" role="status" aria-live="polite">{status}</p>
@@ -102,10 +124,10 @@ export default function Home() {
       <main id="main">
         {view === "explore" && <ExploreView onSearch={search} searchInput={searchInput} status={status} saved={saved} onSave={toggleSaved} onDetail={() => navigate("detail")} headingRef={mainHeading} />}
         {view === "detail" && <DetailView onBack={() => navigate("explore")} setStatus={setStatus} headingRef={mainHeading} />}
-        {view === "login" && <LoginView onBack={() => navigate("explore")} onSuccess={() => navigate(role === "Administrador" ? "admin" : role === "Agencia" ? "agency" : "explore")} headingRef={mainHeading} />}
         {view === "agency" && <AgencyView onPublish={() => navigate("publish")} onPromote={() => navigate("promotion")} setStatus={setStatus} headingRef={mainHeading} />}
-        {view === "publish" && <PublishView onBack={() => navigate("agency")} onComplete={() => { setStatus("Publicación guardada y enviada a revisión."); navigate("agency"); }} headingRef={mainHeading} />}
-        {view === "promotion" && <PromotionView onBack={() => navigate("agency")} onComplete={() => { setStatus("Simulación completada: promoción activa por 7 días."); navigate("agency"); }} headingRef={mainHeading} />}
+        {view === "transport" && <TransportView onPublish={() => navigate("publish")} onPromote={() => navigate("promotion")} setStatus={setStatus} headingRef={mainHeading} />}
+        {view === "publish" && <PublishView onBack={() => navigate(providerHome())} onComplete={() => { setStatus("Publicación guardada y enviada a revisión."); navigate(providerHome()); }} headingRef={mainHeading} />}
+        {view === "promotion" && <PromotionView onBack={() => navigate(providerHome())} onComplete={() => { setStatus("Simulación completada: promoción activa por 7 días."); navigate(providerHome()); }} headingRef={mainHeading} />}
         {view === "admin" && <AdminView approved={approved} setApproved={setApproved} setStatus={setStatus} headingRef={mainHeading} />}
       </main>
 
@@ -151,18 +173,26 @@ function DetailView({ onBack, setStatus, headingRef }: { onBack: () => void; set
   </div></div>;
 }
 
-function LoginView({ onBack, onSuccess, headingRef }: { onBack: () => void; onSuccess: () => void; headingRef: React.RefObject<HTMLHeadingElement | null> }) {
-  const [error, setError] = useState("");
-  function submit(event: FormEvent<HTMLFormElement>) { event.preventDefault(); const data = new FormData(event.currentTarget); if (!String(data.get("email")).includes("@")) setError("Escribe un correo válido, por ejemplo nombre@correo.com."); else onSuccess(); }
-  return <div className="auth-layout"><div className="auth-visual" aria-hidden="true"><p>Tu próxima ruta comienza aquí.</p></div><section className="auth-card" aria-labelledby="login-title"><button className="back-link" onClick={onBack} type="button">← Volver al inicio</button><p className="eyebrow">Bienvenido</p><h1 className="auth-title" id="login-title" ref={headingRef} tabIndex={-1}>Ingresa a LaRutica</h1><p>Guarda experiencias, administra servicios o revisa la plataforma según tu perfil.</p><form onSubmit={submit} noValidate><label><span>Correo electrónico</span><input name="email" type="email" autoComplete="email" aria-describedby={error ? "email-error" : undefined} aria-invalid={Boolean(error)} /></label>{error && <p id="email-error" className="error-message" role="alert"><strong>Revisa el correo:</strong> {error}</p>}<label><span>Contraseña</span><input name="password" type="password" autoComplete="current-password" minLength={8} /><small>Mínimo 8 caracteres.</small></label><div className="form-between"><label className="check-control"><input type="checkbox" /> Recordarme</label><button className="text-link" type="button">Recuperar contraseña</button></div><button className="button button-primary button-full" type="submit">Ingresar</button></form><p className="auth-footer">¿Aún no tienes cuenta? <button className="text-link" type="button">Crear una cuenta</button></p></section></div>;
-}
-
 function AgencyView({ onPublish, onPromote, setStatus, headingRef }: { onPublish: () => void; onPromote: () => void; setStatus: (value: string) => void; headingRef: React.RefObject<HTMLHeadingElement | null> }) {
   return <DashboardShell title="Panel de agencia" subtitle="Arenal Viajes · Perfil verificado" headingRef={headingRef} actions={<button className="button button-primary" onClick={onPublish}>Nueva publicación</button>}>
     <div className="notice notice-success"><strong>Tu perfil está completo.</strong><span>Las personas pueden ver tus datos de contacto y servicios activos.</span></div>
     <div className="metric-grid"><Metric value="3" label="Publicaciones" note="1 en revisión" /><Metric value="1 284" label="Vistas este mes" note="+18% frente a julio" /><Metric value="36" label="Consultas" note="8 esta semana" /><Metric value="4,8" label="Valoración" note="52 opiniones" /></div>
     <section className="dashboard-section" aria-labelledby="pub-title"><div className="dashboard-heading"><div><h2 id="pub-title" className="dashboard-title">Mis publicaciones</h2><p>Administra excursiones y servicios de transporte.</p></div><button className="button button-outline" onClick={onPromote}>Promocionar</button></div><div className="table-scroll"><table><caption className="sr-only">Publicaciones de la agencia</caption><thead><tr><th>Servicio</th><th>Estado</th><th>Precio</th><th>Vistas</th><th>Consultas</th><th>Acciones</th></tr></thead><tbody>{publications.map((item) => <tr key={item.title}><td><strong>{item.title}</strong></td><td><span className={`status-pill status-${item.status.toLowerCase().replace(" ", "-")}`}>{item.status}</span></td><td>{item.price}</td><td>{item.views}</td><td>{item.bookings}</td><td><button className="text-link" type="button" onClick={() => setStatus(`${item.title} abierto para edición.`)}>Editar</button></td></tr>)}</tbody></table></div></section>
     <section className="quick-grid" aria-labelledby="quick-title"><h2 id="quick-title" className="sr-only">Accesos rápidos</h2><button onClick={onPublish}><strong>Crear excursión</strong><span>Agrega precio, duración, ruta e imagen.</span></button><button onClick={onPublish}><strong>Publicar transporte</strong><span>Define recorrido, vehículo y contacto.</span></button><button onClick={onPromote}><strong>Destacar un servicio</strong><span>Simula una promoción de 7 días.</span></button></section>
+  </DashboardShell>;
+}
+
+function TransportView({ onPublish, onPromote, setStatus, headingRef }: { onPublish: () => void; onPromote: () => void; setStatus: (value: string) => void; headingRef: React.RefObject<HTMLHeadingElement | null> }) {
+  const routes = [
+    { title: "San José → La Fortuna", status: "Publicada", views: "842", bookings: "21", price: "$42" },
+    { title: "Liberia → Tamarindo", status: "En revisión", views: "—", bookings: "—", price: "$35" },
+    { title: "SJO → Playas del Coco", status: "Borrador", views: "—", bookings: "—", price: "$48" },
+  ];
+  return <DashboardShell title="Panel de transporte" subtitle="Transportes Sol · Perfil verificado" headingRef={headingRef} actions={<button className="button button-primary" onClick={onPublish}>Nueva ruta</button>}>
+    <div className="notice notice-success"><strong>Tu perfil está completo.</strong><span>Los viajeros pueden ver tus rutas, vehículos y contactos.</span></div>
+    <div className="metric-grid"><Metric value="3" label="Rutas" note="1 en revisión" /><Metric value="842" label="Vistas este mes" note="+12% frente a julio" /><Metric value="21" label="Consultas" note="5 esta semana" /><Metric value="4,7" label="Valoración" note="38 opiniones" /></div>
+    <section className="dashboard-section" aria-labelledby="routes-title"><div className="dashboard-heading"><div><h2 id="routes-title" className="dashboard-title">Mis rutas</h2><p>Administra traslados y servicios de transporte.</p></div><button className="button button-outline" onClick={onPromote}>Promocionar</button></div><div className="table-scroll"><table><caption className="sr-only">Rutas del proveedor de transporte</caption><thead><tr><th>Servicio</th><th>Estado</th><th>Precio</th><th>Vistas</th><th>Consultas</th><th>Acciones</th></tr></thead><tbody>{routes.map((item) => <tr key={item.title}><td><strong>{item.title}</strong></td><td><span className={`status-pill status-${item.status.toLowerCase().replace(" ", "-")}`}>{item.status}</span></td><td>{item.price}</td><td>{item.views}</td><td>{item.bookings}</td><td><button className="text-link" type="button" onClick={() => setStatus(`${item.title} abierto para edición.`)}>Editar</button></td></tr>)}</tbody></table></div></section>
+    <section className="quick-grid" aria-labelledby="transport-quick"><h2 id="transport-quick" className="sr-only">Accesos rápidos</h2><button onClick={onPublish}><strong>Publicar traslado</strong><span>Define recorrido, vehículo y contacto.</span></button><button onClick={onPublish}><strong>Agregar vehículo</strong><span>Capacidad, tipo y disponibilidad.</span></button><button onClick={onPromote}><strong>Destacar una ruta</strong><span>Simula una promoción de 7 días.</span></button></section>
   </DashboardShell>;
 }
 
@@ -185,6 +215,6 @@ function AdminView({ approved, setApproved, setStatus, headingRef }: { approved:
 function DashboardShell({ title, subtitle, headingRef, actions, children }: { title: string; subtitle: string; headingRef: React.RefObject<HTMLHeadingElement | null>; actions: React.ReactNode; children: React.ReactNode }) { return <div className="dashboard"><header className="dashboard-header"><div><p className="eyebrow">LaRutica</p><h1 ref={headingRef} tabIndex={-1}>{title}</h1><p>{subtitle}</p></div>{actions}</header>{children}</div>; }
 function Metric({ value, label, note }: { value: string; label: string; note: string }) { return <article className="metric-card"><span>{label}</span><strong>{value}</strong><small>{note}</small></article>; }
 
-function HelpDialog({ onClose }: { onClose: () => void }) { return <div className="dialog-backdrop" onMouseDown={(event) => { if (event.currentTarget === event.target) onClose(); }}><section className="dialog" role="dialog" aria-modal="true" aria-labelledby="help-title"><button className="dialog-close" aria-label="Cerrar ayuda" onClick={onClose}>Cerrar</button><p className="eyebrow">Ayuda contextual</p><h2 id="help-title">¿Qué quieres hacer?</h2><div className="help-options"><button><strong>Buscar una experiencia</strong><span>Usa destino, fecha y cantidad de personas.</span></button><button><strong>Publicar un servicio</strong><span>Cambia el perfil a Agencia y elige Nueva publicación.</span></button><button><strong>Revisar contenido</strong><span>Cambia el perfil a Administrador.</span></button></div><p className="help-note">Consejo: presiona <kbd>Esc</kbd> para cerrar cualquier panel.</p></section></div>; }
+function HelpDialog({ onClose }: { onClose: () => void }) { return <div className="dialog-backdrop" onMouseDown={(event) => { if (event.currentTarget === event.target) onClose(); }}><section className="dialog" role="dialog" aria-modal="true" aria-labelledby="help-title"><button className="dialog-close" aria-label="Cerrar ayuda" onClick={onClose}>Cerrar</button><p className="eyebrow">Ayuda contextual</p><h2 id="help-title">¿Qué quieres hacer?</h2><div className="help-options"><button><strong>Buscar una experiencia</strong><span>Usa destino, fecha y cantidad de personas.</span></button><button><strong>Publicar un servicio</strong><span>Cambia el perfil a Agencia o Transporte.</span></button><button><strong>Ingresar a tu cuenta</strong><span>Usa el botón Ingresar o crea una en Registrarse.</span></button></div><p className="help-note">Consejo: presiona <kbd>Esc</kbd> para cerrar cualquier panel.</p></section></div>; }
 
 function AccessDialog({ largeText, setLargeText, highContrast, setHighContrast, onClose }: { largeText: boolean; setLargeText: (value: boolean) => void; highContrast: boolean; setHighContrast: (value: boolean) => void; onClose: () => void }) { return <div className="dialog-backdrop" onMouseDown={(event) => { if (event.currentTarget === event.target) onClose(); }}><section className="dialog access-dialog" role="dialog" aria-modal="true" aria-labelledby="access-title"><button className="dialog-close" aria-label="Cerrar opciones de accesibilidad" onClick={onClose}>Cerrar</button><p className="eyebrow">Preferencias</p><h2 id="access-title">Accesibilidad visual</h2><p>Los cambios se aplican inmediatamente a todo el prototipo.</p><label className="toggle-row"><span><strong>Texto más grande</strong><small>Aumenta el tamaño de lectura.</small></span><input type="checkbox" role="switch" checked={largeText} onChange={(event) => setLargeText(event.target.checked)} /></label><label className="toggle-row"><span><strong>Contraste reforzado</strong><small>Oscurece textos y bordes.</small></span><input type="checkbox" role="switch" checked={highContrast} onChange={(event) => setHighContrast(event.target.checked)} /></label><div className="notice"><strong>Navegación por teclado</strong><span>Usa Tab para avanzar, Shift + Tab para volver y Enter para activar.</span></div></section></div>; }
