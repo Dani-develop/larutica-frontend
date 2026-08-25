@@ -1,0 +1,123 @@
+"use client";
+
+import dynamic from "next/dynamic";
+import Link from "next/link";
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+  useSidebar,
+} from "@/components/ui/sidebar";
+import { Skeleton } from "@/components/ui/skeleton";
+import { LogOut } from "lucide-react";
+import { SITE } from "@/modules/landing/constants/site";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { UserAvatar } from "@/components/app-sidebar/nav-user";
+import { getInitials } from "@/components/app-sidebar/user-avatar-utils";
+import { useRouter } from "next/navigation";
+
+const AppSidebar = dynamic(
+  () => import("@/components/app-sidebar").then((mod) => mod.AppSidebar),
+  { loading: () => <Skeleton className="hidden w-64 shrink-0 rounded-none md:block" /> },
+);
+
+const BottomNav = dynamic(() =>
+  import("@/components/app-sidebar/bottom-nav").then((mod) => mod.BottomNav),
+);
+
+/** Usuario temporal hasta integrar autenticación. */
+const DEMO_USER = {
+  username: "Administrador",
+  email: "admin@larutica.cr",
+  role: "Admin",
+  avatarUrl: null as string | null,
+};
+
+interface HeaderUser {
+  username?: string | null;
+  email?: string | null;
+  avatarUrl?: string | null;
+}
+
+function DashboardHeader({ user }: { user: HeaderUser }) {
+  const { isMobile } = useSidebar();
+  const router = useRouter();
+  const initials = getInitials(user?.username, user?.email);
+
+  return (
+    <header className="sticky top-0 z-50 flex h-15 shrink-0 items-center justify-between border-b bg-background px-4">
+      {!isMobile && <SidebarTrigger />}
+
+      {isMobile && (
+        <Link href="/dashboard" className="flex items-center gap-2">
+          <span className="flex size-8 items-center justify-center rounded-[50%_50%_44%_56%] bg-[#0d684e] text-[10px] font-bold text-white">
+            LR
+          </span>
+          <span className="truncate text-sm font-semibold">{SITE.name}</span>
+        </Link>
+      )}
+
+      {isMobile && (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button
+              type="button"
+              className="flex items-center justify-center rounded-lg focus-visible:outline-hidden"
+            >
+              <UserAvatar
+                initials={initials}
+                className="size-8 cursor-pointer border transition-opacity hover:opacity-80"
+              />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="mt-1 w-56 rounded-lg" showHeader={false}>
+            <DropdownMenuLabel className="p-0 font-normal">
+              <div className="flex items-center gap-2 px-2 py-1.5 text-left text-sm">
+                <UserAvatar initials={initials} className="size-8" />
+                <div className="grid flex-1 text-left text-sm leading-tight">
+                  <span className="truncate font-medium">
+                    {user?.username ?? "Invitado"}
+                  </span>
+                  {user?.email && (
+                    <span className="text-muted-foreground truncate text-xs">
+                      {user.email}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onSelect={() => router.push("/")}>
+              <LogOut className="mr-2 size-4" />
+              Cerrar sesión
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )}
+    </header>
+  );
+}
+
+export default function Layout({ children }: { children: React.ReactNode }) {
+  const user = DEMO_USER;
+
+  return (
+    <SidebarProvider>
+      <AppSidebar user={user} />
+      <SidebarInset className="flex flex-col overflow-auto">
+        <DashboardHeader user={user} />
+        <main className="flex-1 overflow-auto p-4 pb-20 md:p-6 md:pb-6">
+          {children}
+        </main>
+        <BottomNav role={user.role} />
+      </SidebarInset>
+    </SidebarProvider>
+  );
+}
