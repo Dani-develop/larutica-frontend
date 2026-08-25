@@ -1,11 +1,15 @@
 import {
   BarChart3,
+  Bookmark,
   Building2,
+  Bus,
+  CalendarDays,
   ClipboardCheck,
+  FileText,
   Home,
   MapPin,
   Megaphone,
-  FileText,
+  Route,
   Users,
   type LucideIcon,
 } from "lucide-react";
@@ -51,7 +55,7 @@ export const navGroups: NavGroup[] = [
         label: "Inicio",
         icon: Home,
         exact: true,
-        roles: ["Admin"],
+        roles: ["Viajero", "Agencia", "Transporte", "Admin"],
         primary: true,
       },
       {
@@ -59,6 +63,81 @@ export const navGroups: NavGroup[] = [
         label: "Gráficas",
         icon: BarChart3,
         roles: ["Admin"],
+      },
+    ],
+  },
+  {
+    label: "Mi viaje",
+    items: [
+      {
+        href: "/dashboard/publications",
+        label: "Explorar",
+        icon: MapPin,
+        roles: ["Viajero"],
+        primary: true,
+      },
+      {
+        href: "/dashboard/promotions",
+        label: "Guardados",
+        icon: Bookmark,
+        roles: ["Viajero"],
+        primary: true,
+      },
+      {
+        href: "/dashboard/reviews",
+        label: "Mis reservas",
+        icon: CalendarDays,
+        roles: ["Viajero"],
+      },
+    ],
+  },
+  {
+    label: "Agencia",
+    items: [
+      {
+        href: "/dashboard/publications",
+        label: "Publicaciones",
+        icon: FileText,
+        roles: ["Agencia"],
+        primary: true,
+      },
+      {
+        href: "/dashboard/promotions",
+        label: "Promociones",
+        icon: Megaphone,
+        roles: ["Agencia"],
+        primary: true,
+      },
+      {
+        href: "/dashboard/reviews",
+        label: "Pendientes",
+        icon: ClipboardCheck,
+        roles: ["Agencia"],
+      },
+    ],
+  },
+  {
+    label: "Transporte",
+    items: [
+      {
+        href: "/dashboard/publications",
+        label: "Rutas",
+        icon: Route,
+        roles: ["Transporte"],
+        primary: true,
+      },
+      {
+        href: "/dashboard/agencies",
+        label: "Vehículos",
+        icon: Bus,
+        roles: ["Transporte"],
+        primary: true,
+      },
+      {
+        href: "/dashboard/promotions",
+        label: "Promociones",
+        icon: Megaphone,
+        roles: ["Transporte"],
       },
     ],
   },

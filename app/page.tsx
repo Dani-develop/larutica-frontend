@@ -4,7 +4,6 @@ import Link from "next/link";
 import { FormEvent, useEffect, useRef, useState } from "react";
 
 type View = "explore" | "detail" | "agency" | "transport" | "publish" | "promotion" | "admin";
-type Role = "Viajero" | "Agencia" | "Transporte";
 
 const experiences = [
   { id: 1, title: "Caminata al volcán Arenal", place: "La Fortuna, Alajuela", meta: "4 h · Español e inglés", price: "$58", rating: "4,9", badge: "Más reservado", image: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=900&q=82", alt: "Sendero verde entre montañas tropicales" },
@@ -20,7 +19,6 @@ const publications = [
 
 export default function Home() {
   const [view, setView] = useState<View>("explore");
-  const [role, setRole] = useState<Role>("Viajero");
   const [status, setStatus] = useState("Explora opciones seleccionadas para ti.");
   const [saved, setSaved] = useState<number[]>([]);
   const [helpOpen, setHelpOpen] = useState(false);
@@ -51,8 +49,7 @@ export default function Home() {
     document.documentElement.classList.toggle("high-contrast", highContrast);
   }, [largeText, highContrast]);
 
-  function navigate(next: View, nextRole?: Role) {
-    if (nextRole) setRole(nextRole);
+  function navigate(next: View) {
     setView(next);
     setStatus(`Pantalla ${screenName(next)} abierta.`);
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -71,15 +68,8 @@ export default function Home() {
     } as Record<View, string>)[next];
   }
 
-  function switchRole(next: Role) {
-    setRole(next);
-    navigate(
-      next === "Viajero" ? "explore" : next === "Agencia" ? "agency" : "transport",
-    );
-  }
-
   function providerHome(): View {
-    return role === "Transporte" ? "transport" : "agency";
+    return "agency";
   }
 
   function search(event: FormEvent<HTMLFormElement>) {
@@ -98,23 +88,15 @@ export default function Home() {
     <>
       <a className="skip-link" href="#main">Ir al contenido principal</a>
       <header className="site-header">
-        <button className="brand brand-button" type="button" onClick={() => navigate("explore", "Viajero")} aria-label="LaRutica, volver al inicio">
+        <button className="brand brand-button" type="button" onClick={() => navigate("explore")} aria-label="LaRutica, volver al inicio">
           <span className="brand-mark" aria-hidden="true">LR</span><span>LaRutica</span>
         </button>
         <nav aria-label="Navegación principal">
-          <button className={view === "explore" || view === "detail" ? "nav-active" : ""} onClick={() => navigate("explore", "Viajero")} aria-current={view === "explore" ? "page" : undefined}>Explorar</button>
-          <button onClick={() => { navigate("explore", "Viajero"); setStatus("Sección Destinos abierta: 18 destinos disponibles."); window.setTimeout(() => document.getElementById("destinos")?.scrollIntoView(), 100); }}>Destinos</button>
+          <button className={view === "explore" || view === "detail" ? "nav-active" : ""} onClick={() => navigate("explore")} aria-current={view === "explore" ? "page" : undefined}>Explorar</button>
+          <button onClick={() => { navigate("explore"); setStatus("Sección Destinos abierta: 18 destinos disponibles."); window.setTimeout(() => document.getElementById("destinos")?.scrollIntoView(), 100); }}>Destinos</button>
           <button onClick={() => setHelpOpen(true)}>Ayuda</button>
         </nav>
         <div className="header-actions">
-          <label className="role-select">
-            <span className="sr-only">Cambiar tipo de usuario</span>
-            <select value={role} onChange={(event) => switchRole(event.target.value as Role)}>
-              <option>Viajero</option>
-              <option>Agencia</option>
-              <option>Transporte</option>
-            </select>
-          </label>
           <button className="button button-quiet access-button" type="button" onClick={() => setAccessOpen(true)}>Accesibilidad</button>
           <Link className="button button-outline" href="/login">Ingresar</Link>
         </div>
@@ -134,7 +116,7 @@ export default function Home() {
       <button className="help-fab" type="button" onClick={() => setHelpOpen(true)}>¿Necesitas ayuda?</button>
       {helpOpen && <HelpDialog onClose={() => setHelpOpen(false)} />}
       {accessOpen && <AccessDialog largeText={largeText} setLargeText={setLargeText} highContrast={highContrast} setHighContrast={setHighContrast} onClose={() => setAccessOpen(false)} />}
-      <footer><button className="brand brand-button footer-brand" type="button" onClick={() => navigate("explore", "Viajero")}><span className="brand-mark" aria-hidden="true">LR</span>LaRutica</button><p>Prototipo académico · Costa Rica · 2026</p><button className="footer-link" type="button" onClick={() => setAccessOpen(true)}>Opciones de accesibilidad</button></footer>
+      <footer><button className="brand brand-button footer-brand" type="button" onClick={() => navigate("explore")}><span className="brand-mark" aria-hidden="true">LR</span>LaRutica</button><p>Prototipo académico · Costa Rica · 2026</p><button className="footer-link" type="button" onClick={() => setAccessOpen(true)}>Opciones de accesibilidad</button></footer>
     </>
   );
 }
@@ -215,6 +197,6 @@ function AdminView({ approved, setApproved, setStatus, headingRef }: { approved:
 function DashboardShell({ title, subtitle, headingRef, actions, children }: { title: string; subtitle: string; headingRef: React.RefObject<HTMLHeadingElement | null>; actions: React.ReactNode; children: React.ReactNode }) { return <div className="dashboard"><header className="dashboard-header"><div><p className="eyebrow">LaRutica</p><h1 ref={headingRef} tabIndex={-1}>{title}</h1><p>{subtitle}</p></div>{actions}</header>{children}</div>; }
 function Metric({ value, label, note }: { value: string; label: string; note: string }) { return <article className="metric-card"><span>{label}</span><strong>{value}</strong><small>{note}</small></article>; }
 
-function HelpDialog({ onClose }: { onClose: () => void }) { return <div className="dialog-backdrop" onMouseDown={(event) => { if (event.currentTarget === event.target) onClose(); }}><section className="dialog" role="dialog" aria-modal="true" aria-labelledby="help-title"><button className="dialog-close" aria-label="Cerrar ayuda" onClick={onClose}>Cerrar</button><p className="eyebrow">Ayuda contextual</p><h2 id="help-title">¿Qué quieres hacer?</h2><div className="help-options"><button><strong>Buscar una experiencia</strong><span>Usa destino, fecha y cantidad de personas.</span></button><button><strong>Publicar un servicio</strong><span>Cambia el perfil a Agencia o Transporte.</span></button><button><strong>Ingresar a tu cuenta</strong><span>Usa el botón Ingresar o crea una en Registrarse.</span></button></div><p className="help-note">Consejo: presiona <kbd>Esc</kbd> para cerrar cualquier panel.</p></section></div>; }
+function HelpDialog({ onClose }: { onClose: () => void }) { return <div className="dialog-backdrop" onMouseDown={(event) => { if (event.currentTarget === event.target) onClose(); }}><section className="dialog" role="dialog" aria-modal="true" aria-labelledby="help-title"><button className="dialog-close" aria-label="Cerrar ayuda" onClick={onClose}>Cerrar</button><p className="eyebrow">Ayuda contextual</p><h2 id="help-title">¿Qué quieres hacer?</h2><div className="help-options"><button><strong>Buscar una experiencia</strong><span>Usa destino, fecha y cantidad de personas.</span></button><button><strong>Publicar un servicio</strong><span>Ingresa y regístrate como Agencia o Transporte.</span></button><button><strong>Ingresar a tu cuenta</strong><span>Usa el botón Ingresar o crea una en Registrarse.</span></button></div><p className="help-note">Consejo: presiona <kbd>Esc</kbd> para cerrar cualquier panel.</p></section></div>; }
 
 function AccessDialog({ largeText, setLargeText, highContrast, setHighContrast, onClose }: { largeText: boolean; setLargeText: (value: boolean) => void; highContrast: boolean; setHighContrast: (value: boolean) => void; onClose: () => void }) { return <div className="dialog-backdrop" onMouseDown={(event) => { if (event.currentTarget === event.target) onClose(); }}><section className="dialog access-dialog" role="dialog" aria-modal="true" aria-labelledby="access-title"><button className="dialog-close" aria-label="Cerrar opciones de accesibilidad" onClick={onClose}>Cerrar</button><p className="eyebrow">Preferencias</p><h2 id="access-title">Accesibilidad visual</h2><p>Los cambios se aplican inmediatamente a todo el prototipo.</p><label className="toggle-row"><span><strong>Texto más grande</strong><small>Aumenta el tamaño de lectura.</small></span><input type="checkbox" role="switch" checked={largeText} onChange={(event) => setLargeText(event.target.checked)} /></label><label className="toggle-row"><span><strong>Contraste reforzado</strong><small>Oscurece textos y bordes.</small></span><input type="checkbox" role="switch" checked={highContrast} onChange={(event) => setHighContrast(event.target.checked)} /></label><div className="notice"><strong>Navegación por teclado</strong><span>Usa Tab para avanzar, Shift + Tab para volver y Enter para activar.</span></div></section></div>; }

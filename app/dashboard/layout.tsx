@@ -22,6 +22,12 @@ import {
 import { UserAvatar } from "@/components/app-sidebar/nav-user";
 import { getInitials } from "@/components/app-sidebar/user-avatar-utils";
 import { useRouter } from "next/navigation";
+import {
+  DashboardRoleProvider,
+  demoUserForRole,
+  useDashboardRole,
+} from "@/components/dashboard/dashboard-role-context";
+import { RoleSwitcher } from "@/components/dashboard/RoleSwitcher";
 
 const AppSidebar = dynamic(
   () => import("@/components/app-sidebar").then((mod) => mod.AppSidebar),
@@ -31,14 +37,6 @@ const AppSidebar = dynamic(
 const BottomNav = dynamic(() =>
   import("@/components/app-sidebar/bottom-nav").then((mod) => mod.BottomNav),
 );
-
-/** Usuario temporal hasta integrar autenticación. */
-const DEMO_USER = {
-  username: "Administrador",
-  email: "admin@larutica.cr",
-  role: "Admin",
-  avatarUrl: null as string | null,
-};
 
 interface HeaderUser {
   username?: string | null;
@@ -52,61 +50,72 @@ function DashboardHeader({ user }: { user: HeaderUser }) {
   const initials = getInitials(user?.username, user?.email);
 
   return (
-    <header className="sticky top-0 z-50 flex h-15 shrink-0 items-center justify-between border-b bg-background px-4">
-      {!isMobile && <SidebarTrigger />}
+    <header className="sticky top-0 z-50 flex h-15 shrink-0 items-center justify-between gap-3 border-b bg-background px-4">
+      <div className="flex min-w-0 items-center gap-3">
+        {!isMobile && <SidebarTrigger />}
 
-      {isMobile && (
-        <Link href="/dashboard" className="flex items-center gap-2">
-          <span className="flex size-8 items-center justify-center rounded-[50%_50%_44%_56%] bg-[#0d684e] text-[10px] font-bold text-white">
-            LR
-          </span>
-          <span className="truncate text-sm font-semibold">{SITE.name}</span>
-        </Link>
-      )}
+        {isMobile && (
+          <Link href="/dashboard" className="flex items-center gap-2">
+            <span className="flex size-8 items-center justify-center rounded-[50%_50%_44%_56%] bg-[#0d684e] text-[10px] font-bold text-white">
+              LR
+            </span>
+            <span className="truncate text-sm font-semibold">{SITE.name}</span>
+          </Link>
+        )}
+      </div>
 
-      {isMobile && (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button
-              type="button"
-              className="flex items-center justify-center rounded-lg focus-visible:outline-hidden"
-            >
-              <UserAvatar
-                initials={initials}
-                className="size-8 cursor-pointer border transition-opacity hover:opacity-80"
-              />
-            </button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="mt-1 w-56 rounded-lg" showHeader={false}>
-            <DropdownMenuLabel className="p-0 font-normal">
-              <div className="flex items-center gap-2 px-2 py-1.5 text-left text-sm">
-                <UserAvatar initials={initials} className="size-8" />
-                <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">
-                    {user?.username ?? "Invitado"}
-                  </span>
-                  {user?.email && (
-                    <span className="text-muted-foreground truncate text-xs">
-                      {user.email}
+      <div className="flex items-center gap-2">
+        <RoleSwitcher className={isMobile ? "hidden sm:flex" : undefined} />
+
+        {isMobile && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                type="button"
+                className="flex items-center justify-center rounded-lg focus-visible:outline-hidden"
+              >
+                <UserAvatar
+                  initials={initials}
+                  className="size-8 cursor-pointer border transition-opacity hover:opacity-80"
+                />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="mt-1 w-56 rounded-lg" showHeader={false}>
+              <DropdownMenuLabel className="p-0 font-normal">
+                <div className="flex items-center gap-2 px-2 py-1.5 text-left text-sm">
+                  <UserAvatar initials={initials} className="size-8" />
+                  <div className="grid flex-1 text-left text-sm leading-tight">
+                    <span className="truncate font-medium">
+                      {user?.username ?? "Invitado"}
                     </span>
-                  )}
+                    {user?.email && (
+                      <span className="text-muted-foreground truncate text-xs">
+                        {user.email}
+                      </span>
+                    )}
+                  </div>
                 </div>
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <div className="px-2 py-2 sm:hidden">
+                <RoleSwitcher className="w-full [&_select]:w-full" />
               </div>
-            </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onSelect={() => router.push("/")}>
-              <LogOut className="mr-2 size-4" />
-              Cerrar sesión
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      )}
+              <DropdownMenuSeparator className="sm:hidden" />
+              <DropdownMenuItem onSelect={() => router.push("/")}>
+                <LogOut className="mr-2 size-4" />
+                Cerrar sesión
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
+      </div>
     </header>
   );
 }
 
-export default function Layout({ children }: { children: React.ReactNode }) {
-  const user = DEMO_USER;
+function DashboardShell({ children }: { children: React.ReactNode }) {
+  const { role } = useDashboardRole();
+  const user = demoUserForRole(role);
 
   return (
     <SidebarProvider>
@@ -119,5 +128,13 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         <BottomNav role={user.role} />
       </SidebarInset>
     </SidebarProvider>
+  );
+}
+
+export default function Layout({ children }: { children: React.ReactNode }) {
+  return (
+    <DashboardRoleProvider>
+      <DashboardShell>{children}</DashboardShell>
+    </DashboardRoleProvider>
   );
 }
