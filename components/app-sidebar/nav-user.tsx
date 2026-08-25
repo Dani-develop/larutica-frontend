@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { ChevronsUpDown, LogOut } from "lucide-react";
 import {
   DropdownMenu,
@@ -61,12 +62,9 @@ export function NavUser({ user }: NavUserProps) {
   return (
     <SidebarMenu>
       <SidebarMenuItem>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <SidebarMenuButton
-              size="lg"
-              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
-            >
+        <div className="flex items-center gap-1">
+          <SidebarMenuButton asChild size="lg" tooltip="Mi usuario" className="flex-1">
+            <Link href="/dashboard/profile">
               <UserAvatar initials={initials} className="size-8" />
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-medium">{displayName}</span>
@@ -76,9 +74,19 @@ export function NavUser({ user }: NavUserProps) {
                   </span>
                 )}
               </div>
-              <ChevronsUpDown className="ml-auto size-4 opacity-60" />
-            </SidebarMenuButton>
-          </DropdownMenuTrigger>
+            </Link>
+          </SidebarMenuButton>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                type="button"
+                aria-label="Abrir menú de usuario"
+                className="flex size-8 shrink-0 items-center justify-center rounded-md text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+              >
+                <ChevronsUpDown className="size-4" />
+              </button>
+            </DropdownMenuTrigger>
 
           <DropdownMenuContent
             className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
@@ -113,7 +121,8 @@ export function NavUser({ user }: NavUserProps) {
               Cerrar sesión
             </DropdownMenuItem>
           </DropdownMenuContent>
-        </DropdownMenu>
+          </DropdownMenu>
+        </div>
       </SidebarMenuItem>
     </SidebarMenu>
   );

@@ -35,10 +35,13 @@ type Props = {
 export function NavMain({ role }: Props) {
   const pathname = usePathname();
   const { setOpenMobile, isMobile } = useSidebar();
+  const visibleGroups = role === "Viajero"
+    ? navGroups.filter((group) => group.label === "Mi viaje")
+    : navGroups;
 
   return (
     <>
-      {navGroups.map((group) => {
+      {visibleGroups.map((group) => {
         const visibleItems = group.items.filter(
           (item) => !item.roles || (role != null && item.roles.includes(role)),
         );
