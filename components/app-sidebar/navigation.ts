@@ -10,6 +10,7 @@ import {
   MapPin,
   Megaphone,
   Route,
+  UserRound,
   Users,
   type LucideIcon,
 } from "lucide-react";
@@ -63,6 +64,13 @@ export const navGroups: NavGroup[] = [
         label: "Gráficas",
         icon: BarChart3,
         roles: ["Admin"],
+      },
+      {
+        href: "/dashboard/profile",
+        label: "Mi perfil",
+        icon: UserRound,
+        roles: ["Viajero", "Agencia", "Transporte", "Admin"],
+        primary: true,
       },
     ],
   },

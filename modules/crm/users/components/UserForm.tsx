@@ -1,0 +1,163 @@
+"use client";
+
+import { useState } from "react";
+import {
+  DASHBOARD_ROLES,
+  type DashboardRole,
+} from "@/components/dashboard/dashboard-role-context";
+import { Button } from "@/components/ui/button";
+import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import type { SystemUserInput, UserStatus } from "../models/User";
+
+type UserFormProps = {
+  initialValue: SystemUserInput;
+  submitLabel: string;
+  /** Si es true, el rol no se puede cambiar (perfil propio). */
+  lockRole?: boolean;
+  onSubmit: (value: SystemUserInput) => void;
+  onCancel: () => void;
+};
+
+const selectClassName =
+  "border-input h-9 w-full rounded-md border bg-transparent px-3 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]";
+
+export function UserForm({
+  initialValue,
+  submitLabel,
+  lockRole = false,
+  onSubmit,
+  onCancel,
+}: UserFormProps) {
+  const [value, setValue] = useState<SystemUserInput>(initialValue);
+  const needsBusiness =
+    value.role === "Agencia" || value.role === "Transporte";
+
+  function patch<K extends keyof SystemUserInput>(
+    key: K,
+    next: SystemUserInput[K],
+  ) {
+    setValue((prev) => ({ ...prev, [key]: next }));
+  }
+
+  return (
+    <form
+      className="space-y-6"
+      onSubmit={(event) => {
+        event.preventDefault();
+        onSubmit({
+          ...value,
+          name: value.name.trim() || "Usuario sin nombre",
+          email: value.email.trim() || "sin-correo@ejemplo.com",
+          phone: value.phone.trim(),
+          businessName: value.businessName.trim(),
+        });
+      }}
+    >
+      <section className="space-y-4 rounded-xl border bg-card p-5 shadow-xs">
+        <div>
+          <h2 className="text-base font-semibold">Datos de la cuenta</h2>
+          <p className="text-sm text-muted-foreground">
+            Información básica del usuario en LaRutica.
+          </p>
+        </div>
+
+        <FieldGroup className="gap-4">
+          <Field>
+            <FieldLabel htmlFor="name">Nombre completo</FieldLabel>
+            <Input
+              id="name"
+              value={value.name}
+              onChange={(event) => patch("name", event.target.value)}
+              placeholder="Nombre y apellidos"
+            />
+          </Field>
+
+          <Field>
+            <FieldLabel htmlFor="email">Correo electrónico</FieldLabel>
+            <Input
+              id="email"
+              type="email"
+              value={value.email}
+              onChange={(event) => patch("email", event.target.value)}
+              placeholder="correo@ejemplo.com"
+            />
+          </Field>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field>
+              <FieldLabel htmlFor="role">Rol</FieldLabel>
+              <select
+                id="role"
+                value={value.role}
+                disabled={lockRole}
+                onChange={(event) =>
+                  patch("role", event.target.value as DashboardRole)
+                }
+                className={selectClassName}
+              >
+                {DASHBOARD_ROLES.map((role) => (
+                  <option key={role} value={role}>
+                    {role}
+                  </option>
+                ))}
+              </select>
+            </Field>
+
+            <Field>
+              <FieldLabel htmlFor="status">Estado</FieldLabel>
+              <select
+                id="status"
+                value={value.status}
+                onChange={(event) =>
+                  patch("status", event.target.value as UserStatus)
+                }
+                className={selectClassName}
+              >
+                <option value="Activo">Activo</option>
+                <option value="Inactivo">Inactivo</option>
+              </select>
+            </Field>
+          </div>
+
+          <Field>
+            <FieldLabel htmlFor="phone">Teléfono</FieldLabel>
+            <Input
+              id="phone"
+              value={value.phone}
+              onChange={(event) => patch("phone", event.target.value)}
+              placeholder="+506 0000-0000"
+            />
+          </Field>
+
+          {needsBusiness && (
+            <Field>
+              <FieldLabel htmlFor="businessName">
+                {value.role === "Agencia"
+                  ? "Nombre de la agencia"
+                  : "Nombre del servicio"}
+              </FieldLabel>
+              <Input
+                id="businessName"
+                value={value.businessName}
+                onChange={(event) => patch("businessName", event.target.value)}
+                placeholder={
+                  value.role === "Agencia"
+                    ? "Ej. Arenal Viajes"
+                    : "Ej. Transportes Sol"
+                }
+              />
+            </Field>
+          )}
+        </FieldGroup>
+      </section>
+
+      <div className="flex flex-wrap justify-end gap-2">
+        <Button type="button" variant="outline" onClick={onCancel}>
+          Cancelar
+        </Button>
+        <Button type="submit">{submitLabel}</Button>
+      </div>
+    </form>
+  );
+}

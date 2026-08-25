@@ -1,10 +1,7 @@
-import { DashboardSectionPage } from "@/components/dashboard/DashboardSectionPage";
+"use client";
+
+import { UsersList } from "@/modules/crm/users/components/UsersList";
 
 export default function Page() {
-  return (
-    <DashboardSectionPage
-      title="Usuarios"
-      description="Gestiona perfiles, roles y estado de las cuentas."
-    />
-  );
+  return <UsersList />;
 }

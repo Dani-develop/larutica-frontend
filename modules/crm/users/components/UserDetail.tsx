@@ -1,0 +1,118 @@
+"use client";
+
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+import { Pencil, Trash2 } from "lucide-react";
+import { useDashboardRole } from "@/components/dashboard/dashboard-role-context";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { useUsers } from "../hooks/useUsers";
+import { UserStatusBadge } from "./UserStatusBadge";
+
+export function UserDetail({ id }: { id: string }) {
+  const router = useRouter();
+  const { role } = useDashboardRole();
+  const { getById, remove } = useUsers();
+  const user = getById(id);
+
+  useEffect(() => {
+    if (role !== "Admin") {
+      router.replace("/dashboard/profile");
+    }
+  }, [role, router]);
+
+  if (role !== "Admin") {
+    return (
+      <p className="text-sm text-muted-foreground">
+        Redirigiendo a tu perfil...
+      </p>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="mx-auto max-w-3xl space-y-4">
+        <h1 className="text-lg font-semibold">Usuario no encontrado</h1>
+        <Button asChild variant="outline">
+          <Link href="/dashboard/users">Volver al listado</Link>
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mx-auto max-w-3xl space-y-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <p className="text-sm font-medium text-primary">
+            <Link href="/dashboard/users" className="hover:underline">
+              Usuarios
+            </Link>
+            <span className="text-muted-foreground"> / Detalle</span>
+          </p>
+          <h1 className="mt-1 text-xl font-semibold tracking-tight">
+            {user.name}
+          </h1>
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            <UserStatusBadge status={user.status} />
+            <span className="text-sm text-muted-foreground">{user.role}</span>
+          </div>
+        </div>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" asChild className="gap-1.5">
+            <Link href={`/dashboard/users/${user.id}/edit`}>
+              <Pencil className="size-3.5" />
+              Editar
+            </Link>
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-1.5 text-destructive hover:text-destructive"
+            onClick={() => {
+              if (window.confirm(`¿Eliminar a “${user.name}”?`)) {
+                remove(user.id);
+                router.push("/dashboard/users");
+              }
+            }}
+          >
+            <Trash2 className="size-3.5" />
+            Eliminar
+          </Button>
+        </div>
+      </div>
+
+      <Card className="shadow-xs">
+        <CardHeader>
+          <CardTitle className="text-base">Información</CardTitle>
+          <CardDescription>Datos de la cuenta en el prototipo.</CardDescription>
+        </CardHeader>
+        <CardContent className="grid gap-4 sm:grid-cols-2">
+          <div>
+            <p className="text-xs text-muted-foreground">Correo</p>
+            <p className="text-sm font-medium">{user.email}</p>
+          </div>
+          <div>
+            <p className="text-xs text-muted-foreground">Teléfono</p>
+            <p className="text-sm font-medium">{user.phone || "—"}</p>
+          </div>
+          <div>
+            <p className="text-xs text-muted-foreground">Rol</p>
+            <p className="text-sm font-medium">{user.role}</p>
+          </div>
+          <div>
+            <p className="text-xs text-muted-foreground">Negocio</p>
+            <p className="text-sm font-medium">{user.businessName || "—"}</p>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
