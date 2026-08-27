@@ -2,8 +2,16 @@
 
 import Link from "next/link";
 import { FormEvent, useEffect, useRef, useState } from "react";
+import { TransportConfirmView } from "@/modules/landing/components/TransportConfirmView";
+import { TransportDetailView } from "@/modules/landing/components/TransportDetailView";
+import { matchRoutes, publishedRoutes } from "@/modules/landing/lib/routeSearch";
+import { useReservations } from "@/modules/transport/reservations/hooks/useReservations";
+import type { TransportReservation } from "@/modules/transport/reservations/models/Reservation";
+import { useRoutes } from "@/modules/transport/routes/hooks/useRoutes";
+import { routeTitle } from "@/modules/transport/routes/models/Route";
 
-type View = "explore" | "detail" | "agency" | "transport" | "publish" | "promotion" | "admin";
+type View = "explore" | "detail" | "route-detail" | "route-confirm" | "agency" | "transport" | "publish" | "promotion" | "admin";
+type ExploreCategory = "all" | "adventure" | "nature" | "transport" | "budget";
 
 const experiences = [
   { id: 1, title: "Caminata al volcán Arenal", place: "La Fortuna, Alajuela", meta: "4 h · Español e inglés", price: "$58", rating: "4,9", badge: "Más reservado", image: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=900&q=82", alt: "Sendero verde entre montañas tropicales" },
@@ -26,8 +34,19 @@ export default function Home() {
   const [largeText, setLargeText] = useState(false);
   const [highContrast, setHighContrast] = useState(false);
   const [approved, setApproved] = useState<string[]>([]);
+  const [category, setCategory] = useState<ExploreCategory>("all");
+  const [routeQuery, setRouteQuery] = useState("");
+  const [bookingDate, setBookingDate] = useState("2026-08-22");
+  const [bookingPeople, setBookingPeople] = useState("2");
+  const [selectedRouteId, setSelectedRouteId] = useState<string | null>(null);
+  const [lastReservation, setLastReservation] = useState<TransportReservation | null>(null);
+  const { routes } = useRoutes();
+  const { create: createReservation } = useReservations();
   const mainHeading = useRef<HTMLHeadingElement>(null);
   const searchInput = useRef<HTMLInputElement>(null);
+  const visibleRoutes = matchRoutes(routes, category === "transport" ? routeQuery : "");
+  const featuredRoute = publishedRoutes(routes)[0];
+  const selectedRoute = routes.find((route) => route.id === selectedRouteId);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -49,9 +68,9 @@ export default function Home() {
     document.documentElement.classList.toggle("high-contrast", highContrast);
   }, [largeText, highContrast]);
 
-  function navigate(next: View) {
+  function navigate(next: View, nextStatus?: string) {
     setView(next);
-    setStatus(`Pantalla ${screenName(next)} abierta.`);
+    setStatus(nextStatus ?? `Pantalla ${screenName(next)} abierta.`);
     window.scrollTo({ top: 0, behavior: "smooth" });
     window.setTimeout(() => mainHeading.current?.focus(), 80);
   }
@@ -60,6 +79,8 @@ export default function Home() {
     return ({
       explore: "Explorar",
       detail: "Detalle de experiencia",
+      "route-detail": "Detalle de ruta",
+      "route-confirm": "Reserva de transporte",
       agency: "Panel de agencia",
       transport: "Panel de transporte",
       publish: "Nueva publicación",
@@ -74,8 +95,36 @@ export default function Home() {
 
   function search(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setStatus("Búsqueda completada: 24 experiencias cerca de La Fortuna.");
+    const data = new FormData(event.currentTarget);
+    const destination = String(data.get("destination") ?? "").trim();
+    const date = String(data.get("date") ?? bookingDate);
+    const people = String(data.get("people") ?? bookingPeople);
+    setBookingDate(date);
+    setBookingPeople(people);
+    if (category === "transport") {
+      const matches = matchRoutes(routes, destination);
+      setRouteQuery(destination);
+      setStatus(
+        matches.length === 1
+          ? "Búsqueda de transporte: 1 ruta publicada."
+          : `Búsqueda de transporte: ${matches.length} rutas publicadas.`,
+      );
+    } else {
+      setStatus("Búsqueda completada: 24 experiencias cerca de La Fortuna.");
+    }
     document.getElementById("results")?.focus();
+  }
+
+  function openTransportSearch() {
+    setCategory("transport");
+    setRouteQuery("");
+    navigate("explore", "Rutas de transporte publicadas.");
+    window.setTimeout(() => document.getElementById("results")?.scrollIntoView(), 100);
+  }
+
+  function openRoute(id: string) {
+    setSelectedRouteId(id);
+    navigate("route-detail");
   }
 
   function toggleSaved(id: number, title: string) {
@@ -92,7 +141,7 @@ export default function Home() {
           <span className="brand-mark" aria-hidden="true">LR</span><span>LaRutica</span>
         </button>
         <nav aria-label="Navegación principal">
-          <button className={view === "explore" || view === "detail" ? "nav-active" : ""} onClick={() => navigate("explore")} aria-current={view === "explore" ? "page" : undefined}>Explorar</button>
+          <button className={view === "explore" || view === "detail" || view === "route-detail" || view === "route-confirm" ? "nav-active" : ""} onClick={() => navigate("explore")} aria-current={view === "explore" ? "page" : undefined}>Explorar</button>
           <button onClick={() => { navigate("explore"); setStatus("Sección Destinos abierta: 18 destinos disponibles."); window.setTimeout(() => document.getElementById("destinos")?.scrollIntoView(), 100); }}>Destinos</button>
           <button onClick={() => setHelpOpen(true)}>Ayuda</button>
         </nav>
@@ -104,8 +153,40 @@ export default function Home() {
       <p className="global-status sr-only" role="status" aria-live="polite">{status}</p>
 
       <main id="main">
-        {view === "explore" && <ExploreView onSearch={search} searchInput={searchInput} status={status} saved={saved} onSave={toggleSaved} onDetail={() => navigate("detail")} headingRef={mainHeading} />}
+        {view === "explore" && <ExploreView onSearch={search} searchInput={searchInput} status={status} saved={saved} onSave={toggleSaved} onDetail={() => navigate("detail")} headingRef={mainHeading} category={category} onCategoryChange={(next) => { setCategory(next); if (next === "transport") { setRouteQuery(""); setStatus("Rutas de transporte publicadas."); } else { setStatus("Explora opciones seleccionadas para ti."); } }} routes={visibleRoutes} featuredRoute={featuredRoute} onOpenRoute={openRoute} onSearchTransport={openTransportSearch} isTransport={category === "transport"} />}
         {view === "detail" && <DetailView onBack={() => navigate("explore")} setStatus={setStatus} headingRef={mainHeading} />}
+        {view === "route-detail" && selectedRoute && (
+          <TransportDetailView
+            route={selectedRoute}
+            defaultDate={bookingDate}
+            defaultPeople={bookingPeople}
+            headingRef={mainHeading}
+            onBack={() => { setCategory("transport"); navigate("explore"); }}
+            onConfirm={({ date, people, totalUsd }) => {
+              const reservation = createReservation({
+                routeId: selectedRoute.id,
+                origin: selectedRoute.origin,
+                destination: selectedRoute.destination,
+                date,
+                people,
+                totalUsd,
+                status: "Confirmada",
+              });
+              setLastReservation(reservation);
+              navigate(
+                "route-confirm",
+                `Reserva registrada: ${routeTitle(selectedRoute)} · ${people} ${people === 1 ? "persona" : "personas"} · $${totalUsd}`,
+              );
+            }}
+          />
+        )}
+        {view === "route-confirm" && lastReservation && (
+          <TransportConfirmView
+            reservation={lastReservation}
+            headingRef={mainHeading}
+            onBack={() => { setCategory("transport"); navigate("explore"); }}
+          />
+        )}
         {view === "agency" && <AgencyView onPublish={() => navigate("publish")} onPromote={() => navigate("promotion")} setStatus={setStatus} headingRef={mainHeading} />}
         {view === "transport" && <TransportView onPublish={() => navigate("publish")} onPromote={() => navigate("promotion")} setStatus={setStatus} headingRef={mainHeading} />}
         {view === "publish" && <PublishView onBack={() => navigate(providerHome())} onComplete={() => { setStatus("Publicación guardada y enviada a revisión."); navigate(providerHome()); }} headingRef={mainHeading} />}
@@ -121,30 +202,246 @@ export default function Home() {
   );
 }
 
-function ExploreView({ onSearch, searchInput, status, saved, onSave, onDetail, headingRef }: { onSearch: (event: FormEvent<HTMLFormElement>) => void; searchInput: React.RefObject<HTMLInputElement | null>; status: string; saved: number[]; onSave: (id: number, title: string) => void; onDetail: () => void; headingRef: React.RefObject<HTMLHeadingElement | null> }) {
-  return <>
-    <section className="hero" aria-labelledby="hero-title">
-      <div className="hero-copy"><p className="eyebrow">Viaja a tu ritmo</p><h1 id="hero-title" ref={headingRef} tabIndex={-1}>Costa Rica, más cerca de lo que imaginas.</h1><p className="hero-lead">Encuentra tours, transporte y experiencias verificadas en un solo lugar.</p>
-        <form className="search-panel" onSubmit={onSearch} aria-label="Buscar experiencias">
-          <label><span>¿A dónde quieres ir?</span><input ref={searchInput} name="destination" defaultValue="La Fortuna" autoComplete="address-level2" /><small>Atajo: presiona /</small></label>
-          <label><span>Fecha</span><input name="date" type="date" defaultValue="2026-08-22" /></label>
-          <label><span>Personas</span><select name="people" defaultValue="2"><option value="1">1 persona</option><option value="2">2 personas</option><option value="3">3 personas</option><option value="4">4 o más</option></select></label>
-          <button className="button button-primary search-button" type="submit">Buscar</button>
-        </form><p className="status-line" role="status" aria-live="polite">{status}</p>
-      </div>
-      <div className="hero-visual" role="img" aria-label="Bosque tropical de Costa Rica"><div className="floating-note"><strong>120+ experiencias</strong><span>de proveedores locales</span></div></div>
-    </section>
-    <section className="section" aria-labelledby="results" id="destinos">
-      <div className="section-heading"><div><p className="eyebrow">Recomendado para ti</p><h2 id="results" tabIndex={-1}>Experiencias que valen el viaje</h2></div><button className="text-link" type="button">Ver las 24 opciones</button></div>
-      <div className="filter-row" aria-label="Filtros rápidos"><button className="chip chip-active" type="button">Todas</button><button className="chip" type="button">Aventura</button><button className="chip" type="button">Naturaleza</button><button className="chip" type="button">Transporte</button><button className="chip" type="button">Menos de $50</button></div>
-      <div className="card-grid">{experiences.map((item) => <article className="experience-card" key={item.id}>
-        <div className="card-image-wrap"><img src={item.image} alt={item.alt} /><span className="badge">{item.badge}</span><button className="save-button" type="button" aria-pressed={saved.includes(item.id)} onClick={() => onSave(item.id, item.title)}>{saved.includes(item.id) ? "Guardado" : "Guardar"}</button></div>
-        <div className="card-body"><p className="card-place">{item.place}</p><h3>{item.title}</h3><p>{item.meta} · <strong>{item.rating}</strong>/5</p><div className="card-footer"><span><strong>{item.price}</strong> por persona</span><button className="button button-small" type="button" onClick={onDetail}>Ver detalle</button></div></div>
-      </article>)}</div>
-    </section>
-    <section className="transport-section" aria-labelledby="transport-title"><div><p className="eyebrow eyebrow-light">Muévete con confianza</p><h2 id="transport-title">Transporte para conectar tu ruta.</h2><p>Compara recorridos, vehículos, precios y contactos antes de salir.</p><button className="button button-light" type="button">Buscar transporte</button></div><div className="route-card"><p className="card-place">Ruta disponible hoy</p><strong>San José → La Fortuna</strong><span>Microbús · 3 h 15 min · Salida 8:00 a. m.</span><div><b>$42</b><button className="button button-small" type="button">Ver servicio</button></div></div></section>
-    <section className="trust-strip" aria-label="Beneficios de LaRutica"><div><strong>Información clara</strong><span>Precio, duración y cupos visibles.</span></div><div><strong>Proveedores verificados</strong><span>Perfiles y servicios revisados.</span></div><div><strong>Ayuda cuando la necesites</strong><span>Soporte contextual y pasos sencillos.</span></div></section>
-  </>;
+function ExploreView({
+  onSearch,
+  searchInput,
+  status,
+  saved,
+  onSave,
+  onDetail,
+  headingRef,
+  category,
+  onCategoryChange,
+  routes,
+  featuredRoute,
+  onOpenRoute,
+  onSearchTransport,
+  isTransport,
+}: {
+  onSearch: (event: FormEvent<HTMLFormElement>) => void;
+  searchInput: React.RefObject<HTMLInputElement | null>;
+  status: string;
+  saved: number[];
+  onSave: (id: number, title: string) => void;
+  onDetail: () => void;
+  headingRef: React.RefObject<HTMLHeadingElement | null>;
+  category: ExploreCategory;
+  onCategoryChange: (next: ExploreCategory) => void;
+  routes: ReturnType<typeof publishedRoutes>;
+  featuredRoute?: ReturnType<typeof publishedRoutes>[number];
+  onOpenRoute: (id: string) => void;
+  onSearchTransport: () => void;
+  isTransport: boolean;
+}) {
+  const chips: Array<{ id: ExploreCategory; label: string }> = [
+    { id: "all", label: "Todas" },
+    { id: "adventure", label: "Aventura" },
+    { id: "nature", label: "Naturaleza" },
+    { id: "transport", label: "Transporte" },
+    { id: "budget", label: "Menos de $50" },
+  ];
+
+  return (
+    <>
+      <section className="hero" aria-labelledby="hero-title">
+        <div className="hero-copy">
+          <p className="eyebrow">Viaja a tu ritmo</p>
+          <h1 id="hero-title" ref={headingRef} tabIndex={-1}>
+            Costa Rica, más cerca de lo que imaginas.
+          </h1>
+          <p className="hero-lead">
+            Encuentra tours, transporte y experiencias verificadas en un solo lugar.
+          </p>
+          <form
+            className="search-panel"
+            onSubmit={onSearch}
+            aria-label={isTransport ? "Buscar transporte" : "Buscar experiencias"}
+          >
+            <label>
+              <span>{isTransport ? "¿De dónde a dónde?" : "¿A dónde quieres ir?"}</span>
+              <input
+                ref={searchInput}
+                name="destination"
+                defaultValue={isTransport ? "" : "La Fortuna"}
+                key={isTransport ? "transport-search" : "tour-search"}
+                autoComplete="address-level2"
+                placeholder={isTransport ? "Nosara, Liberia, San José..." : undefined}
+              />
+              <small>Atajo: presiona /</small>
+            </label>
+            <label>
+              <span>Fecha</span>
+              <input name="date" type="date" defaultValue="2026-08-22" />
+            </label>
+            <label>
+              <span>Personas</span>
+              <select name="people" defaultValue="2">
+                <option value="1">1 persona</option>
+                <option value="2">2 personas</option>
+                <option value="3">3 personas</option>
+                <option value="4">4 o más</option>
+              </select>
+            </label>
+            <button className="button button-primary search-button" type="submit">
+              Buscar
+            </button>
+          </form>
+          <p className="status-line" role="status" aria-live="polite">
+            {status}
+          </p>
+        </div>
+        <div className="hero-visual" role="img" aria-label="Bosque tropical de Costa Rica">
+          <div className="floating-note">
+            <strong>120+ experiencias</strong>
+            <span>de proveedores locales</span>
+          </div>
+        </div>
+      </section>
+      <section className="section" aria-labelledby="results" id="destinos">
+        <div className="section-heading">
+          <div>
+            <p className="eyebrow">{isTransport ? "Transporte" : "Recomendado para ti"}</p>
+            <h2 id="results" tabIndex={-1}>
+              {isTransport ? "Rutas para conectar tu viaje" : "Experiencias que valen el viaje"}
+            </h2>
+          </div>
+          <button
+            className="text-link"
+            type="button"
+            onClick={isTransport ? onSearchTransport : undefined}
+          >
+            {isTransport ? `Ver las ${routes.length} rutas` : "Ver las 24 opciones"}
+          </button>
+        </div>
+        <div className="filter-row" aria-label="Filtros rápidos">
+          {chips.map((chip) => (
+            <button
+              key={chip.id}
+              className={category === chip.id ? "chip chip-active" : "chip"}
+              type="button"
+              onClick={() => onCategoryChange(chip.id)}
+            >
+              {chip.label}
+            </button>
+          ))}
+        </div>
+        {isTransport ? (
+          <div className="card-grid">
+            {routes.length > 0 ? (
+              routes.map((route) => (
+                <article className="experience-card" key={route.id}>
+                  <div className="card-image-wrap">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={route.coverUrl} alt={routeTitle(route)} />
+                    <span className="badge">{route.vehicleType}</span>
+                  </div>
+                  <div className="card-body">
+                    <p className="card-place">{route.providerName}</p>
+                    <h3>{routeTitle(route)}</h3>
+                    <p>
+                      {route.duration} · {route.seats} asientos
+                    </p>
+                    <div className="card-footer">
+                      <span>
+                        <strong>${route.priceUsd}</strong> por persona
+                      </span>
+                      <button
+                        className="button button-small"
+                        type="button"
+                        onClick={() => onOpenRoute(route.id)}
+                      >
+                        Ver servicio
+                      </button>
+                    </div>
+                  </div>
+                </article>
+              ))
+            ) : (
+              <p>No encontramos rutas publicadas con esa búsqueda.</p>
+            )}
+          </div>
+        ) : (
+          <div className="card-grid">
+            {experiences.map((item) => (
+              <article className="experience-card" key={item.id}>
+                <div className="card-image-wrap">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={item.image} alt={item.alt} />
+                  <span className="badge">{item.badge}</span>
+                  <button
+                    className="save-button"
+                    type="button"
+                    aria-pressed={saved.includes(item.id)}
+                    onClick={() => onSave(item.id, item.title)}
+                  >
+                    {saved.includes(item.id) ? "Guardado" : "Guardar"}
+                  </button>
+                </div>
+                <div className="card-body">
+                  <p className="card-place">{item.place}</p>
+                  <h3>{item.title}</h3>
+                  <p>
+                    {item.meta} · <strong>{item.rating}</strong>/5
+                  </p>
+                  <div className="card-footer">
+                    <span>
+                      <strong>{item.price}</strong> por persona
+                    </span>
+                    <button className="button button-small" type="button" onClick={onDetail}>
+                      Ver detalle
+                    </button>
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
+        )}
+      </section>
+      <section className="transport-section" aria-labelledby="transport-title">
+        <div>
+          <p className="eyebrow eyebrow-light">Muévete con confianza</p>
+          <h2 id="transport-title">Transporte para conectar tu ruta.</h2>
+          <p>Compara recorridos, vehículos, precios y contactos antes de salir.</p>
+          <button className="button button-light" type="button" onClick={onSearchTransport}>
+            Buscar transporte
+          </button>
+        </div>
+        {featuredRoute ? (
+          <div className="route-card">
+            <p className="card-place">Ruta disponible hoy</p>
+            <strong>{routeTitle(featuredRoute)}</strong>
+            <span>
+              {featuredRoute.vehicleType} · {featuredRoute.duration}
+            </span>
+            <div>
+              <b>${featuredRoute.priceUsd}</b>
+              <button
+                className="button button-small"
+                type="button"
+                onClick={() => onOpenRoute(featuredRoute.id)}
+              >
+                Ver servicio
+              </button>
+            </div>
+          </div>
+        ) : null}
+      </section>
+      <section className="trust-strip" aria-label="Beneficios de LaRutica">
+        <div>
+          <strong>Información clara</strong>
+          <span>Precio, duración y cupos visibles.</span>
+        </div>
+        <div>
+          <strong>Proveedores verificados</strong>
+          <span>Perfiles y servicios revisados.</span>
+        </div>
+        <div>
+          <strong>Ayuda cuando la necesites</strong>
+          <span>Soporte contextual y pasos sencillos.</span>
+        </div>
+      </section>
+    </>
+  );
 }
 
 function DetailView({ onBack, setStatus, headingRef }: { onBack: () => void; setStatus: (value: string) => void; headingRef: React.RefObject<HTMLHeadingElement | null> }) {
