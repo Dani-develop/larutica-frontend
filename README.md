@@ -10,8 +10,8 @@ Drizzle support.
 
 ## Quick Start
 
-No environment variables, database setup, or external credentials are required
-to run the site locally.
+No Docker, database setup or shared cloud credentials are required. Development
+uses the shared LaRutica backend declared in the versioned `.env.development`.
 
 1. Clone the repository and enter its directory:
 
@@ -31,7 +31,7 @@ to run the site locally.
 3. Install the exact dependencies recorded in `package-lock.json`:
 
    ```bash
-   npm install
+   npm ci
    ```
 
 4. Start the local development server:
@@ -40,13 +40,52 @@ to run the site locally.
    npm run dev
    ```
 
-5. Open [http://localhost:3000](http://localhost:3000) in a browser.
+5. Open [http://localhost:3000](http://localhost:3000) in a browser. Registration,
+   login, profiles and authorized Admin operations use the hosted backend.
 
 To verify a production build, run:
 
 ```bash
 npm run build
 ```
+
+To verify npm registry signatures and production vulnerabilities:
+
+```bash
+npm run security:verify
+```
+
+## Supabase authentication
+
+During development, the browser still calls same-origin `/api` routes. When no
+Supabase server secret is installed locally, those routes proxy to the deployed
+backend. The proxy adapts the production session cookie for `localhost` while
+preserving `HttpOnly`, `SameSite=Strict` and server-side authorization.
+
+Supabase Auth owns password hashing (bcrypt) and identity verification. Access
+and refresh tokens are received only by the server and discarded after the
+credentials are validated. The browser receives an opaque session identifier in
+an `HttpOnly` cookie; the database stores only its SHA-256 hash.
+
+Application sessions expire after 8 hours, after 30 minutes without an
+authenticated request, or when the same account signs in again. Profile and
+administrator operations always go through same-origin server APIs. The
+`SUPABASE_SECRET_KEY` remains server-only. The legacy
+`SUPABASE_SERVICE_ROLE_KEY` is accepted temporarily for existing projects.
+
+### Hosted backend
+
+The publishable backend address in `.env.development` is safe to version. The
+Supabase secret/service-role key bypasses RLS and is stored only as a secret in
+the hosting platform. Collaborators do not need it and must never receive it
+through Git, chat or email.
+
+Maintainers who intentionally run the backend directly can copy `.env.example`
+to `.env.local` and obtain their own authorized values. A clone without that
+file automatically stays in proxy mode.
+
+See `supabase/README.md` for remote migrations, redirect URLs and environment
+details.
 
 ### Windows PowerShell
 
@@ -137,7 +176,9 @@ actions tied to the current ChatGPT user. Leave public content anonymous.
 
 - `npm run dev`: start local development
 - `npm run build`: verify the vinext build output
-- `npm test`: build the starter and verify its rendered loading skeleton
+- `npm test`: build the application and run local contract/render tests
+- `npm run test:auth:cloud`: verify the configured Supabase project directly
+- `npm run test:auth:e2e`: with the app running, verify the complete API flow
 - `npm run db:generate`: generate Drizzle migrations after schema changes
 
 ## Learn More

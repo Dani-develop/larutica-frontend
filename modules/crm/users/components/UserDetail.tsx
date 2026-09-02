@@ -19,7 +19,7 @@ import { UserStatusBadge } from "./UserStatusBadge";
 export function UserDetail({ id }: { id: string }) {
   const router = useRouter();
   const { role } = useDashboardRole();
-  const { getById, remove } = useUsers();
+  const { getById, remove, loading } = useUsers();
   const user = getById(id);
 
   useEffect(() => {
@@ -35,6 +35,8 @@ export function UserDetail({ id }: { id: string }) {
       </p>
     );
   }
+
+  if (loading) return <p className="text-sm text-muted-foreground">Cargando usuario...</p>;
 
   if (!user) {
     return (
@@ -76,9 +78,9 @@ export function UserDetail({ id }: { id: string }) {
             variant="outline"
             size="sm"
             className="gap-1.5 text-destructive hover:text-destructive"
-            onClick={() => {
+            onClick={async () => {
               if (window.confirm(`¿Eliminar a “${user.name}”?`)) {
-                remove(user.id);
+                await remove(user.id);
                 router.push("/dashboard/users");
               }
             }}
@@ -92,7 +94,7 @@ export function UserDetail({ id }: { id: string }) {
       <Card className="shadow-xs">
         <CardHeader>
           <CardTitle className="text-base">Información</CardTitle>
-          <CardDescription>Datos de la cuenta en el prototipo.</CardDescription>
+          <CardDescription>Datos sincronizados con la cuenta en la nube.</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4 sm:grid-cols-2">
           <div>

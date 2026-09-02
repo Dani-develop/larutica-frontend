@@ -17,7 +17,7 @@ export type SystemUser = {
 export type SystemUserInput = Omit<
   SystemUser,
   "id" | "createdAt" | "updatedAt"
->;
+> & { password?: string };
 
 export const emptyUserInput: SystemUserInput = {
   name: "",
@@ -26,4 +26,5 @@ export const emptyUserInput: SystemUserInput = {
   phone: "",
   businessName: "",
   status: "Activo",
+  password: "",
 };

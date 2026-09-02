@@ -3,9 +3,9 @@
 import {
   createContext,
   useContext,
-  useState,
   type ReactNode,
 } from "react";
+import { useAuth } from "@/modules/auth/context/AuthContext";
 
 export const DASHBOARD_ROLES = [
   "Viajero",
@@ -18,7 +18,6 @@ export type DashboardRole = (typeof DASHBOARD_ROLES)[number];
 
 type DashboardRoleContextValue = {
   role: DashboardRole;
-  setRole: (role: DashboardRole) => void;
 };
 
 const DashboardRoleContext = createContext<DashboardRoleContextValue | null>(
@@ -26,10 +25,11 @@ const DashboardRoleContext = createContext<DashboardRoleContextValue | null>(
 );
 
 export function DashboardRoleProvider({ children }: { children: ReactNode }) {
-  const [role, setRole] = useState<DashboardRole>("Admin");
+  const { user } = useAuth();
+  const role = user?.role ?? "Viajero";
 
   return (
-    <DashboardRoleContext.Provider value={{ role, setRole }}>
+    <DashboardRoleContext.Provider value={{ role }}>
       {children}
     </DashboardRoleContext.Provider>
   );
@@ -43,34 +43,4 @@ export function useDashboardRole() {
     );
   }
   return context;
-}
-
-export function demoUserForRole(role: DashboardRole) {
-  const profiles: Record<
-    DashboardRole,
-    { username: string; email: string; role: DashboardRole }
-  > = {
-    Viajero: {
-      username: "Ana Viajera",
-      email: "ana@correo.com",
-      role: "Viajero",
-    },
-    Agencia: {
-      username: "Arenal Viajes",
-      email: "hola@arenalviajes.cr",
-      role: "Agencia",
-    },
-    Transporte: {
-      username: "Transportes Sol",
-      email: "contacto@transportessol.cr",
-      role: "Transporte",
-    },
-    Admin: {
-      username: "Administrador",
-      email: "admin@larutica.cr",
-      role: "Admin",
-    },
-  };
-
-  return { ...profiles[role], avatarUrl: null as string | null };
 }

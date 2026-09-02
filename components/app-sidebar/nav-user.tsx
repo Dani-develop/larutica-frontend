@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
 import { getInitials } from "./user-avatar-utils";
+import { useAuth } from "@/modules/auth/context/AuthContext";
 
 type SessionUser = {
   username?: string | null;
@@ -54,6 +55,7 @@ export function UserAvatar({
 export function NavUser({ user }: NavUserProps) {
   const { isMobile } = useSidebar();
   const router = useRouter();
+  const { signOut } = useAuth();
 
   const displayName = user?.username ?? "Invitado";
   const displayEmail = user?.email ?? "";
@@ -116,7 +118,9 @@ export function NavUser({ user }: NavUserProps) {
 
             <DropdownMenuSeparator />
 
-            <DropdownMenuItem onSelect={() => router.push("/")}>
+            <DropdownMenuItem onSelect={() => {
+              void signOut().then(() => router.replace("/login"));
+            }}>
               <LogOut className="mr-2 size-4" />
               Cerrar sesión
             </DropdownMenuItem>

@@ -1,90 +1,48 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import {
-  demoUserForRole,
-  useDashboardRole,
-} from "@/components/dashboard/dashboard-role-context";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { useUsers } from "../hooks/useUsers";
+import { useState } from "react";
+import { useAuth } from "@/modules/auth/context/AuthContext";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { UserForm } from "./UserForm";
 import { UserStatusBadge } from "./UserStatusBadge";
 
 export function MyProfilePage() {
-  const { role } = useDashboardRole();
-  const demo = demoUserForRole(role);
-  const { getByEmail, getByRoleDemo, update } = useUsers();
+  const { user: profile, saveProfile } = useAuth();
   const [formKey, setFormKey] = useState(0);
-  const [saved, setSaved] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
 
-  const profile = useMemo(() => {
-    return getByEmail(demo.email) ?? getByRoleDemo(role);
-  }, [demo.email, getByEmail, getByRoleDemo, role]);
-
-  if (!profile) {
-    return (
-      <div className="mx-auto max-w-3xl space-y-4">
-        <h1 className="text-xl font-semibold tracking-tight">Mi perfil</h1>
-        <p className="text-sm text-muted-foreground">
-          No se encontró un perfil asociado a la vista actual.
-        </p>
-      </div>
-    );
-  }
-
-  const { id, createdAt: _c, updatedAt: _u, ...initialValue } = profile;
+  if (!profile) return <p className="text-sm text-muted-foreground">Cargando perfil...</p>;
+  const id = profile.id;
+  const initialValue = {
+    name: profile.name,
+    email: profile.email,
+    role: profile.role,
+    phone: profile.phone,
+    businessName: profile.businessName,
+    status: profile.status,
+  };
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
-      <div>
-        <h1 className="text-xl font-semibold tracking-tight">Mi perfil</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Solo puedes editar tu propia información. El listado de usuarios es
-          exclusivo de Admin.
-        </p>
-      </div>
-
-      <Card className="shadow-xs">
-        <CardHeader className="flex flex-row items-center justify-between gap-3 space-y-0">
-          <div>
-            <CardTitle className="text-base">{profile.name}</CardTitle>
-            <CardDescription>
-              {profile.role}
-              {profile.businessName ? ` · ${profile.businessName}` : ""}
-            </CardDescription>
-          </div>
-          <UserStatusBadge status={profile.status} />
-        </CardHeader>
-        <CardContent className="text-sm text-muted-foreground">
-          {profile.email}
-        </CardContent>
-      </Card>
-
-      {saved ? (
-        <p className="text-sm text-primary" role="status">
-          Perfil actualizado (ejemplo en memoria).
-        </p>
-      ) : null}
-
+      <div><h1 className="text-xl font-semibold tracking-tight">Mi perfil</h1><p className="mt-1 text-sm text-muted-foreground">Los cambios se guardan en la cuenta compartida de LaRutica.</p></div>
+      <Card className="shadow-xs"><CardHeader className="flex flex-row items-center justify-between gap-3 space-y-0"><div><CardTitle className="text-base">{profile.name}</CardTitle><CardDescription>{profile.role}{profile.businessName ? ` · ${profile.businessName}` : ""}</CardDescription></div><UserStatusBadge status={profile.status} /></CardHeader><CardContent className="text-sm text-muted-foreground">{profile.email}</CardContent></Card>
+      {message ? <p className="text-sm text-primary" role="status">{message}</p> : null}
       <UserForm
         key={`${id}-${formKey}`}
         initialValue={initialValue}
         submitLabel="Guardar perfil"
         lockRole
-        onCancel={() => {
-          setSaved(false);
-          setFormKey((current) => current + 1);
-        }}
-        onSubmit={(value) => {
-          update(id, { ...value, role: profile.role });
-          setSaved(true);
-          setFormKey((current) => current + 1);
+        lockEmail
+        lockStatus
+        onCancel={() => { setMessage(null); setFormKey((current) => current + 1); }}
+        onSubmit={async (value) => {
+          try {
+            await saveProfile({ name: value.name, phone: value.phone, businessName: value.businessName });
+            setMessage("Perfil actualizado en todos los módulos.");
+            setFormKey((current) => current + 1);
+          } catch (error) {
+            setMessage(error instanceof Error ? error.message : "No se pudo actualizar el perfil.");
+          }
         }}
       />
     </div>

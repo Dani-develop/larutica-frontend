@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { useRouter } from "next/navigation";
 import { CalendarDays, MapPin, Search, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,9 +14,8 @@ import {
 } from "@/components/ui/card";
 import { seedPublications } from "@/modules/agency/publications/data/seedPublications";
 import type { Publication } from "@/modules/agency/publications/models/Publication";
-import { demoUserForRole, useDashboardRole } from "@/components/dashboard/dashboard-role-context";
-import { useUsers } from "@/modules/crm/users/hooks/useUsers";
 import type { SystemUser } from "@/modules/crm/users/models/User";
+import { MyProfilePage } from "@/modules/crm/users/components/MyProfilePage";
 
 const savedTrips = [
   seedPublications[0],
@@ -311,19 +309,10 @@ export function TravelerPurchasePage({ publicationId }: { publicationId: string 
 }
 
 export function TravelerProfilePage() {
-  const { role } = useDashboardRole();
-  const demo = demoUserForRole(role);
-  const { getByEmail, getByRoleDemo, update, remove } = useUsers();
-  const router = useRouter();
-  const profile = getByEmail(demo.email) ?? getByRoleDemo(role);
-  const [saved, setSaved] = useState(false);
-
-  if (!profile) return null;
-
-  return <TravelerProfileForm profile={profile} onSave={(value) => { update(profile.id, { name: value.name, email: value.email, phone: value.phone, role: profile.role, businessName: profile.businessName, status: profile.status }); setSaved(true); }} onDelete={() => { remove(profile.id); router.push("/"); }} saved={saved} />;
+  return <MyProfilePage />;
 }
 
-function TravelerProfileForm({ profile, onSave, onDelete, saved }: { profile: SystemUser; onSave: (value: { name: string; email: string; phone: string }) => void; onDelete: () => void; saved: boolean }) {
+export function TravelerProfileForm({ profile, onSave, onDelete, saved }: { profile: SystemUser; onSave: (value: { name: string; email: string; phone: string }) => void; onDelete: () => void; saved: boolean }) {
   const [name, setName] = useState(profile.name);
   const [email, setEmail] = useState(profile.email);
   const [phone, setPhone] = useState(profile.phone);
