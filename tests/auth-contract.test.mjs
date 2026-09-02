@@ -70,11 +70,13 @@ test("un clon nuevo usa el backend compartido sin recibir secretos", async () =>
   const packageJson = JSON.parse(await read("package.json"));
   const proxy = await read("lib/api/remote-proxy.ts");
   const development = await read(".env.development");
+  const devVars = await read(".dev.vars");
   const ignore = await read(".gitignore");
   const example = await read(".env.example");
 
   assert.equal(packageJson.devDependencies.supabase, undefined);
   assert.match(development, /^LARUTICA_REMOTE_API_ORIGIN=https:\/\//m);
+  assert.match(devVars, /^LARUTICA_REMOTE_API_ORIGIN=https:\/\//m);
   assert.match(proxy, /process\.env\.SUPABASE_SECRET_KEY\s*\|\|/);
   assert.match(proxy, /x-larutica-client-origin/);
   assert.match(proxy, /__Host-larutica_session/);

@@ -11,7 +11,9 @@ Drizzle support.
 ## Quick Start
 
 No Docker, database setup or shared cloud credentials are required. Development
-uses the shared LaRutica backend declared in the versioned `.env.development`.
+uses the shared LaRutica backend declared in the versioned `.env.development`
+and `.dev.vars` files. The latter exposes the same public address to the local
+Cloudflare Worker used by Vinext.
 
 1. Clone the repository and enter its directory:
 
@@ -75,7 +77,8 @@ administrator operations always go through same-origin server APIs. The
 
 ### Hosted backend
 
-The publishable backend address in `.env.development` is safe to version. The
+The publishable backend address in `.env.development` and `.dev.vars` is safe to
+version. The
 Supabase secret/service-role key bypasses RLS and is stored only as a secret in
 the hosting platform. Collaborators do not need it and must never receive it
 through Git, chat or email.

@@ -3,7 +3,8 @@
 ## Desarrollo para colaboradores
 
 Un clon nuevo solo necesita `npm ci` y `npm run dev`. No requiere Docker ni un
-archivo `.env.local`. La configuración pública de `.env.development` hace que
+archivo `.env.local`. La configuración pública de `.env.development` y
+`.dev.vars` hace que
 las rutas `/api` locales se comuniquen con el backend desplegado de LaRutica.
 
 La cookie de sesión queda en `localhost` como `HttpOnly`; el proxy local la
@@ -63,7 +64,8 @@ recibir solo la cookie opaca.
 
 ## Qué se puede versionar
 
-- Sí: migraciones, `.env.example` con marcadores y `.env.development` con la URL
+- Sí: migraciones, `.env.example` con marcadores, `.env.development` y
+  `.dev.vars` con la URL
   pública del backend.
 - No: `SUPABASE_SECRET_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, contraseñas de base de
   datos, tokens personales de la CLI ni archivos `.env.local`.
