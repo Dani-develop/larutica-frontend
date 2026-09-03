@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { useDashboardRole } from "@/components/dashboard/dashboard-role-context";
-import { Button } from "@/components/ui/button";
 import { emptyUserInput } from "../models/User";
 import { useUsers } from "../hooks/useUsers";
 import { UserForm } from "./UserForm";
@@ -41,16 +40,17 @@ export function CreateUserPage() {
           Nuevo usuario
         </h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Alta de ejemplo para la vista Admin.
+          Crea una cuenta real en Supabase Auth y su perfil asociado.
         </p>
       </div>
 
       <UserForm
         initialValue={emptyUserInput}
         submitLabel="Crear usuario"
+        requirePassword
         onCancel={() => router.push("/dashboard/users")}
-        onSubmit={(value) => {
-          const created = create(value);
+        onSubmit={async (value) => {
+          const created = await create(value);
           router.push(`/dashboard/users/${created.id}`);
         }}
       />

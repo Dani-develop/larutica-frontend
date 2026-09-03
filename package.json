@@ -9,12 +9,16 @@
     "dev": "vinext dev",
     "build": "vinext build",
     "start": "vinext start",
-    "test": "npm run build && node --test tests/rendered-html.test.mjs",
+    "test": "npm run build && node --experimental-strip-types --test tests/rendered-html.test.mjs tests/auth-contract.test.mjs tests/remote-proxy.test.mjs",
+    "test:auth:cloud": "node --env-file-if-exists=.env.local --test tests/supabase-auth.integration.mjs",
+    "test:auth:e2e": "node --env-file-if-exists=.env.local --test tests/opaque-session.integration.mjs",
+    "security:verify": "npm audit signatures && npm audit --omit=dev",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next",
     "db:generate": "drizzle-kit generate"
   },
   "dependencies": {
     "@radix-ui/react-dropdown-menu": "^2.1.24",
+    "@supabase/supabase-js": "2.57.4",
     "@tanstack/react-form": "^1.33.5",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

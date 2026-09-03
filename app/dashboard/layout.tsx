@@ -24,10 +24,11 @@ import { getInitials } from "@/components/app-sidebar/user-avatar-utils";
 import { useRouter } from "next/navigation";
 import {
   DashboardRoleProvider,
-  demoUserForRole,
   useDashboardRole,
 } from "@/components/dashboard/dashboard-role-context";
 import { RoleSwitcher } from "@/components/dashboard/RoleSwitcher";
+import { useAuth } from "@/modules/auth/context/AuthContext";
+import { useEffect } from "react";
 
 const AppSidebar = dynamic(
   () => import("@/components/app-sidebar").then((mod) => mod.AppSidebar),
@@ -47,6 +48,7 @@ interface HeaderUser {
 function DashboardHeader({ user }: { user: HeaderUser }) {
   const { isMobile } = useSidebar();
   const router = useRouter();
+  const { signOut } = useAuth();
   const initials = getInitials(user?.username, user?.email);
 
   return (
@@ -101,7 +103,9 @@ function DashboardHeader({ user }: { user: HeaderUser }) {
                 <RoleSwitcher className="w-full [&_select]:w-full" />
               </div>
               <DropdownMenuSeparator className="sm:hidden" />
-              <DropdownMenuItem onSelect={() => router.push("/")}>
+              <DropdownMenuItem onSelect={() => {
+                void signOut().then(() => router.replace("/login"));
+              }}>
                 <LogOut className="mr-2 size-4" />
                 Cerrar sesión
               </DropdownMenuItem>
@@ -115,7 +119,13 @@ function DashboardHeader({ user }: { user: HeaderUser }) {
 
 function DashboardShell({ children }: { children: React.ReactNode }) {
   const { role } = useDashboardRole();
-  const user = demoUserForRole(role);
+  const { user: profile } = useAuth();
+  const user = {
+    username: profile?.name ?? "",
+    email: profile?.email ?? "",
+    role,
+    avatarUrl: null as string | null,
+  };
 
   return (
     <SidebarProvider>
@@ -132,6 +142,29 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
 }
 
 export default function Layout({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
+  const { session, user, loading, error, signOut } = useAuth();
+
+  useEffect(() => {
+    if (!loading && !session) router.replace("/login");
+    if (!loading && session && user?.status === "Inactivo") {
+      void signOut().then(() => router.replace("/login?reason=inactive"));
+    }
+  }, [loading, router, session, signOut, user?.status]);
+
+  if (loading) {
+    return <div className="grid min-h-screen place-items-center text-sm text-muted-foreground">Validando sesión...</div>;
+  }
+  if (!session) {
+    return <div className="grid min-h-screen place-items-center text-sm text-muted-foreground">Redirigiendo al inicio de sesión...</div>;
+  }
+  if (user?.status === "Inactivo") {
+    return <div className="grid min-h-screen place-items-center text-sm text-muted-foreground">Cerrando una cuenta inactiva...</div>;
+  }
+  if (error || !user) {
+    return <div className="grid min-h-screen place-items-center p-6 text-center text-sm text-destructive">{error ?? "No se encontró el perfil asociado a esta sesión."}</div>;
+  }
+
   return (
     <DashboardRoleProvider>
       <DashboardShell>{children}</DashboardShell>

@@ -15,7 +15,10 @@ type UserFormProps = {
   submitLabel: string;
   /** Si es true, el rol no se puede cambiar (perfil propio). */
   lockRole?: boolean;
-  onSubmit: (value: SystemUserInput) => void;
+  lockEmail?: boolean;
+  lockStatus?: boolean;
+  requirePassword?: boolean;
+  onSubmit: (value: SystemUserInput) => void | Promise<void>;
   onCancel: () => void;
 };
 
@@ -26,6 +29,9 @@ export function UserForm({
   initialValue,
   submitLabel,
   lockRole = false,
+  lockEmail = false,
+  lockStatus = false,
+  requirePassword = false,
   onSubmit,
   onCancel,
 }: UserFormProps) {
@@ -45,10 +51,10 @@ export function UserForm({
       className="space-y-6"
       onSubmit={(event) => {
         event.preventDefault();
-        onSubmit({
+        void onSubmit({
           ...value,
-          name: value.name.trim() || "Usuario sin nombre",
-          email: value.email.trim() || "sin-correo@ejemplo.com",
+          name: value.name.trim(),
+          email: value.email.trim(),
           phone: value.phone.trim(),
           businessName: value.businessName.trim(),
         });
@@ -70,6 +76,8 @@ export function UserForm({
               value={value.name}
               onChange={(event) => patch("name", event.target.value)}
               placeholder="Nombre y apellidos"
+              minLength={2}
+              required
             />
           </Field>
 
@@ -79,8 +87,10 @@ export function UserForm({
               id="email"
               type="email"
               value={value.email}
+              disabled={lockEmail}
               onChange={(event) => patch("email", event.target.value)}
               placeholder="correo@ejemplo.com"
+              required
             />
           </Field>
 
@@ -109,6 +119,7 @@ export function UserForm({
               <select
                 id="status"
                 value={value.status}
+                disabled={lockStatus}
                 onChange={(event) =>
                   patch("status", event.target.value as UserStatus)
                 }
@@ -146,6 +157,22 @@ export function UserForm({
                     ? "Ej. Arenal Viajes"
                     : "Ej. Transportes Sol"
                 }
+              />
+            </Field>
+          )}
+
+          {requirePassword && (
+            <Field>
+              <FieldLabel htmlFor="password">Contraseña temporal</FieldLabel>
+              <Input
+                id="password"
+                type="password"
+                value={value.password ?? ""}
+                onChange={(event) => patch("password", event.target.value)}
+                placeholder="Mínimo 8 caracteres"
+                minLength={8}
+                autoComplete="new-password"
+                required
               />
             </Field>
           )}

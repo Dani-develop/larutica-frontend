@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Pencil, Plus, Trash2 } from "lucide-react";
 import { useDashboardRole } from "@/components/dashboard/dashboard-role-context";
 import { Button } from "@/components/ui/button";
@@ -19,7 +19,8 @@ import { UserStatusBadge } from "./UserStatusBadge";
 export function UsersList() {
   const router = useRouter();
   const { role } = useDashboardRole();
-  const { users, remove } = useUsers();
+  const { users, loading, error, remove } = useUsers();
+  const [actionError, setActionError] = useState<string | null>(null);
 
   useEffect(() => {
     if (role !== "Admin") {
@@ -34,6 +35,8 @@ export function UsersList() {
       </p>
     );
   }
+
+  if (loading) return <p className="text-sm text-muted-foreground">Cargando usuarios...</p>;
 
   return (
     <div className="mx-auto max-w-7xl space-y-6">
@@ -56,8 +59,7 @@ export function UsersList() {
         <CardHeader className="border-b">
           <CardTitle className="text-base">Cuentas registradas</CardTitle>
           <CardDescription>
-            {users.length} usuario{users.length === 1 ? "" : "s"} en el
-            prototipo.
+            {users.length} usuario{users.length === 1 ? "" : "s"} registrado{users.length === 1 ? "" : "s"}.
           </CardDescription>
         </CardHeader>
         <CardContent className="p-0">
@@ -116,13 +118,18 @@ export function UsersList() {
                           size="sm"
                           className="gap-1.5 text-destructive hover:text-destructive"
                           disabled={user.role === "Admin" && user.email === "admin@larutica.cr"}
-                          onClick={() => {
+                          onClick={async () => {
                             if (
                               window.confirm(
                                 `¿Eliminar a “${user.name}”? Acción de ejemplo.`,
                               )
                             ) {
-                              remove(user.id);
+                              try {
+                                setActionError(null);
+                                await remove(user.id);
+                              } catch (nextError) {
+                                setActionError(nextError instanceof Error ? nextError.message : "No se pudo eliminar el usuario.");
+                              }
                             }
                           }}
                         >
@@ -138,6 +145,7 @@ export function UsersList() {
           </div>
         </CardContent>
       </Card>
+      {error || actionError ? <p className="text-sm text-destructive" role="alert">{actionError ?? error}</p> : null}
     </div>
   );
 }

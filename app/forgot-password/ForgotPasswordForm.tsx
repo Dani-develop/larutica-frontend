@@ -9,6 +9,8 @@ import { Input } from "@/components/ui/input";
 
 export default function ForgotPasswordForm() {
   const [sent, setSent] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
   return (
     <AuthShell eyebrow="Ayuda para entrar" title="Recuperar contraseña">
@@ -26,14 +28,36 @@ export default function ForgotPasswordForm() {
           <p className="mb-6 -mt-6 text-sm text-muted-foreground">
             Escribe el correo de tu cuenta y te ayudaremos a recuperar el acceso.
           </p>
-          <form className="flex flex-col gap-5" onSubmit={(event) => { event.preventDefault(); setSent(true); }}>
+          <form className="flex flex-col gap-5" onSubmit={async (event) => {
+            event.preventDefault();
+            setError(null);
+            setSubmitting(true);
+            const form = new FormData(event.currentTarget);
+            const email = String(form.get("email") ?? "").trim().toLowerCase();
+            try {
+              const response = await fetch("/api/auth/forgot-password", {
+                method: "POST",
+                credentials: "same-origin",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify({ email }),
+              });
+              const payload = await response.json() as { error?: string };
+              if (!response.ok) throw new Error(payload.error ?? "No se pudo enviar el correo.");
+              setSent(true);
+            } catch (nextError) {
+              setError(nextError instanceof Error ? nextError.message : "No se pudo enviar el correo.");
+            } finally {
+              setSubmitting(false);
+            }
+          }}>
             <FieldGroup>
               <Field>
                 <FieldLabel htmlFor="recovery-email">Correo electrónico</FieldLabel>
                 <Input id="recovery-email" name="email" type="email" placeholder="correo@ejemplo.com" autoComplete="email" required />
               </Field>
             </FieldGroup>
-            <Button type="submit" className="mt-1 w-full">Enviar instrucciones</Button>
+            {error ? <p className="text-sm text-destructive" role="alert">{error}</p> : null}
+            <Button type="submit" className="mt-1 w-full" disabled={submitting}>{submitting ? "Enviando..." : "Enviar instrucciones"}</Button>
           </form>
           <p className="mt-6 text-center text-sm text-muted-foreground">
             <Link href="/login" className="font-medium text-primary underline-offset-4 hover:underline">Volver a iniciar sesión</Link>

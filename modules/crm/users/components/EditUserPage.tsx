@@ -11,7 +11,7 @@ import { UserForm } from "./UserForm";
 export function EditUserPage({ id }: { id: string }) {
   const router = useRouter();
   const { role } = useDashboardRole();
-  const { getById, update } = useUsers();
+  const { getById, update, loading } = useUsers();
   const user = getById(id);
 
   useEffect(() => {
@@ -28,6 +28,8 @@ export function EditUserPage({ id }: { id: string }) {
     );
   }
 
+  if (loading) return <p className="text-sm text-muted-foreground">Cargando usuario...</p>;
+
   if (!user) {
     return (
       <div className="mx-auto max-w-3xl space-y-4">
@@ -39,7 +41,14 @@ export function EditUserPage({ id }: { id: string }) {
     );
   }
 
-  const { id: _id, createdAt: _c, updatedAt: _u, ...initialValue } = user;
+  const initialValue = {
+    name: user.name,
+    email: user.email,
+    role: user.role,
+    phone: user.phone,
+    businessName: user.businessName,
+    status: user.status,
+  };
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
@@ -60,8 +69,8 @@ export function EditUserPage({ id }: { id: string }) {
         initialValue={initialValue}
         submitLabel="Guardar cambios"
         onCancel={() => router.push(`/dashboard/users/${id}`)}
-        onSubmit={(value) => {
-          update(id, value);
+        onSubmit={async (value) => {
+          await update(id, value);
           router.push(`/dashboard/users/${id}`);
         }}
       />
