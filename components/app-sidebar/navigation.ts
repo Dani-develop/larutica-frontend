@@ -19,13 +19,17 @@ export type NavItem = {
   href: string;
   label: string;
   icon: LucideIcon;
+
   /**
    * Si es true, el item se marca activo solo cuando la ruta coincide
    * exactamente. Útil para el dashboard raíz.
    */
   exact?: boolean;
+
   badge?: string | number;
+
   roles?: readonly string[];
+
   /**
    * Si es true, el item aparece como acceso directo fijo en la barra de
    * navegación inferior en mobile (máximo 4, el resto va en "Más").
@@ -36,6 +40,7 @@ export type NavItem = {
 export type NavGroup = {
   label: string;
   items: NavItem[];
+
   /**
    * Si el grupo arranca expandido. Por defecto `true`.
    */
@@ -74,6 +79,7 @@ export const navGroups: NavGroup[] = [
       },
     ],
   },
+
   {
     label: "Mi viaje",
     items: [
@@ -99,9 +105,17 @@ export const navGroups: NavGroup[] = [
       },
     ],
   },
+
   {
     label: "Agencia",
     items: [
+      {
+        href: "/dashboard/my-agency",
+        label: "Mi agencia",
+        icon: Building2,
+        roles: ["Agencia"],
+        primary: true,
+      },
       {
         href: "/dashboard/publications",
         label: "Publicaciones",
@@ -124,6 +138,7 @@ export const navGroups: NavGroup[] = [
       },
     ],
   },
+
   {
     label: "Transporte",
     items: [
@@ -149,6 +164,7 @@ export const navGroups: NavGroup[] = [
       },
     ],
   },
+
   {
     label: "Administración",
     items: [
@@ -174,6 +190,7 @@ export const navGroups: NavGroup[] = [
       },
     ],
   },
+
   {
     label: "Contenido",
     items: [
