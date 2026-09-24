@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { useEffect, useState } from "react";
 import {
   BadgeCheck,
   Building2,
@@ -149,6 +149,58 @@ function LoadingState() {
   );
 }
 
+function ImageLightbox({
+  src,
+  alt,
+  onClose,
+}: {
+  src: string;
+  alt: string;
+  onClose: () => void;
+}) {
+  useEffect(() => {
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKeyDown);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [onClose]);
+
+  return (
+    <div
+      className="fixed inset-0 z-[90] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm"
+      role="dialog"
+      aria-modal="true"
+      aria-label={alt}
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) onClose();
+      }}
+    >
+      <button
+        type="button"
+        aria-label="Cerrar imagen"
+        className="absolute top-4 right-4 flex size-10 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/20"
+        onClick={onClose}
+      >
+        <X className="size-5" />
+      </button>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={src}
+        alt={alt}
+        className="max-h-[90vh] max-w-[min(96vw,1100px)] rounded-lg object-contain shadow-2xl"
+      />
+    </div>
+  );
+}
+
 export default function AdminAgencyDetail({
   agencyId,
 }: {
@@ -165,6 +217,10 @@ export default function AdminAgencyDetail({
     reject,
     openDocument,
   } = useAdminAgency(agencyId);
+  const [lightbox, setLightbox] = useState<{
+    src: string;
+    alt: string;
+  } | null>(null);
 
   if (loading) return <LoadingState />;
 
@@ -272,12 +328,27 @@ export default function AdminAgencyDetail({
       <section className="bg-card overflow-hidden rounded-xl">
         <div className="bg-muted relative aspect-[21/9] max-h-56 w-full overflow-hidden sm:aspect-[3/1]">
           {agency.coverUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={agency.coverUrl}
-              alt=""
-              className="size-full object-cover"
-            />
+            <button
+              type="button"
+              className="group relative size-full cursor-zoom-in"
+              aria-label="Ver portada en grande"
+              onClick={() =>
+                setLightbox({
+                  src: agency.coverUrl!,
+                  alt: `Portada de ${agency.commercialName}`,
+                })
+              }
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={agency.coverUrl}
+                alt=""
+                className="size-full object-cover transition duration-300 group-hover:scale-[1.02]"
+              />
+              <span className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/35 to-transparent px-4 py-3 text-left !text-xs font-medium text-white opacity-0 transition group-hover:opacity-100">
+                Toca para ver en grande
+              </span>
+            </button>
           ) : (
             <div className="text-muted-foreground/25 flex size-full items-center justify-center">
               <Building2 className="size-10" />
@@ -286,18 +357,30 @@ export default function AdminAgencyDetail({
         </div>
 
         <div className="flex flex-col gap-4 p-5 sm:flex-row sm:items-start sm:gap-5 sm:p-6">
-          <div className="bg-muted ring-background flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl ring-1 sm:size-20">
-            {agency.logoUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
+          {agency.logoUrl ? (
+            <button
+              type="button"
+              className="bg-muted ring-background group size-16 shrink-0 cursor-zoom-in overflow-hidden rounded-2xl ring-1 transition hover:ring-primary/30 sm:size-20"
+              aria-label="Ver logo en grande"
+              onClick={() =>
+                setLightbox({
+                  src: agency.logoUrl!,
+                  alt: `Logo de ${agency.commercialName}`,
+                })
+              }
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={agency.logoUrl}
                 alt=""
-                className="size-full object-cover"
+                className="size-full object-cover transition duration-300 group-hover:scale-105"
               />
-            ) : (
+            </button>
+          ) : (
+            <div className="bg-muted ring-background flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl ring-1 sm:size-20">
               <Building2 className="text-muted-foreground size-7" />
-            )}
-          </div>
+            </div>
+          )}
 
           <div className="min-w-0 flex-1 space-y-3">
             <div className="flex flex-wrap items-start justify-between gap-3">
@@ -488,11 +571,13 @@ export default function AdminAgencyDetail({
         </section>
       ) : null}
 
-      <div>
-        <Button asChild variant="ghost" className="!text-sm">
-          <Link href="/dashboard/agencies">Volver a agencias</Link>
-        </Button>
-      </div>
+      {lightbox ? (
+        <ImageLightbox
+          src={lightbox.src}
+          alt={lightbox.alt}
+          onClose={() => setLightbox(null)}
+        />
+      ) : null}
     </div>
   );
 }
