@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { BrandMark } from "@/components/brand/BrandMark";
 import {
   SidebarMenu,
   SidebarMenuButton,
@@ -27,9 +28,7 @@ export function SidebarBrand() {
               }
             }}
           >
-            <div className="flex aspect-square size-9 items-center justify-center overflow-hidden rounded-[50%_50%_44%_56%] bg-[#0d684e] text-xs font-bold text-white">
-              LR
-            </div>
+            <BrandMark className="size-9" />
             <div className="grid flex-1 text-left leading-tight">
               <span className="truncate text-sm font-semibold">{SITE.name}</span>
               <span className="text-muted-foreground truncate text-xs">
