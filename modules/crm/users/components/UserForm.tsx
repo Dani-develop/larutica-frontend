@@ -69,12 +69,15 @@ export function UserForm({
         });
       }}
     >
-      <section className="space-y-4 rounded-xl bg-card p-5">
+      <section className="space-y-4">
         <FieldGroup className="gap-4">
           <Field>
-            <FieldLabel htmlFor="name">Nombre completo</FieldLabel>
+            <FieldLabel htmlFor="name" className="!text-sm">
+              Nombre completo
+            </FieldLabel>
             <Input
               id="name"
+              className="!h-9 !text-sm"
               value={value.name}
               onChange={(event) => patch("name", event.target.value)}
               placeholder="Nombre y apellidos"
@@ -84,57 +87,77 @@ export function UserForm({
           </Field>
 
           <Field>
-            <FieldLabel htmlFor="email">Correo electrónico</FieldLabel>
-            <Input
-              id="email"
-              type="email"
-              value={value.email}
-              disabled={lockEmail}
-              onChange={(event) => patch("email", event.target.value)}
-              placeholder="correo@ejemplo.com"
-              required
-            />
+            <FieldLabel htmlFor="email" className="!text-sm">
+              Correo electrónico
+            </FieldLabel>
+            {lockEmail ? (
+              <p className="bg-muted/40 text-muted-foreground rounded-md px-3 py-2 !text-sm">
+                {value.email || "—"}
+              </p>
+            ) : (
+              <Input
+                id="email"
+                className="!h-9 !text-sm"
+                type="email"
+                value={value.email}
+                onChange={(event) => patch("email", event.target.value)}
+                placeholder="correo@ejemplo.com"
+                required
+              />
+            )}
           </Field>
 
           <div className="grid gap-4 sm:grid-cols-2">
             <Field>
-              <FieldLabel htmlFor="role">Rol</FieldLabel>
-              <select
-                id="role"
-                value={value.role}
-                disabled={lockRole}
-                onChange={(event) =>
-                  patch("role", event.target.value as DashboardRole)
-                }
-                className={selectClassName}
-              >
-                {DASHBOARD_ROLES.map((role) => (
-                  <option key={role} value={role}>
-                    {role}
-                  </option>
-                ))}
-              </select>
+              <FieldLabel className="!text-sm">Rol</FieldLabel>
+              {lockRole ? (
+                <p className="bg-muted/40 text-foreground rounded-md px-3 py-2 !text-sm !font-medium">
+                  {value.role}
+                </p>
+              ) : (
+                <select
+                  id="role"
+                  value={value.role}
+                  onChange={(event) =>
+                    patch("role", event.target.value as DashboardRole)
+                  }
+                  className={selectClassName}
+                >
+                  {DASHBOARD_ROLES.map((role) => (
+                    <option key={role} value={role}>
+                      {role}
+                    </option>
+                  ))}
+                </select>
+              )}
             </Field>
 
             <Field>
-              <FieldLabel htmlFor="status">Estado</FieldLabel>
-              <select
-                id="status"
-                value={value.status}
-                disabled={lockStatus}
-                onChange={(event) =>
-                  patch("status", event.target.value as UserStatus)
-                }
-                className={selectClassName}
-              >
-                <option value="Activo">Activo</option>
-                <option value="Inactivo">Inactivo</option>
-              </select>
+              <FieldLabel className="!text-sm">Estado</FieldLabel>
+              {lockStatus ? (
+                <p className="bg-muted/40 text-foreground rounded-md px-3 py-2 !text-sm !font-medium">
+                  {value.status}
+                </p>
+              ) : (
+                <select
+                  id="status"
+                  value={value.status}
+                  onChange={(event) =>
+                    patch("status", event.target.value as UserStatus)
+                  }
+                  className={selectClassName}
+                >
+                  <option value="Activo">Activo</option>
+                  <option value="Inactivo">Inactivo</option>
+                </select>
+              )}
             </Field>
           </div>
 
           <Field data-invalid={phoneError ? true : undefined}>
-            <FieldLabel htmlFor="phone">Teléfono</FieldLabel>
+            <FieldLabel htmlFor="phone" className="!text-sm">
+              Teléfono
+            </FieldLabel>
             <PhoneNumberInput
               id="phone"
               value={value.phone}
@@ -145,11 +168,11 @@ export function UserForm({
               aria-invalid={Boolean(phoneError)}
             />
             {phoneError ? (
-              <p className="text-sm text-destructive" role="alert">
+              <p className="text-destructive !text-sm" role="alert">
                 {phoneError}
               </p>
             ) : (
-              <p className="text-xs text-muted-foreground">
+              <p className="text-muted-foreground !text-xs">
                 Formato internacional (Costa Rica por defecto).
               </p>
             )}
@@ -157,13 +180,14 @@ export function UserForm({
 
           {needsBusiness && (
             <Field>
-              <FieldLabel htmlFor="businessName">
+              <FieldLabel htmlFor="businessName" className="!text-sm">
                 {value.role === "Agencia"
                   ? "Nombre de la agencia"
                   : "Nombre del servicio"}
               </FieldLabel>
               <Input
                 id="businessName"
+                className="!h-9 !text-sm"
                 value={value.businessName}
                 onChange={(event) => patch("businessName", event.target.value)}
                 placeholder={
@@ -177,9 +201,12 @@ export function UserForm({
 
           {requirePassword && (
             <Field>
-              <FieldLabel htmlFor="password">Contraseña temporal</FieldLabel>
+              <FieldLabel htmlFor="password" className="!text-sm">
+                Contraseña temporal
+              </FieldLabel>
               <Input
                 id="password"
+                className="!h-9 !text-sm"
                 type="password"
                 value={value.password ?? ""}
                 onChange={(event) => patch("password", event.target.value)}
@@ -194,10 +221,12 @@ export function UserForm({
       </section>
 
       <div className="flex flex-wrap justify-end gap-2">
-        <Button type="button" variant="outline" onClick={onCancel}>
+        <Button type="button" variant="outline" className="!text-sm" onClick={onCancel}>
           Cancelar
         </Button>
-        <Button type="submit">{submitLabel}</Button>
+        <Button type="submit" className="!text-sm">
+          {submitLabel}
+        </Button>
       </div>
     </form>
   );

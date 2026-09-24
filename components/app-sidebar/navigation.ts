@@ -70,13 +70,6 @@ export const navGroups: NavGroup[] = [
         icon: BarChart3,
         roles: ["Admin"],
       },
-      {
-        href: "/dashboard/profile",
-        label: "Mi perfil",
-        icon: UserRound,
-        roles: ["Viajero", "Agencia", "Transporte", "Admin"],
-        primary: true,
-      },
     ],
   },
 
@@ -212,6 +205,19 @@ export const navGroups: NavGroup[] = [
         label: "Pendientes",
         icon: ClipboardCheck,
         roles: ["Admin"],
+      },
+    ],
+  },
+
+  {
+    label: "Cuenta",
+    items: [
+      {
+        href: "/dashboard/profile",
+        label: "Mi perfil",
+        icon: UserRound,
+        roles: ["Viajero", "Agencia", "Transporte", "Admin"],
+        primary: true,
       },
     ],
   },
