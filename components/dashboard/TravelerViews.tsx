@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 
 import {
@@ -22,6 +22,15 @@ import {
 } from "@/components/ui/card";
 
 import {
+  listReservations,
+  type Reservation,
+  type ReservationStatus,
+} from "@/modules/transport/reservations/services/reservation.service";
+
+import type { SystemUser } from "@/modules/crm/users/models/User";
+import { MyProfilePage } from "@/modules/crm/users/components/MyProfilePage";
+
+import {
   travelerPublications,
 } from "@/modules/traveler/data/traveler-publications";
 
@@ -29,13 +38,6 @@ import type {
   TravelerPublication,
 } from "@/modules/traveler/types/traveler-publication.types";
 
-import type {
-  SystemUser,
-} from "@/modules/crm/users/models/User";
-
-import {
-  MyProfilePage,
-} from "@/modules/crm/users/components/MyProfilePage";
 
 const savedTrips: TravelerPublication[] = [
   travelerPublications[0],
@@ -242,66 +244,52 @@ export function TravelerSavedPage() {
   );
 }
 
+const STATUS_LABEL: Record<ReservationStatus, string> = {
+  PENDING: "Por confirmar",
+  CONFIRMED: "Confirmada",
+  PAST: "Pasada",
+  CANCELLED: "Cancelada",
+};
+
+function formatDeparture(value: string) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "Fecha por confirmar";
+  return new Intl.DateTimeFormat("es-CR", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(date);
+}
+
 export function TravelerReservationsPage() {
-  const [
-    reservationView,
-    setReservationView,
-  ] =
-    useState<
-      "upcoming" | "past"
-    >("upcoming");
+  const [reservationView, setReservationView] = useState<"upcoming" | "past">("upcoming");
+  const [reservations, setReservations] = useState<Reservation[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const upcomingReservations = [
-    {
-      id: "pub-arenal-01",
-      title:
-        "Caminata al volcán Arenal al amanecer",
-      date:
-        "22 ago 2026",
-      details:
-        "2 personas · La Fortuna",
-      status:
-        "Confirmada",
-    },
+  useEffect(() => {
+    let cancelled = false;
+    listReservations()
+      .then((data) => {
+        if (!cancelled) setReservations(data);
+      })
+      .catch((cause: unknown) => {
+        if (!cancelled) {
+          setError(cause instanceof Error ? cause.message : "No se pudieron cargar las reservas.");
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
-    {
-      id: "pub-monteverde-02",
-      title:
-        "Bosque nuboso de Monteverde",
-      date:
-        "28 ago 2026",
-      details:
-        "1 persona · Monteverde",
-      status:
-        "Por confirmar",
-    },
-  ];
-
-  const pastReservations = [
-    {
-      id: "pub-arenal-01",
-      title:
-        "Caminata al volcán Arenal",
-      date:
-        "10 jul 2026",
-      details:
-        "2 personas · La Fortuna",
-      status:
-        "Completada",
-    },
-
-    {
-      id: "pub-monteverde-02",
-      title:
-        "Bosque nuboso de Monteverde",
-      date:
-        "18 jun 2026",
-      details:
-        "3 personas · Monteverde",
-      status:
-        "Completada",
-    },
-  ];
+  const visibleReservations = reservations.filter((reservation) =>
+    reservationView === "upcoming"
+      ? reservation.status === "PENDING" || reservation.status === "CONFIRMED"
+      : reservation.status === "PAST" || reservation.status === "CANCELLED",
+  );
 
   return (
     <div className="mx-auto max-w-4xl space-y-6">
@@ -318,7 +306,11 @@ export function TravelerReservationsPage() {
           Revisa tus viajes reservados y la información de cada experiencia.
         </p>
       </div>
-
+      {error ? (
+        <p className="rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive" role="alert">
+          {error}
+        </p>
+      ) : null}
       <div className="space-y-4">
         <div
           className="inline-flex rounded-lg border bg-muted/40 p-1"
@@ -371,18 +363,17 @@ export function TravelerReservationsPage() {
         </div>
 
         <ReservationGroup
-          title={
-            reservationView ===
-            "upcoming"
-              ? "Reservas por venir"
-              : "Historial de reservas"
+          title={reservationView === "upcoming" ? "Reservas por venir" : "Historial de reservas"}
+          emptyLabel={
+            loading
+              ? "Cargando reservas..."
+              : error
+                ? "El listado no está disponible."
+                : reservationView === "upcoming"
+                  ? "No tienes reservas por venir."
+                  : "No tienes reservas en el historial."
           }
-          reservations={
-            reservationView ===
-            "upcoming"
-              ? upcomingReservations
-              : pastReservations
-          }
+          reservations={visibleReservations}
         />
       </div>
     </div>
@@ -391,94 +382,49 @@ export function TravelerReservationsPage() {
 
 function ReservationGroup({
   title,
+  emptyLabel,
   reservations,
 }: {
   title: string;
-
-  reservations: Array<{
-    id: string;
-    title: string;
-    date: string;
-    details: string;
-    status: string;
-  }>;
+  emptyLabel: string;
+  reservations: Reservation[];
 }) {
-  const headingId =
-    title
-      .replaceAll(
-        " ",
-        "-",
-      )
-      .toLowerCase();
-
+  const headingId = title.replaceAll(" ", "-").toLowerCase();
   return (
-    <section
-      className="space-y-3"
-      aria-labelledby={
-        headingId
-      }
-    >
-      <h2
-        id={headingId}
-        className="text-lg font-semibold"
-      >
-        {title}
-      </h2>
-
-      {reservations.map(
-        (reservation) => (
-          <Card
-            key={`${title}-${reservation.date}`}
-            className="shadow-xs"
-          >
+    <section className="space-y-3" aria-labelledby={headingId}>
+      <h2 id={headingId} className="text-lg font-semibold">{title}</h2>
+      {reservations.length === 0 ? (
+        <p className="text-sm text-muted-foreground">{emptyLabel}</p>
+      ) : reservations.map((reservation) => {
+        const people = reservation.numberOfPeople === 1
+          ? "1 persona"
+          : `${reservation.numberOfPeople} personas`;
+        const place = reservation.destination ?? "Sin destino";
+        return (
+          <Card key={reservation.id} className="shadow-xs">
             <CardContent className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
               <div className="space-y-1">
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <CalendarDays className="size-4" />
-
-                  <span>
-                    {
-                      reservation.date
-                    }
-                  </span>
+                  <span>{formatDeparture(reservation.departureStartAt)}</span>
                 </div>
-
-                <h3 className="font-semibold">
-                  {
-                    reservation.title
-                  }
-                </h3>
-
-                <p className="text-sm text-muted-foreground">
-                  {
-                    reservation.details
-                  }
-                </p>
+                <h3 className="font-semibold">{reservation.publicationTitle}</h3>
+                <p className="text-sm text-muted-foreground">{people} · {place}</p>
               </div>
-
               <div className="flex flex-wrap items-center gap-3">
                 <span className="w-fit rounded-full bg-emerald-50 px-3 py-1 text-sm font-medium text-emerald-700">
-                  {
-                    reservation.status
-                  }
+                  {STATUS_LABEL[reservation.status]}
                 </span>
-
-                <Button
-                  asChild
-                  variant="outline"
-                  size="sm"
-                >
-                  <Link
-                    href={`/dashboard/publications/${reservation.id}?mode=details`}
-                  >
-                    Ver detalles
-                  </Link>
-                </Button>
+                {reservation.publicationId ? (
+                  <Button asChild variant="outline" size="sm">
+                    <Link href={`/dashboard/publications/${reservation.publicationId}?mode=details`}>Ver detalles</Link>
+                  </Button>
+                ) : null}
               </div>
             </CardContent>
           </Card>
-        ),
-      )}
+        );
+      })}
     </section>
   );
 }
