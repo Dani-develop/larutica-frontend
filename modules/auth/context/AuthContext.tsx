@@ -9,6 +9,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { startAuthentication, type PublicKeyCredentialRequestOptionsJSON } from "@simplewebauthn/browser";
 import type { SignInDto, SignUpDto } from "../models/auth";
 import type { SystemUser, SystemUserInput } from "@/modules/crm/users/models/User";
 import { updateOwnProfile } from "@/modules/crm/users/services/usersService";
@@ -30,6 +31,7 @@ type AuthContextValue = {
   loading: boolean;
   error: string | null;
   signIn: (input: SignInDto) => Promise<void>;
+  signInWithPasskey: () => Promise<void>;
   signUp: (input: SignUpDto) => Promise<{ requiresEmailConfirmation: boolean }>;
   signOut: () => Promise<void>;
   refreshSession: () => Promise<void>;
@@ -131,6 +133,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     broadcast();
   }, [applySession, broadcast]);
 
+  const signInWithPasskey = useCallback(async () => {
+    setError(null);
+    const { flowId, options } = await apiRequest<{
+      flowId: string;
+      options: PublicKeyCredentialRequestOptionsJSON;
+    }>("/api/auth/passkey/login/options", { method: "POST" });
+    const response = await startAuthentication({ optionsJSON: options });
+    const payload = await apiRequest<SessionPayload>("/api/auth/passkey/login/verify", {
+      method: "POST",
+      body: JSON.stringify({ flowId, response }),
+    });
+    applySession(payload);
+    broadcast();
+  }, [applySession, broadcast]);
+
   const signUp = useCallback(async (input: SignUpDto) => {
     setError(null);
     const payload = await apiRequest<SessionPayload & { requiresEmailConfirmation: boolean }>(
@@ -174,6 +191,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     loading,
     error,
     signIn,
+    signInWithPasskey,
     signUp,
     signOut,
     refreshSession,
@@ -185,6 +203,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     loading,
     error,
     signIn,
+    signInWithPasskey,
     signUp,
     signOut,
     refreshSession,

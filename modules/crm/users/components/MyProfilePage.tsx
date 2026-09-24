@@ -20,6 +20,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/modules/auth/context/AuthContext";
 import type { SystemUser, UserStatus } from "../models/User";
+import { PasskeysPanel } from "./PasskeysPanel";
 import { UserForm } from "./UserForm";
 
 const roleBadgeClass: Record<DashboardRole, string> = {
@@ -34,12 +35,13 @@ const statusBadgeClass: Record<UserStatus, string> = {
   Inactivo: "bg-slate-100 text-slate-600 border-slate-200",
 };
 
-type ProfileTab = "info" | "edit" | "password";
+type ProfileTab = "info" | "edit" | "password" | "passkeys";
 
 const TABS: { id: ProfileTab; label: string }[] = [
   { id: "info", label: "Información" },
   { id: "edit", label: "Editar" },
   { id: "password", label: "Contraseña" },
+  { id: "passkeys", label: "Passkeys" },
 ];
 
 function formatPhone(phone: string): string {
@@ -308,7 +310,7 @@ export function MyProfilePage() {
           Mi perfil
         </h1>
         <p className="text-muted-foreground mt-0.5 !text-sm !leading-5">
-          Consulta tu cuenta, edita tus datos o cambia tu contraseña.
+          Consulta tu cuenta, edita tus datos, cambia tu contraseña o administra tus passkeys.
         </p>
       </div>
 
@@ -397,6 +399,19 @@ export function MyProfilePage() {
 
           {tab === "password" ? (
             <ChangePasswordForm
+              onSuccess={(next) => {
+                setIsError(false);
+                setMessage(next);
+              }}
+              onError={(next) => {
+                setIsError(true);
+                setMessage(next);
+              }}
+            />
+          ) : null}
+
+          {tab === "passkeys" ? (
+            <PasskeysPanel
               onSuccess={(next) => {
                 setIsError(false);
                 setMessage(next);

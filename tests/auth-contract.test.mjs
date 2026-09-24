@@ -88,3 +88,20 @@ test("un clon nuevo usa el backend compartido sin recibir secretos", async () =>
   assert.match(example, /SUPABASE_SECRET_KEY=sb_secret_REEMPLAZAR/);
   assert.doesNotMatch(example, /sb_secret_[A-Za-z0-9]{16,}/);
 });
+
+test("las passkeys guardan solo la clave pública y usan desafíos de un solo uso", async () => {
+  const sql = await read("supabase/migrations/202609240001_passkeys.sql");
+  const passkeys = await read("lib/supabase/passkeys.ts");
+  const loginVerify = await read("app/api/auth/passkey/login/verify/route.ts");
+  assert.match(sql, /create table public\.user_passkeys/i);
+  assert.match(sql, /credential_id text not null unique/i);
+  assert.match(sql, /references auth\.users\(id\) on delete cascade/i);
+  assert.match(sql, /revoke all on table public\.user_passkeys from anon, authenticated/i);
+  assert.match(sql, /revoke all on table public\.passkey_challenges from anon, authenticated/i);
+  assert.doesNotMatch(sql, /private_key/i);
+  assert.match(passkeys, /\.from\("passkey_challenges"\)\s*\.delete\(\)/);
+  assert.match(passkeys, /requireUserVerification: true/);
+  assert.match(passkeys, /clientOrigin\(request\)/);
+  assert.match(loginVerify, /assertSameOrigin\(request\)/);
+  assert.match(loginVerify, /createAppSession\(userId\)/);
+});
