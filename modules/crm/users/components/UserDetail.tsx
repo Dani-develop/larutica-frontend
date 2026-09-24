@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { Pencil, Trash2 } from "lucide-react";
+import { parsePhoneNumber } from "react-phone-number-input";
 import { useDashboardRole } from "@/components/dashboard/dashboard-role-context";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,6 +16,14 @@ import {
 } from "@/components/ui/card";
 import { useUsers } from "../hooks/useUsers";
 import { UserStatusBadge } from "./UserStatusBadge";
+
+function formatPhone(phone: string): string {
+  try {
+    return parsePhoneNumber(phone)?.formatInternational() ?? phone;
+  } catch {
+    return phone;
+  }
+}
 
 export function UserDetail({ id }: { id: string }) {
   const router = useRouter();
@@ -103,7 +112,9 @@ export function UserDetail({ id }: { id: string }) {
           </div>
           <div>
             <p className="text-xs text-muted-foreground">Teléfono</p>
-            <p className="text-sm font-medium">{user.phone || "—"}</p>
+            <p className="text-sm font-medium">
+              {user.phone ? formatPhone(user.phone) : "—"}
+            </p>
           </div>
           <div>
             <p className="text-xs text-muted-foreground">Rol</p>

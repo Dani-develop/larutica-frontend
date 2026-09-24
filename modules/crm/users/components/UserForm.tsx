@@ -8,6 +8,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { PhoneNumberInput } from "@/components/ui/phone-input";
+import { isOptionalPhoneNumber } from "@/lib/phoneValidation";
 import type { SystemUserInput, UserStatus } from "../models/User";
 
 type UserFormProps = {
@@ -36,6 +38,7 @@ export function UserForm({
   onCancel,
 }: UserFormProps) {
   const [value, setValue] = useState<SystemUserInput>(initialValue);
+  const [phoneError, setPhoneError] = useState<string | null>(null);
   const needsBusiness =
     value.role === "Agencia" || value.role === "Transporte";
 
@@ -51,11 +54,17 @@ export function UserForm({
       className="space-y-6"
       onSubmit={(event) => {
         event.preventDefault();
+        const phone = value.phone.trim();
+        if (!isOptionalPhoneNumber(phone)) {
+          setPhoneError("Ingresa un número de teléfono válido.");
+          return;
+        }
+        setPhoneError(null);
         void onSubmit({
           ...value,
           name: value.name.trim(),
           email: value.email.trim(),
-          phone: value.phone.trim(),
+          phone,
           businessName: value.businessName.trim(),
         });
       }}
@@ -131,14 +140,26 @@ export function UserForm({
             </Field>
           </div>
 
-          <Field>
+          <Field data-invalid={phoneError ? true : undefined}>
             <FieldLabel htmlFor="phone">Teléfono</FieldLabel>
-            <Input
+            <PhoneNumberInput
               id="phone"
               value={value.phone}
-              onChange={(event) => patch("phone", event.target.value)}
-              placeholder="+506 0000-0000"
+              onChange={(next) => {
+                setPhoneError(null);
+                patch("phone", next);
+              }}
+              aria-invalid={Boolean(phoneError)}
             />
+            {phoneError ? (
+              <p className="text-sm text-destructive" role="alert">
+                {phoneError}
+              </p>
+            ) : (
+              <p className="text-xs text-muted-foreground">
+                Formato internacional (Costa Rica por defecto).
+              </p>
+            )}
           </Field>
 
           {needsBusiness && (
