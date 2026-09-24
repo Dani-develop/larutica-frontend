@@ -69,14 +69,7 @@ export function UserForm({
         });
       }}
     >
-      <section className="space-y-4 rounded-xl border bg-card p-5 shadow-xs">
-        <div>
-          <h2 className="text-base font-semibold">Datos de la cuenta</h2>
-          <p className="text-sm text-muted-foreground">
-            Información básica del usuario en LaRutica.
-          </p>
-        </div>
-
+      <section className="space-y-4 rounded-xl bg-card p-5">
         <FieldGroup className="gap-4">
           <Field>
             <FieldLabel htmlFor="name">Nombre completo</FieldLabel>
