@@ -26,7 +26,9 @@ export async function GET(request: Request) {
     if (error || !data.session || !data.user) throw error ?? new Error("Intercambio PKCE inválido.");
 
     try {
-      const appSession = await createAppSession(data.user.id);
+      const appSession = await createAppSession(data.user.id, {
+        passwordReset: flow.flow_kind === "recovery",
+      });
       const destination = flow.flow_kind === "recovery" ? "/update-password" : "/dashboard";
       return setSessionCookie(
         NextResponse.redirect(clientUrl(destination, request)),
