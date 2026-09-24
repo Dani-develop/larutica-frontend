@@ -2,14 +2,22 @@
 
 import {
   useMemo,
+  useRef,
   useState,
+  type DragEvent,
   type FormEvent,
+  type ReactNode,
 } from "react";
+
+import {
+  useRouter,
+} from "next/navigation";
 
 import {
   AtSign,
   BadgeCheck,
   Bus,
+  CheckCircle2,
   FileText,
   Flower2,
   Globe2,
@@ -17,6 +25,7 @@ import {
   Info,
   Landmark,
   Leaf,
+  Loader2,
   MessageCircle,
   Mountain,
   Send,
@@ -31,6 +40,11 @@ import {
 import {
   useAgency,
 } from "../hooks/useAgency";
+
+import {
+  uploadAgencyFile,
+  type AgencyUploadKind,
+} from "../services/agency-upload.service";
 
 import type {
   Agency,
@@ -236,6 +250,9 @@ export default function AgencyForm({
   mode = "create",
   initialAgency = null,
 }: AgencyFormProps) {
+  const router =
+    useRouter();
+
   const {
     createAgency,
     updateAgency,
@@ -270,6 +287,26 @@ export default function AgencyForm({
   ] =
     useState(false);
 
+  const [
+    uploadingKinds,
+    setUploadingKinds,
+  ] =
+    useState<
+      AgencyUploadKind[]
+    >([]);
+
+  const isUploading =
+    uploadingKinds.length >
+    0;
+
+  const currentStatus =
+    initialAgency?.status ??
+    "DRAFT";
+
+  const isRejected =
+    currentStatus ===
+    "REJECTED";
+
   const updateField = <
     K extends keyof AgencyFormData,
   >(
@@ -279,8 +316,42 @@ export default function AgencyForm({
     setForm(
       (previous) => ({
         ...previous,
-        [field]: value,
+
+        [field]:
+          value,
       }),
+    );
+  };
+
+  const handleUploadState = (
+    kind: AgencyUploadKind,
+    uploading: boolean,
+  ) => {
+    setUploadingKinds(
+      (previous) => {
+        if (
+          uploading
+        ) {
+          if (
+            previous.includes(
+              kind,
+            )
+          ) {
+            return previous;
+          }
+
+          return [
+            ...previous,
+            kind,
+          ];
+        }
+
+        return previous.filter(
+          (item) =>
+            item !==
+            kind,
+        );
+      },
     );
   };
 
@@ -297,7 +368,8 @@ export default function AgencyForm({
           )
             ? previous.categoryIds.filter(
                 (item) =>
-                  item !== id,
+                  item !==
+                  id,
               )
             : [
                 ...previous.categoryIds,
@@ -320,7 +392,8 @@ export default function AgencyForm({
           )
             ? previous.languageIds.filter(
                 (item) =>
-                  item !== id,
+                  item !==
+                  id,
               )
             : [
                 ...previous.languageIds,
@@ -330,8 +403,23 @@ export default function AgencyForm({
     );
   };
 
+  const goToAgency =
+    () => {
+      router.push(
+        "/dashboard/my-agency",
+      );
+
+      router.refresh();
+    };
+
   const saveDraft =
     async () => {
+      if (
+        isUploading
+      ) {
+        return;
+      }
+
       try {
         setSuccessMessage(
           null,
@@ -350,18 +438,38 @@ export default function AgencyForm({
             payload,
           );
 
+          /*
+           * Una agencia APPROVED o REJECTED pasa a
+           * DRAFT al guardar modificaciones.
+           *
+           * Volvemos al perfil para mostrar el estado
+           * real inmediatamente.
+           */
+          if (
+            currentStatus ===
+              "APPROVED" ||
+            currentStatus ===
+              "REJECTED"
+          ) {
+            goToAgency();
+
+            return;
+          }
+
           setSuccessMessage(
             "Los cambios se guardaron correctamente.",
           );
-        } else {
-          await createAgency(
-            payload,
-          );
 
-          setSuccessMessage(
-            "La agencia se guardó como borrador.",
-          );
+          return;
         }
+
+        await createAgency(
+          payload,
+        );
+
+        setSuccessMessage(
+          "La agencia se guardó como borrador.",
+        );
       } catch {
         // useAgency maneja el error.
       }
@@ -372,6 +480,12 @@ export default function AgencyForm({
       event: FormEvent<HTMLFormElement>,
     ) => {
       event.preventDefault();
+
+      if (
+        isUploading
+      ) {
+        return;
+      }
 
       try {
         setSuccessMessage(
@@ -390,19 +504,18 @@ export default function AgencyForm({
           await updateAgency(
             payload,
           );
-
-          setSuccessMessage(
-            "La agencia fue actualizada y enviada para revisión.",
-          );
         } else {
           await createAgency(
             payload,
           );
-
-          setSuccessMessage(
-            "La agencia fue enviada para revisión.",
-          );
         }
+
+        /*
+         * SUBMIT exitoso significa PENDING.
+         * Volvemos a Mi agencia para que el usuario
+         * vea "En revisión".
+         */
+        goToAgency();
       } catch {
         // useAgency maneja el error.
       }
@@ -419,8 +532,12 @@ export default function AgencyForm({
         form.city,
         form.province,
       ]
-        .filter(Boolean)
-        .join(", ");
+        .filter(
+          Boolean,
+        )
+        .join(
+          ", ",
+        );
 
       return (
         location ||
@@ -452,9 +569,7 @@ export default function AgencyForm({
       className="space-y-3"
     >
       <div className="grid gap-4 lg:grid-cols-[minmax(0,3.15fr)_minmax(250px,1fr)]">
-        {/* COLUMNA PRINCIPAL */}
         <div className="space-y-3">
-          {/* 1. DATOS GENERALES */}
           <SectionCard
             number="1"
             title="Datos generales"
@@ -473,9 +588,7 @@ export default function AgencyForm({
                   ) =>
                     updateField(
                       "agencyName",
-                      event
-                        .target
-                        .value,
+                      event.target.value,
                     )
                   }
                   className={
@@ -498,9 +611,7 @@ export default function AgencyForm({
                   ) =>
                     updateField(
                       "commercialName",
-                      event
-                        .target
-                        .value,
+                      event.target.value,
                     )
                   }
                   className={
@@ -596,9 +707,7 @@ export default function AgencyForm({
                     ) =>
                       updateField(
                         "description",
-                        event
-                          .target
-                          .value,
+                        event.target.value,
                       )
                     }
                     className={`${textareaClass} pb-5`}
@@ -607,8 +716,7 @@ export default function AgencyForm({
 
                   <span className="absolute bottom-1.5 right-2.5 text-[10px] text-[#87908C]">
                     {
-                      form
-                        .description
+                      form.description
                         .length
                     }{" "}
                     / 600
@@ -728,7 +836,9 @@ export default function AgencyForm({
 
                     return (
                       <button
-                        key={id}
+                        key={
+                          id
+                        }
                         type="button"
                         onClick={() =>
                           toggleCategory(
@@ -756,7 +866,9 @@ export default function AgencyForm({
                         />
 
                         <span className="truncate">
-                          {name}
+                          {
+                            name
+                          }
                         </span>
                       </button>
                     );
@@ -766,7 +878,6 @@ export default function AgencyForm({
             </div>
           </SectionCard>
 
-          {/* 2. CONTACTO Y UBICACIÓN */}
           <SectionCard
             number="2"
             title="Contacto y ubicación"
@@ -786,9 +897,7 @@ export default function AgencyForm({
                   ) =>
                     updateField(
                       "email",
-                      event
-                        .target
-                        .value,
+                      event.target.value,
                     )
                   }
                   className={
@@ -822,9 +931,7 @@ export default function AgencyForm({
                     ) =>
                       updateField(
                         "phone",
-                        event
-                          .target
-                          .value,
+                        event.target.value,
                       )
                     }
                     className="min-w-0 flex-1 px-3 text-[12px] text-[#252B28] outline-none placeholder:text-[#9AA19D]"
@@ -843,9 +950,7 @@ export default function AgencyForm({
                   ) =>
                     updateField(
                       "website",
-                      event
-                        .target
-                        .value,
+                      event.target.value,
                     )
                   }
                   className={
@@ -868,9 +973,7 @@ export default function AgencyForm({
                   ) =>
                     updateField(
                       "country",
-                      event
-                        .target
-                        .value,
+                      event.target.value,
                     )
                   }
                   className={
@@ -896,9 +999,7 @@ export default function AgencyForm({
                   ) =>
                     updateField(
                       "province",
-                      event
-                        .target
-                        .value,
+                      event.target.value,
                     )
                   }
                   className={
@@ -952,9 +1053,7 @@ export default function AgencyForm({
                   ) =>
                     updateField(
                       "city",
-                      event
-                        .target
-                        .value,
+                      event.target.value,
                     )
                   }
                   className={
@@ -979,9 +1078,7 @@ export default function AgencyForm({
                   ) =>
                     updateField(
                       "exactAddress",
-                      event
-                        .target
-                        .value,
+                      event.target.value,
                     )
                   }
                   className={
@@ -1074,15 +1171,26 @@ export default function AgencyForm({
             </div>
           </SectionCard>
 
-          {/* 3. IDENTIDAD */}
           <SectionCard
             number="3"
             title="Identidad visual y verificación"
           >
             <div className="grid gap-3 lg:grid-cols-3">
               <UploadBox
+                kind="logo"
                 title="Subir logo"
                 subtitle="JPG, PNG o SVG. Máx. 2MB"
+                accept="image/jpeg,image/png,image/svg+xml"
+                allowedMimeTypes={[
+                  "image/jpeg",
+                  "image/png",
+                  "image/svg+xml",
+                ]}
+                maxSize={
+                  2 *
+                  1024 *
+                  1024
+                }
                 value={
                   form.logoUrl
                 }
@@ -1094,6 +1202,9 @@ export default function AgencyForm({
                     value,
                   )
                 }
+                onUploadingChange={
+                  handleUploadState
+                }
                 preview={
                   form.logoUrl ? (
                     <img
@@ -1101,7 +1212,7 @@ export default function AgencyForm({
                         form.logoUrl
                       }
                       alt="Logo"
-                      className="size-10 rounded-full object-cover"
+                      className="size-12 rounded-full object-cover"
                     />
                   ) : (
                     <div className="flex size-10 items-center justify-center rounded-full bg-[#075E36] text-white">
@@ -1117,8 +1228,19 @@ export default function AgencyForm({
               />
 
               <UploadBox
+                kind="cover"
                 title="Imagen de portada"
                 subtitle="JPG, PNG. Recomendado 1600x600px. Máx. 5MB"
+                accept="image/jpeg,image/png"
+                allowedMimeTypes={[
+                  "image/jpeg",
+                  "image/png",
+                ]}
+                maxSize={
+                  5 *
+                  1024 *
+                  1024
+                }
                 value={
                   form.coverUrl
                 }
@@ -1130,6 +1252,9 @@ export default function AgencyForm({
                     value,
                   )
                 }
+                onUploadingChange={
+                  handleUploadState
+                }
                 preview={
                   form.coverUrl ? (
                     <img
@@ -1137,7 +1262,7 @@ export default function AgencyForm({
                         form.coverUrl
                       }
                       alt="Portada"
-                      className="h-10 w-full rounded-md object-cover"
+                      className="h-12 w-24 rounded-md object-cover"
                     />
                   ) : (
                     <ImageIcon
@@ -1152,9 +1277,21 @@ export default function AgencyForm({
               />
 
               <UploadBox
+                kind="verification"
                 title="Documento de verificación"
                 info
                 subtitle="PDF, JPG o PNG. Máx. 5MB"
+                accept="application/pdf,image/jpeg,image/png"
+                allowedMimeTypes={[
+                  "application/pdf",
+                  "image/jpeg",
+                  "image/png",
+                ]}
+                maxSize={
+                  5 *
+                  1024 *
+                  1024
+                }
                 value={
                   form.verificationDocumentUrl
                 }
@@ -1166,12 +1303,19 @@ export default function AgencyForm({
                     value,
                   )
                 }
+                onUploadingChange={
+                  handleUploadState
+                }
                 preview={
                   <FileText
                     size={
                       26
                     }
-                    className="text-[#66706B]"
+                    className={
+                      form.verificationDocumentUrl
+                        ? "text-[#075E36]"
+                        : "text-[#66706B]"
+                    }
                   />
                 }
                 text="Arrastra tu archivo aquí"
@@ -1189,9 +1333,7 @@ export default function AgencyForm({
                 ) =>
                   updateField(
                     "acceptedTerms",
-                    event
-                      .target
-                      .checked,
+                    event.target.checked,
                   )
                 }
                 className="size-4 accent-[#075E36]"
@@ -1212,7 +1354,6 @@ export default function AgencyForm({
           </SectionCard>
         </div>
 
-        {/* PANEL LATERAL */}
         <aside className="space-y-3 self-start">
           <div className="rounded-xl border border-[#D7E7D9] bg-[#F7FBF8] p-4">
             <h3 className="!m-0 !text-[13px] !font-semibold !leading-5 !tracking-normal text-[#252B28]">
@@ -1327,9 +1468,7 @@ export default function AgencyForm({
               </p>
 
               <div className="mt-2 flex flex-wrap gap-1">
-                {form
-                  .categoryIds
-                  .length >
+                {form.categoryIds.length >
                 0 ? (
                   form.categoryIds
                     .slice(
@@ -1441,6 +1580,19 @@ export default function AgencyForm({
         </aside>
       </div>
 
+      {isUploading && (
+        <div className="flex items-center gap-2 rounded-lg border border-[#CFE0D6] bg-[#F4FAF6] px-3 py-2 text-[11px] text-[#075E36]">
+          <Loader2
+            size={
+              13
+            }
+            className="animate-spin"
+          />
+
+          Espera a que terminen de subir los archivos antes de guardar.
+        </div>
+      )}
+
       {error && (
         <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-[11px] text-red-700">
           {error}
@@ -1455,7 +1607,6 @@ export default function AgencyForm({
         </div>
       )}
 
-      {/* ACCIONES */}
       <div className="flex flex-col gap-2.5 border-t border-[#E0E4E1] pt-3 sm:flex-row sm:items-center">
         <button
           type="button"
@@ -1463,9 +1614,10 @@ export default function AgencyForm({
             onCancel
           }
           disabled={
-            saving
+            saving ||
+            isUploading
           }
-          className="h-9 min-w-[140px] rounded-lg border border-[#66706B] bg-white px-5 text-[11px] font-semibold text-[#252B28] transition hover:bg-[#F7F8F7] disabled:opacity-50"
+          className="h-9 min-w-[140px] rounded-lg border border-[#66706B] bg-white px-5 text-[11px] font-semibold text-[#252B28] transition hover:bg-[#F7F8F7] disabled:cursor-not-allowed disabled:opacity-50"
         >
           Cancelar
         </button>
@@ -1477,9 +1629,10 @@ export default function AgencyForm({
               void saveDraft()
             }
             disabled={
-              saving
+              saving ||
+              isUploading
             }
-            className="h-9 min-w-[165px] rounded-lg border border-[#075E36] bg-white px-5 text-[11px] font-semibold text-[#075E36] transition hover:bg-[#EFF8F3] disabled:opacity-50"
+            className="h-9 min-w-[165px] rounded-lg border border-[#075E36] bg-white px-5 text-[11px] font-semibold text-[#075E36] transition hover:bg-[#EFF8F3] disabled:cursor-not-allowed disabled:opacity-50"
           >
             {saving
               ? "Guardando..."
@@ -1492,19 +1645,31 @@ export default function AgencyForm({
           <button
             type="submit"
             disabled={
-              saving
+              saving ||
+              isUploading
             }
-            className="inline-flex h-9 min-w-[200px] items-center justify-center gap-2 rounded-lg bg-[#075E36] px-5 text-[11px] font-semibold text-white transition hover:bg-[#064D2D] disabled:opacity-50"
+            className="inline-flex h-9 min-w-[200px] items-center justify-center gap-2 rounded-lg bg-[#075E36] px-5 text-[11px] font-semibold text-white transition hover:bg-[#064D2D] disabled:cursor-not-allowed disabled:opacity-50"
           >
-            <Send
-              size={
-                13
-              }
-            />
+            {saving ? (
+              <Loader2
+                size={
+                  13
+                }
+                className="animate-spin"
+              />
+            ) : (
+              <Send
+                size={
+                  13
+                }
+              />
+            )}
 
             {saving
               ? "Guardando..."
-              : "Enviar para revisión"}
+              : isRejected
+                ? "Reenviar para revisión"
+                : "Enviar para revisión"}
           </button>
         </div>
       </div>
@@ -1519,8 +1684,7 @@ function SectionCard({
 }: {
   number: string;
   title: string;
-  children:
-    React.ReactNode;
+  children: ReactNode;
 }) {
   return (
     <section className="rounded-xl border border-[#DDE2DF] bg-white p-4">
@@ -1546,8 +1710,7 @@ function Field({
 }: {
   label: string;
   required?: boolean;
-  children:
-    React.ReactNode;
+  children: ReactNode;
 }) {
   return (
     <label className="block">
@@ -1582,11 +1745,8 @@ function SocialInput({
   placeholder,
   onChange,
 }: {
-  icon:
-    React.ReactNode;
-
+  icon: ReactNode;
   value: string;
-
   placeholder: string;
 
   onChange: (
@@ -1600,13 +1760,14 @@ function SocialInput({
       </span>
 
       <input
-        value={value}
+        value={
+          value
+        }
         onChange={(
           event,
         ) =>
           onChange(
-            event.target
-              .value,
+            event.target.value,
           )
         }
         placeholder={
@@ -1619,31 +1780,183 @@ function SocialInput({
 }
 
 function UploadBox({
+  kind,
   title,
   subtitle,
   value,
   onChange,
+  onUploadingChange,
   preview,
   text,
+  accept,
+  allowedMimeTypes,
+  maxSize,
   info = false,
 }: {
+  kind: AgencyUploadKind;
   title: string;
-
   subtitle: string;
-
   value: string;
 
   onChange: (
     value: string,
   ) => void;
 
-  preview:
-    React.ReactNode;
+  onUploadingChange: (
+    kind: AgencyUploadKind,
+    uploading: boolean,
+  ) => void;
 
+  preview: ReactNode;
   text: string;
+  accept: string;
+
+  allowedMimeTypes: string[];
+
+  maxSize: number;
 
   info?: boolean;
 }) {
+  const inputRef =
+    useRef<HTMLInputElement>(
+      null,
+    );
+
+  const [
+    uploading,
+    setUploading,
+  ] =
+    useState(false);
+
+  const [
+    dragActive,
+    setDragActive,
+  ] =
+    useState(false);
+
+  const [
+    uploadError,
+    setUploadError,
+  ] =
+    useState<
+      string | null
+    >(null);
+
+  const handleFile =
+    async (
+      file: File,
+    ) => {
+      setUploadError(
+        null,
+      );
+
+      if (
+        !allowedMimeTypes.includes(
+          file.type,
+        )
+      ) {
+        setUploadError(
+          "El tipo de archivo seleccionado no está permitido.",
+        );
+
+        return;
+      }
+
+      if (
+        file.size >
+        maxSize
+      ) {
+        const maxMegabytes =
+          maxSize /
+          1024 /
+          1024;
+
+        setUploadError(
+          `El archivo supera el límite de ${maxMegabytes} MB.`,
+        );
+
+        return;
+      }
+
+      try {
+        setUploading(
+          true,
+        );
+
+        onUploadingChange(
+          kind,
+          true,
+        );
+
+        const result =
+          await uploadAgencyFile(
+            file,
+            kind,
+          );
+
+        onChange(
+          result.value,
+        );
+      } catch (
+        cause
+      ) {
+        setUploadError(
+          cause instanceof
+          Error
+            ? cause.message
+            : "No se pudo cargar el archivo.",
+        );
+      } finally {
+        setUploading(
+          false,
+        );
+
+        onUploadingChange(
+          kind,
+          false,
+        );
+      }
+    };
+
+  const handleDrop = (
+    event: DragEvent<HTMLDivElement>,
+  ) => {
+    event.preventDefault();
+
+    setDragActive(
+      false,
+    );
+
+    if (
+      uploading
+    ) {
+      return;
+    }
+
+    const file =
+      event.dataTransfer
+        .files?.[0];
+
+    if (
+      file
+    ) {
+      void handleFile(
+        file,
+      );
+    }
+  };
+
+  const openPicker =
+    () => {
+      if (
+        uploading
+      ) {
+        return;
+      }
+
+      inputRef.current?.click();
+    };
+
   return (
     <div>
       <p
@@ -1663,51 +1976,195 @@ function UploadBox({
         )}
       </p>
 
-      <div className="relative flex min-h-[104px] flex-col items-center justify-center rounded-lg border border-dashed border-[#C9D0CC] bg-[#FCFDFC] px-3 py-2.5 text-center transition hover:border-[#8AB5A0] hover:bg-[#FAFCFB]">
-        <button
-          type="button"
-          className="absolute right-2 top-2 flex size-6 items-center justify-center rounded-md border border-[#DDE2DF] bg-white text-[#075E36] transition hover:bg-[#EFF8F3]"
-        >
-          <UploadCloud
-            size={
-              12
-            }
-          />
-        </button>
+      <div
+        role="button"
+        tabIndex={
+          0
+        }
+        onClick={
+          openPicker
+        }
+        onKeyDown={(
+          event,
+        ) => {
+          if (
+            event.key ===
+              "Enter" ||
+            event.key ===
+              " "
+          ) {
+            event.preventDefault();
 
-        <div className="mb-1.5 flex min-h-9 items-center justify-center">
-          {preview}
+            openPicker();
+          }
+        }}
+        onDragEnter={(
+          event,
+        ) => {
+          event.preventDefault();
+
+          if (
+            !uploading
+          ) {
+            setDragActive(
+              true,
+            );
+          }
+        }}
+        onDragOver={(
+          event,
+        ) => {
+          event.preventDefault();
+
+          if (
+            !uploading
+          ) {
+            setDragActive(
+              true,
+            );
+          }
+        }}
+        onDragLeave={(
+          event,
+        ) => {
+          event.preventDefault();
+
+          setDragActive(
+            false,
+          );
+        }}
+        onDrop={
+          handleDrop
+        }
+        className={[
+          "relative flex min-h-[120px] cursor-pointer flex-col items-center justify-center rounded-lg border border-dashed px-3 py-3 text-center transition",
+
+          dragActive
+            ? "border-[#075E36] bg-[#EFF8F3]"
+            : "border-[#C9D0CC] bg-[#FCFDFC] hover:border-[#8AB5A0] hover:bg-[#FAFCFB]",
+
+          uploading
+            ? "cursor-wait opacity-80"
+            : "",
+        ].join(
+          " ",
+        )}
+      >
+        <input
+          ref={
+            inputRef
+          }
+          type="file"
+          accept={
+            accept
+          }
+          disabled={
+            uploading
+          }
+          onChange={(
+            event,
+          ) => {
+            const file =
+              event.target
+                .files?.[0];
+
+            if (
+              file
+            ) {
+              void handleFile(
+                file,
+              );
+            }
+
+            event.target.value =
+              "";
+          }}
+          className="sr-only"
+        />
+
+        <div className="absolute right-2 top-2 flex size-7 items-center justify-center rounded-md border border-[#DDE2DF] bg-white text-[#075E36]">
+          {uploading ? (
+            <Loader2
+              size={
+                13
+              }
+              className="animate-spin"
+            />
+          ) : value ? (
+            <CheckCircle2
+              size={
+                13
+              }
+            />
+          ) : (
+            <UploadCloud
+              size={
+                13
+              }
+            />
+          )}
+        </div>
+
+        <div className="mb-1.5 flex min-h-12 items-center justify-center">
+          {uploading ? (
+            <div className="flex flex-col items-center gap-1.5 text-[#075E36]">
+              <Loader2
+                size={
+                  25
+                }
+                className="animate-spin"
+              />
+
+              <span className="text-[9px] font-medium">
+                Subiendo...
+              </span>
+            </div>
+          ) : (
+            preview
+          )}
         </div>
 
         <p className="text-[10px] font-medium text-[#252B28]">
-          {text}
+          {value
+            ? kind ===
+              "verification"
+              ? "Documento cargado"
+              : "Archivo cargado"
+            : text}
         </p>
 
-        <label className="mt-0.5 cursor-pointer text-[9px] font-semibold text-[#075E36]">
-          o selecciona un archivo
-
-          <input
-            type="text"
-            value={
-              value
-            }
-            onChange={(
-              event,
-            ) =>
-              onChange(
-                event
-                  .target
-                  .value,
-              )
-            }
-            className="sr-only"
-          />
-        </label>
+        <p className="mt-0.5 text-[9px] font-semibold text-[#075E36]">
+          {value
+            ? "Selecciona otro archivo para reemplazarlo"
+            : "o selecciona un archivo"}
+        </p>
 
         <p className="mt-1 text-[8px] leading-3 text-[#87908C]">
           {subtitle}
         </p>
+
+        {value &&
+          kind ===
+            "verification" && (
+            <div className="mt-2 flex items-center gap-1 rounded-full bg-[#EAF5ED] px-2 py-1 text-[8px] font-medium text-[#075E36]">
+              <ShieldCheck
+                size={
+                  10
+                }
+              />
+
+              Documento almacenado de forma privada
+            </div>
+          )}
       </div>
+
+      {uploadError && (
+        <p className="mt-1.5 text-[9px] leading-4 text-red-600">
+          {
+            uploadError
+          }
+        </p>
+      )}
     </div>
   );
 }
@@ -1716,9 +2173,7 @@ function InfoRow({
   icon,
   text,
 }: {
-  icon:
-    React.ReactNode;
-
+  icon: ReactNode;
   text: string;
 }) {
   return (
