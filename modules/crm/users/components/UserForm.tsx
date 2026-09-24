@@ -69,12 +69,15 @@ export function UserForm({
         });
       }}
     >
-      <section className="space-y-4 rounded-xl bg-card p-5">
+      <section className="space-y-4">
         <FieldGroup className="gap-4">
           <Field>
-            <FieldLabel htmlFor="name">Nombre completo</FieldLabel>
+            <FieldLabel htmlFor="name" className="!text-sm">
+              Nombre completo
+            </FieldLabel>
             <Input
               id="name"
+              className="!h-9 !text-sm"
               value={value.name}
               onChange={(event) => patch("name", event.target.value)}
               placeholder="Nombre y apellidos"
@@ -84,9 +87,12 @@ export function UserForm({
           </Field>
 
           <Field>
-            <FieldLabel htmlFor="email">Correo electrónico</FieldLabel>
+            <FieldLabel htmlFor="email" className="!text-sm">
+              Correo electrónico
+            </FieldLabel>
             <Input
               id="email"
+              className="!h-9 !text-sm"
               type="email"
               value={value.email}
               disabled={lockEmail}
@@ -98,7 +104,9 @@ export function UserForm({
 
           <div className="grid gap-4 sm:grid-cols-2">
             <Field>
-              <FieldLabel htmlFor="role">Rol</FieldLabel>
+              <FieldLabel htmlFor="role" className="!text-sm">
+                Rol
+              </FieldLabel>
               <select
                 id="role"
                 value={value.role}
@@ -117,7 +125,9 @@ export function UserForm({
             </Field>
 
             <Field>
-              <FieldLabel htmlFor="status">Estado</FieldLabel>
+              <FieldLabel htmlFor="status" className="!text-sm">
+                Estado
+              </FieldLabel>
               <select
                 id="status"
                 value={value.status}
@@ -134,7 +144,9 @@ export function UserForm({
           </div>
 
           <Field data-invalid={phoneError ? true : undefined}>
-            <FieldLabel htmlFor="phone">Teléfono</FieldLabel>
+            <FieldLabel htmlFor="phone" className="!text-sm">
+              Teléfono
+            </FieldLabel>
             <PhoneNumberInput
               id="phone"
               value={value.phone}
@@ -145,11 +157,11 @@ export function UserForm({
               aria-invalid={Boolean(phoneError)}
             />
             {phoneError ? (
-              <p className="text-sm text-destructive" role="alert">
+              <p className="text-destructive !text-sm" role="alert">
                 {phoneError}
               </p>
             ) : (
-              <p className="text-xs text-muted-foreground">
+              <p className="text-muted-foreground !text-xs">
                 Formato internacional (Costa Rica por defecto).
               </p>
             )}
@@ -157,13 +169,14 @@ export function UserForm({
 
           {needsBusiness && (
             <Field>
-              <FieldLabel htmlFor="businessName">
+              <FieldLabel htmlFor="businessName" className="!text-sm">
                 {value.role === "Agencia"
                   ? "Nombre de la agencia"
                   : "Nombre del servicio"}
               </FieldLabel>
               <Input
                 id="businessName"
+                className="!h-9 !text-sm"
                 value={value.businessName}
                 onChange={(event) => patch("businessName", event.target.value)}
                 placeholder={
@@ -177,9 +190,12 @@ export function UserForm({
 
           {requirePassword && (
             <Field>
-              <FieldLabel htmlFor="password">Contraseña temporal</FieldLabel>
+              <FieldLabel htmlFor="password" className="!text-sm">
+                Contraseña temporal
+              </FieldLabel>
               <Input
                 id="password"
+                className="!h-9 !text-sm"
                 type="password"
                 value={value.password ?? ""}
                 onChange={(event) => patch("password", event.target.value)}
@@ -194,10 +210,12 @@ export function UserForm({
       </section>
 
       <div className="flex flex-wrap justify-end gap-2">
-        <Button type="button" variant="outline" onClick={onCancel}>
+        <Button type="button" variant="outline" className="!text-sm" onClick={onCancel}>
           Cancelar
         </Button>
-        <Button type="submit">{submitLabel}</Button>
+        <Button type="submit" className="!text-sm">
+          {submitLabel}
+        </Button>
       </div>
     </form>
   );

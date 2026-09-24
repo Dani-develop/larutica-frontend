@@ -44,16 +44,18 @@ export function CreateUserPage() {
         </p>
       </div>
 
-      <UserForm
-        initialValue={emptyUserInput}
-        submitLabel="Crear usuario"
-        requirePassword
-        onCancel={() => router.push("/dashboard/users")}
-        onSubmit={async (value) => {
-          const created = await create(value);
-          router.push(`/dashboard/users/${created.id}`);
-        }}
-      />
+      <div className="bg-card rounded-xl p-5">
+        <UserForm
+          initialValue={emptyUserInput}
+          submitLabel="Crear usuario"
+          requirePassword
+          onCancel={() => router.push("/dashboard/users")}
+          onSubmit={async (value) => {
+            const created = await create(value);
+            router.push(`/dashboard/users/${created.id}`);
+          }}
+        />
+      </div>
     </div>
   );
 }

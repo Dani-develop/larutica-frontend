@@ -54,7 +54,7 @@ function DashboardHeader({ user }: { user: HeaderUser }) {
   return (
     <header className="sticky top-0 z-50 flex h-15 shrink-0 items-center justify-between gap-3 border-b bg-background px-4">
       <div className="flex min-w-0 items-center gap-3">
-        <SidebarTrigger />
+        {!isMobile && <SidebarTrigger />}
 
         {isMobile && (
           <Link href="/dashboard" className="flex min-w-0 items-center gap-2">

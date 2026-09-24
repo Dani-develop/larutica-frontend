@@ -36,7 +36,11 @@ export function NavMain({ role }: Props) {
   const pathname = usePathname();
   const { setOpenMobile, isMobile } = useSidebar();
   const visibleGroups = role === "Viajero"
-    ? navGroups.filter((group) => group.label === "Mi viaje")
+    ? navGroups.filter((group) =>
+        group.label === "General" ||
+        group.label === "Mi viaje" ||
+        group.label === "Cuenta",
+      )
     : navGroups;
 
   return (

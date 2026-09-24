@@ -65,15 +65,17 @@ export function EditUserPage({ id }: { id: string }) {
         <p className="mt-1 text-sm text-muted-foreground">{user.name}</p>
       </div>
 
-      <UserForm
-        initialValue={initialValue}
-        submitLabel="Guardar cambios"
-        onCancel={() => router.push(`/dashboard/users/${id}`)}
-        onSubmit={async (value) => {
-          await update(id, value);
-          router.push(`/dashboard/users/${id}`);
-        }}
-      />
+      <div className="bg-card rounded-xl p-5">
+        <UserForm
+          initialValue={initialValue}
+          submitLabel="Guardar cambios"
+          onCancel={() => router.push(`/dashboard/users/${id}`)}
+          onSubmit={async (value) => {
+            await update(id, value);
+            router.push(`/dashboard/users/${id}`);
+          }}
+        />
+      </div>
     </div>
   );
 }
