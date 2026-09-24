@@ -27,10 +27,9 @@ export async function PATCH(request: Request) {
       currentPassword?: unknown;
     };
     const password = String(body.password ?? "");
-    const requiresCurrentPassword = Object.prototype.hasOwnProperty.call(
-      body,
-      "currentPassword",
-    );
+    // Sin la contraseña actual solo se permite desde el enlace de recuperación;
+    // createAppSession más abajo reemplaza la sesión y consume ese permiso.
+    const requiresCurrentPassword = !current.canResetPasswordWithoutCurrent;
 
     if (password.length < 8 || password.length > 128) {
       throw new ApiError("La contraseña debe tener entre 8 y 128 caracteres.", 400);

@@ -138,7 +138,7 @@ export default function Home() {
       <a className="skip-link" href="#main">Ir al contenido principal</a>
       <header className="site-header">
         <button className="brand brand-button" type="button" onClick={() => navigate("explore")} aria-label="LaRutica, volver al inicio">
-          <span className="brand-mark" aria-hidden="true">LR</span><span>LaRutica</span>
+          <span className="brand-mark" aria-hidden="true" /><span>LaRutica</span>
         </button>
         <nav aria-label="Navegación principal">
           <button className={view === "explore" || view === "detail" || view === "route-detail" || view === "route-confirm" ? "nav-active" : ""} onClick={() => navigate("explore")} aria-current={view === "explore" ? "page" : undefined}>Explorar</button>
@@ -197,7 +197,7 @@ export default function Home() {
       <button className="help-fab" type="button" onClick={() => setHelpOpen(true)}>¿Necesitas ayuda?</button>
       {helpOpen && <HelpDialog onClose={() => setHelpOpen(false)} />}
       {accessOpen && <AccessDialog largeText={largeText} setLargeText={setLargeText} highContrast={highContrast} setHighContrast={setHighContrast} onClose={() => setAccessOpen(false)} />}
-      <footer><button className="brand brand-button footer-brand" type="button" onClick={() => navigate("explore")}><span className="brand-mark" aria-hidden="true">LR</span>LaRutica</button><p>Prototipo académico · Costa Rica · 2026</p><button className="footer-link" type="button" onClick={() => setAccessOpen(true)}>Opciones de accesibilidad</button></footer>
+      <footer><button className="brand brand-button footer-brand" type="button" onClick={() => navigate("explore")}><span className="brand-mark" aria-hidden="true" />LaRutica</button><p>Prototipo académico · Costa Rica · 2026</p><button className="footer-link" type="button" onClick={() => setAccessOpen(true)}>Opciones de accesibilidad</button></footer>
     </>
   );
 }

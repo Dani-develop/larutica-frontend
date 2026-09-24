@@ -6,6 +6,7 @@ import { profileRowToSystemUser, type ProfileRow } from "./profiles";
 const SESSION_BYTES = 32;
 const ABSOLUTE_SESSION_SECONDS = 8 * 60 * 60;
 const IDLE_SESSION_SECONDS = 30 * 60;
+const PASSWORD_RESET_SECONDS = 15 * 60;
 
 type SessionRow = {
   session_hash: string;
@@ -14,6 +15,7 @@ type SessionRow = {
   last_seen_at: string;
   expires_at: string;
   idle_expires_at: string;
+  password_reset_until?: string | null;
 };
 
 export type PublicSession = {
@@ -26,6 +28,8 @@ export type AppSession = {
   sessionHash: string;
   session: PublicSession;
   profile: ProfileRow;
+  // Solo las sesiones creadas desde el enlace de recuperación, y por poco tiempo.
+  canResetPasswordWithoutCurrent: boolean;
 };
 
 function sessionCookieName() {
@@ -69,7 +73,10 @@ function readSessionCookie(request: Request) {
     ?? readCookie(request, "__Host-larutica_session");
 }
 
-export async function createAppSession(userId: string) {
+export async function createAppSession(
+  userId: string,
+  options: { passwordReset?: boolean } = {},
+) {
   const admin = getSupabaseAdminClient();
   const { data: profile, error: profileError } = await admin
     .from("profiles")
@@ -98,6 +105,9 @@ export async function createAppSession(userId: string) {
     user_id: userId,
     expires_at: expiresAt,
     idle_expires_at: idleExpiresAt,
+    ...(options.passwordReset
+      ? { password_reset_until: new Date(now + PASSWORD_RESET_SECONDS * 1000).toISOString() }
+      : {}),
   });
   if (insertError) throw insertError;
 
@@ -158,6 +168,9 @@ export async function requireAppSession(request: Request): Promise<AppSession> {
     sessionHash,
     session: { userId: row.user_id, expiresAt: row.expires_at, idleExpiresAt },
     profile: profile as ProfileRow,
+    canResetPasswordWithoutCurrent: Boolean(
+      row.password_reset_until && Date.parse(row.password_reset_until) > now,
+    ),
   };
 }
 

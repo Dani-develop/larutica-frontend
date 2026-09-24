@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { BrandMark } from "@/components/brand/BrandMark";
 import { SITE } from "@/modules/landing/constants/site";
 
 type AuthShellProps = {
@@ -23,9 +24,7 @@ export function AuthShell({ eyebrow, title, children }: AuthShellProps) {
             {eyebrow}
           </p>
           <div className="flex items-center gap-3">
-            <span className="flex size-11 items-center justify-center rounded-[50%_50%_44%_56%] bg-[#d9f5a7] text-sm font-bold text-[#084d3a]">
-              LR
-            </span>
+            <BrandMark variant="plain" className="h-12" />
             <div>
               <p className="text-2xl font-semibold tracking-tight">{SITE.name}</p>
               <p className="text-sm text-white/75">{SITE.tagline}</p>
@@ -40,9 +39,7 @@ export function AuthShell({ eyebrow, title, children }: AuthShellProps) {
       <div className="flex flex-1 flex-col overflow-y-auto">
         <div className="mb-2 px-8 pt-10 lg:hidden">
           <Link href="/" className="flex items-center gap-2">
-            <span className="flex size-9 items-center justify-center rounded-[50%_50%_44%_56%] bg-primary text-xs font-bold text-white">
-              LR
-            </span>
+            <BrandMark className="size-9" />
             <span className="text-sm font-semibold">{SITE.name}</span>
           </Link>
         </div>
