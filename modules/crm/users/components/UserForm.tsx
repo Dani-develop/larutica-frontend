@@ -90,56 +90,67 @@ export function UserForm({
             <FieldLabel htmlFor="email" className="!text-sm">
               Correo electrónico
             </FieldLabel>
-            <Input
-              id="email"
-              className="!h-9 !text-sm"
-              type="email"
-              value={value.email}
-              disabled={lockEmail}
-              onChange={(event) => patch("email", event.target.value)}
-              placeholder="correo@ejemplo.com"
-              required
-            />
+            {lockEmail ? (
+              <p className="bg-muted/40 text-muted-foreground rounded-md px-3 py-2 !text-sm">
+                {value.email || "—"}
+              </p>
+            ) : (
+              <Input
+                id="email"
+                className="!h-9 !text-sm"
+                type="email"
+                value={value.email}
+                onChange={(event) => patch("email", event.target.value)}
+                placeholder="correo@ejemplo.com"
+                required
+              />
+            )}
           </Field>
 
           <div className="grid gap-4 sm:grid-cols-2">
             <Field>
-              <FieldLabel htmlFor="role" className="!text-sm">
-                Rol
-              </FieldLabel>
-              <select
-                id="role"
-                value={value.role}
-                disabled={lockRole}
-                onChange={(event) =>
-                  patch("role", event.target.value as DashboardRole)
-                }
-                className={selectClassName}
-              >
-                {DASHBOARD_ROLES.map((role) => (
-                  <option key={role} value={role}>
-                    {role}
-                  </option>
-                ))}
-              </select>
+              <FieldLabel className="!text-sm">Rol</FieldLabel>
+              {lockRole ? (
+                <p className="bg-muted/40 text-foreground rounded-md px-3 py-2 !text-sm !font-medium">
+                  {value.role}
+                </p>
+              ) : (
+                <select
+                  id="role"
+                  value={value.role}
+                  onChange={(event) =>
+                    patch("role", event.target.value as DashboardRole)
+                  }
+                  className={selectClassName}
+                >
+                  {DASHBOARD_ROLES.map((role) => (
+                    <option key={role} value={role}>
+                      {role}
+                    </option>
+                  ))}
+                </select>
+              )}
             </Field>
 
             <Field>
-              <FieldLabel htmlFor="status" className="!text-sm">
-                Estado
-              </FieldLabel>
-              <select
-                id="status"
-                value={value.status}
-                disabled={lockStatus}
-                onChange={(event) =>
-                  patch("status", event.target.value as UserStatus)
-                }
-                className={selectClassName}
-              >
-                <option value="Activo">Activo</option>
-                <option value="Inactivo">Inactivo</option>
-              </select>
+              <FieldLabel className="!text-sm">Estado</FieldLabel>
+              {lockStatus ? (
+                <p className="bg-muted/40 text-foreground rounded-md px-3 py-2 !text-sm !font-medium">
+                  {value.status}
+                </p>
+              ) : (
+                <select
+                  id="status"
+                  value={value.status}
+                  onChange={(event) =>
+                    patch("status", event.target.value as UserStatus)
+                  }
+                  className={selectClassName}
+                >
+                  <option value="Activo">Activo</option>
+                  <option value="Inactivo">Inactivo</option>
+                </select>
+              )}
             </Field>
           </div>
 

@@ -26,7 +26,6 @@ import {
   DashboardRoleProvider,
   useDashboardRole,
 } from "@/components/dashboard/dashboard-role-context";
-import { RoleSwitcher } from "@/components/dashboard/RoleSwitcher";
 import { useAuth } from "@/modules/auth/context/AuthContext";
 import { useEffect } from "react";
 
@@ -67,8 +66,6 @@ function DashboardHeader({ user }: { user: HeaderUser }) {
       </div>
 
       <div className="flex items-center gap-2">
-        <RoleSwitcher className={isMobile ? "hidden sm:flex" : undefined} />
-
         {isMobile && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -99,10 +96,6 @@ function DashboardHeader({ user }: { user: HeaderUser }) {
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <div className="px-2 py-2 sm:hidden">
-                <RoleSwitcher className="w-full [&_select]:w-full" />
-              </div>
-              <DropdownMenuSeparator className="sm:hidden" />
               <DropdownMenuItem onSelect={() => {
                 void signOut().then(() => router.replace("/login"));
               }}>
