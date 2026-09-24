@@ -1,11 +1,12 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import {
+  useRouter,
+} from "next/navigation";
 
 import {
   BadgeCheck,
   Building2,
-  CheckCircle2,
   FileText,
   Mail,
   MapPin,
@@ -16,22 +17,32 @@ import {
   ShieldCheck,
 } from "lucide-react";
 
-import { useAgency } from "@/modules/agency/hooks/useAgency";
+import {
+  useAgency,
+} from "@/modules/agency/hooks/useAgency";
 
 export default function MyAgencyPage() {
-  const router = useRouter();
+  const router =
+    useRouter();
 
   const {
     agency,
     loading,
     error,
-  } = useAgency();
+  } =
+    useAgency();
 
-  if (loading) {
-    return <AgencyLoadingState />;
+  if (
+    loading
+  ) {
+    return (
+      <AgencyLoadingState />
+    );
   }
 
-  if (!agency) {
+  if (
+    !agency
+  ) {
     return (
       <div className="mx-auto w-full max-w-[1180px]">
         <PageHeader
@@ -39,13 +50,16 @@ export default function MyAgencyPage() {
           description="Administra la información y el estado de tu agencia dentro de LaRutica."
         />
 
-        {/* ESTADO VACÍO PRINCIPAL */}
         <section className="rounded-xl border border-[#DDE2DF] bg-white px-6 py-8 sm:px-10">
           <div className="mx-auto max-w-[680px] text-center">
             <div className="mx-auto flex size-12 items-center justify-center rounded-xl bg-[#EAF5ED] text-[#075E36]">
               <Building2
-                size={22}
-                strokeWidth={1.8}
+                size={
+                  22
+                }
+                strokeWidth={
+                  1.8
+                }
               />
             </div>
 
@@ -63,18 +77,27 @@ export default function MyAgencyPage() {
               <button
                 type="button"
                 onClick={() =>
-                  router.push("/dashboard/my-agency/new")
+                  router.push(
+                    "/dashboard/my-agency/new",
+                  )
                 }
-                className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-[#075E36] px-5 text-[12px] font-semibold text-white transition hover:bg-[#064D2D] focus:outline-none focus:ring-2 focus:ring-[#075E36]/20"
+                className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-[#075E36] px-5 text-[12px] font-semibold text-white transition hover:bg-[#064D2D]"
               >
-                <Plus size={15} />
+                <Plus
+                  size={
+                    15
+                  }
+                />
+
                 Registrar mi agencia
               </button>
             </div>
 
             <div className="mt-3 flex items-center justify-center gap-1.5 text-[10px] leading-4 text-[#7A837F]">
               <ShieldCheck
-                size={12}
+                size={
+                  12
+                }
                 className="shrink-0 text-[#6B8176]"
               />
 
@@ -84,32 +107,48 @@ export default function MyAgencyPage() {
             </div>
           </div>
 
-          {/* PASOS */}
           <div className="mx-auto mt-8 grid max-w-[860px] gap-3 border-t border-[#EDF0EE] pt-5 md:grid-cols-3">
             <ProcessStep
               number="1"
-              icon={<FileText size={15} />}
+              icon={
+                <FileText
+                  size={
+                    15
+                  }
+                />
+              }
               title="Completa tu perfil"
               text="Agrega información del negocio, medios de contacto e identidad visual."
             />
 
             <ProcessStep
               number="2"
-              icon={<ShieldCheck size={15} />}
+              icon={
+                <ShieldCheck
+                  size={
+                    15
+                  }
+                />
+              }
               title="Envía a revisión"
               text="Administración revisará la información y documentos enviados."
             />
 
             <ProcessStep
               number="3"
-              icon={<BadgeCheck size={15} />}
+              icon={
+                <BadgeCheck
+                  size={
+                    15
+                  }
+                />
+              }
               title="Activa tu agencia"
               text="Cuando sea aprobada podrás empezar a operar dentro de LaRutica."
             />
           </div>
         </section>
 
-        {/* ALERTA TÉCNICA */}
         {error && (
           <div className="mt-3 flex flex-col gap-2 rounded-lg border border-[#F1E5C9] bg-[#FFFCF5] px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
@@ -118,8 +157,7 @@ export default function MyAgencyPage() {
               </p>
 
               <p className="mt-0.5 text-[10px] leading-4 text-[#8C7743]">
-                Puedes continuar revisando la interfaz mientras se completa la
-                conexión con el servicio.
+                Intenta nuevamente dentro de unos momentos.
               </p>
             </div>
 
@@ -128,9 +166,14 @@ export default function MyAgencyPage() {
               onClick={() =>
                 window.location.reload()
               }
-              className="inline-flex h-8 shrink-0 items-center justify-center gap-1.5 rounded-md border border-[#D9C993] bg-white px-3 text-[10px] font-semibold text-[#765B17] transition hover:bg-[#FFF9EA]"
+              className="inline-flex h-8 shrink-0 items-center justify-center gap-1.5 rounded-md border border-[#D9C993] bg-white px-3 text-[10px] font-semibold text-[#765B17]"
             >
-              <RefreshCw size={12} />
+              <RefreshCw
+                size={
+                  12
+                }
+              />
+
               Reintentar
             </button>
           </div>
@@ -139,38 +182,99 @@ export default function MyAgencyPage() {
     );
   }
 
+  const canEdit =
+    agency.status ===
+      "DRAFT" ||
+    agency.status ===
+      "REJECTED" ||
+    agency.status ===
+      "APPROVED";
+
   return (
     <div className="mx-auto w-full max-w-[1180px]">
       <PageHeader
         title="Mi agencia"
         description="Consulta y administra la información de tu agencia."
         action={
-          <button
-            type="button"
-            onClick={() =>
-              router.push("/dashboard/my-agency/edit")
-            }
-            className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-[#0A6A42] bg-white px-4 text-[11px] font-semibold text-[#075E36] transition hover:bg-[#EFF8F3]"
-          >
-            <Pencil size={13} />
-            Editar agencia
-          </button>
+          canEdit ? (
+            <button
+              type="button"
+              onClick={() =>
+                router.push(
+                  "/dashboard/my-agency/edit",
+                )
+              }
+              className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-[#0A6A42] bg-white px-4 text-[11px] font-semibold text-[#075E36] transition hover:bg-[#EFF8F3]"
+            >
+              <Pencil
+                size={
+                  13
+                }
+              />
+
+              Editar agencia
+            </button>
+          ) : undefined
         }
       />
+
+      {agency.status ===
+        "PENDING" && (
+        <div className="mb-4 flex items-start gap-3 rounded-xl border border-[#F1D49A] bg-[#FFF9EC] px-4 py-3">
+          <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[#FFF1C8] text-[#886617]">
+            <ShieldCheck
+              size={
+                16
+              }
+            />
+          </div>
+
+          <div>
+            <p className="text-[11px] font-semibold text-[#765B17]">
+              Tu agencia está en revisión
+            </p>
+
+            <p className="mt-0.5 text-[10px] leading-4 text-[#8C7743]">
+              Administración está revisando la información y los documentos
+              enviados. Mientras el proceso esté activo no podrás modificar el
+              perfil.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {agency.status ===
+        "REJECTED" && (
+        <div className="mb-4 rounded-xl border border-[#F2CACA] bg-[#FFF4F4] px-4 py-3">
+          <p className="text-[11px] font-semibold text-[#963333]">
+            La agencia requiere correcciones
+          </p>
+
+          <p className="mt-0.5 text-[10px] leading-4 text-[#A75A5A]">
+            Edita la información necesaria y vuelve a enviarla para revisión.
+          </p>
+        </div>
+      )}
 
       <section className="overflow-hidden rounded-xl border border-[#DDE2DF] bg-white">
         <div className="relative h-[190px] bg-[#EEF4EF]">
           {agency.coverUrl ? (
             <img
-              src={agency.coverUrl}
+              src={
+                agency.coverUrl
+              }
               alt="Portada de la agencia"
               className="h-full w-full object-cover"
             />
           ) : (
             <div className="flex h-full items-center justify-center text-[#91A69A]">
               <Building2
-                size={34}
-                strokeWidth={1.5}
+                size={
+                  34
+                }
+                strokeWidth={
+                  1.5
+                }
               />
             </div>
           )}
@@ -182,43 +286,60 @@ export default function MyAgencyPage() {
               <div className="flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-xl border-4 border-white bg-[#EAF5ED] text-[#075E36] shadow-sm">
                 {agency.logoUrl ? (
                   <img
-                    src={agency.logoUrl}
+                    src={
+                      agency.logoUrl
+                    }
                     alt="Logo de la agencia"
                     className="h-full w-full object-cover"
                   />
                 ) : (
-                  <Building2 size={27} />
+                  <Building2
+                    size={
+                      27
+                    }
+                  />
                 )}
               </div>
 
               <div className="min-w-0 pb-1">
                 <div className="flex items-center gap-1.5">
                   <h2 className="!m-0 truncate !text-[18px] !font-semibold !leading-6 !tracking-normal text-[#123A30]">
-                    {agency.commercialName}
+                    {
+                      agency.commercialName
+                    }
                   </h2>
 
-                  {agency.status === "APPROVED" && (
+                  {agency.status ===
+                    "APPROVED" && (
                     <BadgeCheck
-                      size={16}
+                      size={
+                        16
+                      }
                       className="shrink-0 text-[#075E36]"
                     />
                   )}
                 </div>
 
                 <p className="mt-0.5 truncate text-[11px] text-[#66706B]">
-                  {agency.agencyName}
+                  {
+                    agency.agencyName
+                  }
                 </p>
               </div>
             </div>
 
             <AgencyStatusBadge
-              status={agency.status}
+              status={
+                agency.status
+              }
             />
           </div>
 
           {agency.description && (
             <p className="mt-5 max-w-3xl text-[11px] leading-5 text-[#66706B]">
-              {agency.description}
+              {
+                agency.description
+              }
             </p>
           )}
 
@@ -228,15 +349,31 @@ export default function MyAgencyPage() {
               items={[
                 agency.email
                   ? {
-                      icon: <Mail size={13} />,
-                      text: agency.email,
+                      icon: (
+                        <Mail
+                          size={
+                            13
+                          }
+                        />
+                      ),
+
+                      text:
+                        agency.email,
                     }
                   : null,
 
                 agency.phone
                   ? {
-                      icon: <Phone size={13} />,
-                      text: agency.phone,
+                      icon: (
+                        <Phone
+                          size={
+                            13
+                          }
+                        />
+                      ),
+
+                      text:
+                        agency.phone,
                     }
                   : null,
               ]}
@@ -246,20 +383,39 @@ export default function MyAgencyPage() {
               title="Ubicación"
               items={[
                 {
-                  icon: <MapPin size={13} />,
+                  icon: (
+                    <MapPin
+                      size={
+                        13
+                      }
+                    />
+                  ),
+
                   text: [
                     agency.city,
                     agency.province,
                     agency.country,
                   ]
-                    .filter(Boolean)
-                    .join(", "),
+                    .filter(
+                      Boolean,
+                    )
+                    .join(
+                      ", ",
+                    ),
                 },
 
                 agency.exactAddress
                   ? {
-                      icon: <MapPin size={13} />,
-                      text: agency.exactAddress,
+                      icon: (
+                        <MapPin
+                          size={
+                            13
+                          }
+                        />
+                      ),
+
+                      text:
+                        agency.exactAddress,
                     }
                   : null,
               ]}
@@ -272,12 +428,18 @@ export default function MyAgencyPage() {
 
               <div className="mt-3 flex items-center gap-2">
                 <div className="flex size-7 items-center justify-center rounded-full bg-[#EAF5ED] text-[#075E36]">
-                  <ShieldCheck size={14} />
+                  <ShieldCheck
+                    size={
+                      14
+                    }
+                  />
                 </div>
 
                 <div>
                   <p className="text-[10px] font-semibold text-[#252B28]">
-                    {getStatusTitle(agency.status)}
+                    {getStatusTitle(
+                      agency.status,
+                    )}
                   </p>
 
                   <p className="mt-0.5 text-[9px] text-[#66706B]">
@@ -297,14 +459,21 @@ export default function MyAgencyPage() {
               </p>
 
               <div className="mt-2 flex flex-wrap gap-1.5">
-                {agency.categories.length > 0 ? (
+                {agency.categories.length >
+                0 ? (
                   agency.categories.map(
-                    (category) => (
+                    (
+                      category,
+                    ) => (
                       <span
-                        key={category.id}
+                        key={
+                          category.id
+                        }
                         className="rounded-md border border-[#D7E7D9] bg-[#EFF8F3] px-2 py-1 text-[9px] font-medium text-[#075E36]"
                       >
-                        {category.name}
+                        {
+                          category.name
+                        }
                       </span>
                     ),
                   )
@@ -320,14 +489,21 @@ export default function MyAgencyPage() {
               </p>
 
               <div className="mt-2 flex flex-wrap gap-1.5">
-                {agency.languages.length > 0 ? (
+                {agency.languages.length >
+                0 ? (
                   agency.languages.map(
-                    (language) => (
+                    (
+                      language,
+                    ) => (
                       <span
-                        key={language.id}
+                        key={
+                          language.id
+                        }
                         className="rounded-md border border-[#E0E4E1] bg-white px-2 py-1 text-[9px] font-medium text-[#52615B]"
                       >
-                        {language.name}
+                        {
+                          language.name
+                        }
                       </span>
                     ),
                   )
@@ -363,32 +539,8 @@ function AgencyLoadingState() {
           <div className="mx-auto mt-3 h-3 w-full max-w-[520px] animate-pulse rounded bg-[#EEF1EF]" />
 
           <div className="mx-auto mt-2 h-3 w-4/5 max-w-[420px] animate-pulse rounded bg-[#EEF1EF]" />
-
-          <div className="mx-auto mt-5 h-10 w-44 animate-pulse rounded-lg bg-[#DCE9E1]" />
-        </div>
-
-        <div className="mx-auto mt-8 grid max-w-[860px] gap-3 border-t border-[#EDF0EE] pt-5 md:grid-cols-3">
-          <LoadingStep />
-          <LoadingStep />
-          <LoadingStep />
         </div>
       </section>
-    </div>
-  );
-}
-
-function LoadingStep() {
-  return (
-    <div className="flex items-start gap-3 rounded-lg border border-[#EDF0EE] p-3">
-      <div className="size-8 shrink-0 animate-pulse rounded-lg bg-[#EAF5ED]" />
-
-      <div className="flex-1">
-        <div className="h-3 w-24 animate-pulse rounded bg-[#E4E9E6]" />
-
-        <div className="mt-2 h-2.5 w-full animate-pulse rounded bg-[#EEF1EF]" />
-
-        <div className="mt-1.5 h-2.5 w-4/5 animate-pulse rounded bg-[#EEF1EF]" />
-      </div>
     </div>
   );
 }
@@ -400,7 +552,9 @@ function PageHeader({
 }: {
   title: string;
   description: string;
-  action?: React.ReactNode;
+
+  action?:
+    React.ReactNode;
 }) {
   return (
     <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
@@ -430,8 +584,12 @@ function ProcessStep({
   text,
 }: {
   number: string;
-  icon: React.ReactNode;
+
+  icon:
+    React.ReactNode;
+
   title: string;
+
   text: string;
 }) {
   return (
@@ -460,7 +618,9 @@ function ProcessStep({
 }
 
 interface InfoItem {
-  icon: React.ReactNode;
+  icon:
+    React.ReactNode;
+
   text: string;
 }
 
@@ -469,12 +629,22 @@ function InfoCard({
   items,
 }: {
   title: string;
-  items: Array<InfoItem | null>;
+
+  items: Array<
+    InfoItem | null
+  >;
 }) {
-  const validItems = items.filter(
-    (item): item is InfoItem =>
-      item !== null && Boolean(item.text),
-  );
+  const validItems =
+    items.filter(
+      (
+        item,
+      ): item is InfoItem =>
+        item !==
+          null &&
+        Boolean(
+          item.text,
+        ),
+    );
 
   return (
     <div className="rounded-lg border border-[#E3E7E5] bg-[#FBFCFB] p-3.5">
@@ -483,21 +653,31 @@ function InfoCard({
       </p>
 
       <div className="mt-2.5 space-y-2">
-        {validItems.length > 0 ? (
-          validItems.map((item, index) => (
-            <div
-              key={`${item.text}-${index}`}
-              className="flex items-start gap-2 text-[10px] leading-4 text-[#66706B]"
-            >
-              <span className="mt-0.5 shrink-0 text-[#075E36]">
-                {item.icon}
-              </span>
+        {validItems.length >
+        0 ? (
+          validItems.map(
+            (
+              item,
+              index,
+            ) => (
+              <div
+                key={`${item.text}-${index}`}
+                className="flex items-start gap-2 text-[10px] leading-4 text-[#66706B]"
+              >
+                <span className="mt-0.5 shrink-0 text-[#075E36]">
+                  {
+                    item.icon
+                  }
+                </span>
 
-              <span className="break-words">
-                {item.text}
-              </span>
-            </div>
-          ))
+                <span className="break-words">
+                  {
+                    item.text
+                  }
+                </span>
+              </div>
+            ),
+          )
         ) : (
           <EmptyInlineText />
         )}
@@ -519,7 +699,10 @@ function AgencyStatusBadge({
 }: {
   status: string;
 }) {
-  const styles: Record<string, string> = {
+  const styles: Record<
+    string,
+    string
+  > = {
     DRAFT:
       "border-[#DDE2DF] bg-[#F5F6F5] text-[#59615D]",
 
@@ -536,23 +719,43 @@ function AgencyStatusBadge({
       "border-[#DDE2DF] bg-[#F1F2F1] text-[#727A76]",
   };
 
-  const labels: Record<string, string> = {
-    DRAFT: "Borrador",
-    PENDING: "En revisión",
-    APPROVED: "Verificada",
-    REJECTED: "Rechazada",
-    INACTIVE: "Inactiva",
+  const labels: Record<
+    string,
+    string
+  > = {
+    DRAFT:
+      "Borrador",
+
+    PENDING:
+      "En revisión",
+
+    APPROVED:
+      "Verificada",
+
+    REJECTED:
+      "Rechazada",
+
+    INACTIVE:
+      "Inactiva",
   };
 
   return (
     <span
       className={[
         "inline-flex h-7 items-center rounded-full border px-2.5 text-[9px] font-semibold",
-        styles[status] ??
+
+        styles[
+          status
+        ] ??
           "border-[#DDE2DF] bg-[#F5F6F5] text-[#59615D]",
-      ].join(" ")}
+      ].join(
+        " ",
+      )}
     >
-      {labels[status] ?? status}
+      {labels[
+        status
+      ] ??
+        status}
     </span>
   );
 }
@@ -560,7 +763,9 @@ function AgencyStatusBadge({
 function getStatusTitle(
   status: string,
 ) {
-  switch (status) {
+  switch (
+    status
+  ) {
     case "APPROVED":
       return "Agencia verificada";
 
@@ -581,7 +786,9 @@ function getStatusTitle(
 function getStatusDescription(
   status: string,
 ) {
-  switch (status) {
+  switch (
+    status
+  ) {
     case "APPROVED":
       return "Tu perfil está activo.";
 

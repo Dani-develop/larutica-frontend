@@ -6,7 +6,10 @@ import {
 } from "next/navigation";
 
 import {
+  AlertTriangle,
   ArrowLeft,
+  Ban,
+  Clock3,
 } from "lucide-react";
 
 import AgencyForm from "@/modules/agency/components/agency-form";
@@ -73,6 +76,52 @@ export default function EditAgencyPage() {
     );
   }
 
+  if (
+    agency.status ===
+    "PENDING"
+  ) {
+    return (
+      <BlockedEditState
+        icon={
+          <Clock3
+            size={22}
+          />
+        }
+        title="Tu agencia está en revisión"
+        description="Mientras administración revisa la información enviada, no puedes modificar el perfil. Cuando finalice la revisión podrás continuar según el resultado."
+        buttonText="Volver a Mi agencia"
+        onBack={() =>
+          router.push(
+            "/dashboard/my-agency",
+          )
+        }
+      />
+    );
+  }
+
+  if (
+    agency.status ===
+    "INACTIVE"
+  ) {
+    return (
+      <BlockedEditState
+        icon={
+          <Ban
+            size={22}
+          />
+        }
+        title="La agencia está inactiva"
+        description="Una agencia inactiva no puede modificarse desde este formulario."
+        buttonText="Volver a Mi agencia"
+        onBack={() =>
+          router.push(
+            "/dashboard/my-agency",
+          )
+        }
+      />
+    );
+  }
+
   return (
     <div className="mx-auto w-full max-w-[1180px]">
       <button
@@ -85,9 +134,7 @@ export default function EditAgencyPage() {
         className="mb-3 inline-flex items-center gap-1.5 text-[11px] font-medium text-[#52615B] transition hover:text-[#075E36]"
       >
         <ArrowLeft
-          size={
-            14
-          }
+          size={14}
         />
 
         Volver a Mi agencia
@@ -99,9 +146,53 @@ export default function EditAgencyPage() {
         </h1>
 
         <p className="mt-1 text-[12px] leading-5 text-[#66706B]">
-          Actualiza la información de tu negocio y guarda los cambios.
+          Actualiza la información de tu negocio.
         </p>
       </div>
+
+      {agency.status ===
+        "APPROVED" && (
+        <div className="mb-4 flex items-start gap-3 rounded-xl border border-[#F1D49A] bg-[#FFF9EC] px-4 py-3">
+          <span className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full bg-[#FFF1C8] text-[#886617]">
+            <AlertTriangle
+              size={16}
+            />
+          </span>
+
+          <div>
+            <p className="text-[11px] font-semibold text-[#765B17]">
+              Estás modificando una agencia verificada
+            </p>
+
+            <p className="mt-0.5 text-[10px] leading-4 text-[#8C7743]">
+              Al guardar cambios, la agencia volverá a estado borrador y
+              tendrás que enviarla nuevamente para revisión.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {agency.status ===
+        "REJECTED" && (
+        <div className="mb-4 flex items-start gap-3 rounded-xl border border-[#F2CACA] bg-[#FFF4F4] px-4 py-3">
+          <span className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full bg-[#FFE6E6] text-[#A63737]">
+            <AlertTriangle
+              size={16}
+            />
+          </span>
+
+          <div>
+            <p className="text-[11px] font-semibold text-[#963333]">
+              Tu agencia requiere correcciones
+            </p>
+
+            <p className="mt-0.5 text-[10px] leading-4 text-[#A75A5A]">
+              Revisa y corrige la información necesaria. Luego podrás
+              reenviarla para una nueva revisión.
+            </p>
+          </div>
+        </div>
+      )}
 
       <AgencyForm
         mode="edit"
@@ -114,6 +205,53 @@ export default function EditAgencyPage() {
           )
         }
       />
+    </div>
+  );
+}
+
+function BlockedEditState({
+  icon,
+  title,
+  description,
+  buttonText,
+  onBack,
+}: {
+  icon:
+    React.ReactNode;
+
+  title: string;
+
+  description: string;
+
+  buttonText: string;
+
+  onBack: () => void;
+}) {
+  return (
+    <div className="mx-auto w-full max-w-[760px]">
+      <div className="rounded-xl border border-[#DDE2DF] bg-white px-6 py-10 text-center">
+        <div className="mx-auto flex size-12 items-center justify-center rounded-xl bg-[#EAF5ED] text-[#075E36]">
+          {icon}
+        </div>
+
+        <h1 className="!m-0 !mt-4 !text-[21px] !font-semibold !leading-7 !tracking-[-0.015em] text-[#123A30]">
+          {title}
+        </h1>
+
+        <p className="mx-auto mt-2 max-w-[540px] text-[11px] leading-5 text-[#66706B]">
+          {description}
+        </p>
+
+        <button
+          type="button"
+          onClick={
+            onBack
+          }
+          className="mt-5 inline-flex h-9 items-center justify-center rounded-lg bg-[#075E36] px-5 text-[11px] font-semibold text-white transition hover:bg-[#064D2D]"
+        >
+          {buttonText}
+        </button>
+      </div>
     </div>
   );
 }
