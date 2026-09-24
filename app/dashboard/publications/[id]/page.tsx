@@ -6,7 +6,7 @@ import {
   TravelerDetailsPage,
   TravelerPurchasePage,
 } from "@/components/dashboard/TravelerViews";
-import { PublicationDetail } from "@/modules/agency/publications/components/PublicationDetail";
+import { PublicationDetail } from "@/modules/publications/components/PublicationDetail";
 import { RouteDetail } from "@/modules/transport/routes/components/RouteDetail";
 
 export default function Page() {

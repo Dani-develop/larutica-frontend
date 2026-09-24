@@ -2,7 +2,7 @@
 
 import { useParams } from "next/navigation";
 import { useDashboardRole } from "@/components/dashboard/dashboard-role-context";
-import { EditPublicationPage } from "@/modules/agency/publications/components/EditPublicationPage";
+import { EditPublicationPage } from "@/modules/publications/components/EditPublicationPage";
 import { EditRoutePage } from "@/modules/transport/routes/components/EditRoutePage";
 
 export default function Page() {

@@ -1,0 +1,108 @@
+"use client";
+
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+
+import { ArrowLeft } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+
+import { PublicationForm } from "./PublicationForm";
+
+import { usePublications } from "../hooks/usePublications";
+
+import {
+  emptyPublicationInput,
+  type CreatePublicationInput,
+} from "../types/publication.types";
+
+export function CreatePublicationPage() {
+  const router =
+    useRouter();
+
+  const {
+    create,
+  } =
+    usePublications();
+
+  async function handleSubmit(
+    value: CreatePublicationInput,
+  ) {
+    const created =
+      await create(
+        value,
+      );
+
+    /*
+     * Después de crear correctamente
+     * la publicación, enviamos al usuario
+     * al detalle de la publicación.
+     */
+    router.push(
+      `/dashboard/publications/${created.id}`,
+    );
+  }
+
+  return (
+    <div className="mx-auto w-full max-w-5xl">
+      {/* Navegación */}
+      <div className="mb-5">
+        <Button
+          variant="ghost"
+          size="sm"
+          asChild
+          className="-ml-2 h-8 gap-1.5 px-2 text-xs text-muted-foreground"
+        >
+          <Link href="/dashboard/publications">
+            <ArrowLeft
+              size={15}
+            />
+
+            Volver a publicaciones
+          </Link>
+        </Button>
+      </div>
+
+      {/* Encabezado */}
+      <div className="mb-6">
+        <p className="mb-1 text-xs font-medium text-[#0d684e]">
+          Dashboard / Publicaciones / Nueva
+        </p>
+
+        <h1 className="!m-0 !text-[26px] !font-semibold !leading-tight !tracking-tight text-[#123a30]">
+          Nueva publicación
+        </h1>
+
+        <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
+          Completa la información del servicio que deseas ofrecer en LaRutica.
+          Puedes guardar el formulario como borrador y terminarlo más adelante.
+        </p>
+      </div>
+
+      {/* Aviso */}
+      <div className="mb-5 rounded-xl border border-[#cfe3dc] bg-[#f3faf7] px-4 py-3">
+        <p className="text-xs leading-5 text-[#315c50]">
+          Las publicaciones enviadas a revisión serán evaluadas antes de estar
+          disponibles para los viajeros.
+        </p>
+      </div>
+
+      {/* Formulario */}
+      <PublicationForm
+        initialValue={
+          emptyPublicationInput
+        }
+        draftLabel="Guardar borrador"
+        submitLabel="Enviar a revisión"
+        onCancel={() =>
+          router.push(
+            "/dashboard/publications",
+          )
+        }
+        onSubmit={
+          handleSubmit
+        }
+      />
+    </div>
+  );
+}
