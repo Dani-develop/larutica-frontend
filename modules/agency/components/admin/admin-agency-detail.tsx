@@ -1,41 +1,159 @@
 "use client";
 
+import Link from "next/link";
 import {
-  ArrowLeft,
   BadgeCheck,
   Building2,
   Check,
   ExternalLink,
   FileText,
   Globe2,
+  Home,
   Mail,
   MapPin,
   Phone,
-  RefreshCw,
   ShieldCheck,
   X,
 } from "lucide-react";
-
 import {
-  useRouter,
-} from "next/navigation";
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils";
+import { useAdminAgency } from "../../hooks/admin/useAdminAgency";
+import type { Agency, AgencyStatus, BusinessType } from "../../types/agency.types";
 
-import {
-  useAdminAgency,
-} from "../../hooks/admin/useAdminAgency";
+const statusBadgeClass: Record<AgencyStatus, string> = {
+  DRAFT: "bg-slate-100 text-slate-700 border-slate-200",
+  PENDING: "bg-amber-100 text-amber-800 border-amber-200",
+  APPROVED: "bg-emerald-100 text-emerald-700 border-emerald-200",
+  REJECTED: "bg-red-100 text-red-700 border-red-200",
+  INACTIVE: "bg-slate-100 text-slate-600 border-slate-200",
+};
 
-import type {
-  Agency,
-  AgencyStatus,
-} from "../../types/agency.types";
+const statusLabel: Record<AgencyStatus, string> = {
+  DRAFT: "Borrador",
+  PENDING: "En revisión",
+  APPROVED: "Aprobada",
+  REJECTED: "Rechazada",
+  INACTIVE: "Inactiva",
+};
 
-interface AdminAgencyDetailProps {
-  agencyId: string;
+function StatusBadge({ status }: { status: AgencyStatus }) {
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center rounded-full border px-2.5 py-1 !text-xs !font-medium",
+        statusBadgeClass[status],
+      )}
+    >
+      {statusLabel[status]}
+    </span>
+  );
+}
+
+function businessTypeLabel(value: BusinessType) {
+  switch (value) {
+    case "AGENCY":
+      return "Agencia";
+    case "TOUR_OPERATOR":
+      return "Operador turístico";
+    case "TRANSPORT":
+      return "Transporte";
+    case "INDEPENDENT_GUIDE":
+      return "Guía independiente";
+    default:
+      return value;
+  }
+}
+
+function formatDate(value: string) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "—";
+  return new Intl.DateTimeFormat("es-CR", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+  }).format(date);
+}
+
+function InfoRow({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: typeof Mail;
+  label: string;
+  value: string | null | undefined;
+}) {
+  return (
+    <div className="flex items-start gap-3 py-3">
+      <span className="bg-muted text-muted-foreground mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full">
+        <Icon className="size-3.5" aria-hidden="true" />
+      </span>
+      <div className="min-w-0">
+        <p className="text-muted-foreground !text-xs !font-medium tracking-wide uppercase">
+          {label}
+        </p>
+        <p className="mt-0.5 break-words !text-sm !font-medium">
+          {value?.trim() ? value : "—"}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function TagList({ title, values }: { title: string; values: string[] }) {
+  return (
+    <div>
+      <p className="!m-0 !text-sm !font-semibold">{title}</p>
+      <div className="mt-2.5 flex flex-wrap gap-1.5">
+        {values.length > 0 ? (
+          values.map((value) => (
+            <span
+              key={value}
+              className="bg-muted text-foreground inline-flex rounded-full px-2.5 py-1 !text-xs !font-medium"
+            >
+              {value}
+            </span>
+          ))
+        ) : (
+          <span className="text-muted-foreground !text-xs">Sin información</span>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function LoadingState() {
+  return (
+    <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
+      <Skeleton className="h-4 w-48" />
+      <div className="space-y-2">
+        <Skeleton className="h-8 w-64" />
+        <Skeleton className="h-4 w-80 max-w-full" />
+      </div>
+      <Skeleton className="h-44 w-full rounded-xl" />
+      <div className="grid gap-4 md:grid-cols-2">
+        <Skeleton className="h-48 rounded-xl" />
+        <Skeleton className="h-48 rounded-xl" />
+      </div>
+    </div>
+  );
 }
 
 export default function AdminAgencyDetail({
   agencyId,
-}: AdminAgencyDetailProps) {
+}: {
+  agencyId: string;
+}) {
   const {
     agency,
     loading,
@@ -46,708 +164,334 @@ export default function AdminAgencyDetail({
     approve,
     reject,
     openDocument,
-  } = useAdminAgency(
-    agencyId,
-  );
+  } = useAdminAgency(agencyId);
 
-  if (loading) {
-    return <LoadingState />;
-  }
+  if (loading) return <LoadingState />;
 
   if (!agency) {
     return (
-      <div className="mx-auto w-full max-w-[1180px]">
-        <BackButton />
+      <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
+        <Breadcrumb>
+          <BreadcrumbList className="!text-sm">
+            <BreadcrumbItem>
+              <BreadcrumbLink
+                href="/dashboard"
+                className="flex items-center gap-1.5 !text-sm"
+              >
+                <Home className="size-3.5" />
+                Inicio
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbLink href="/dashboard/agencies" className="!text-sm">
+                Agencias
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbPage className="!text-sm">Detalle</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
 
-        <div className="rounded-xl border border-[#DDE2DF] bg-white px-6 py-10 text-center">
-          <Building2
-            size={24}
-            className="mx-auto text-[#87908C]"
-          />
-
-          <p className="mt-3 text-[12px] font-semibold text-[#252B28]">
-            No se pudo cargar la agencia
-          </p>
-
-          {error && (
-            <p className="mt-2 text-[10px] text-red-600">
-              {error}
-            </p>
-          )}
-
-          <button
+        <div className="flex flex-col items-center gap-3 py-16 text-center">
+          <div className="bg-muted flex size-14 items-center justify-center rounded-full">
+            <Building2 className="text-muted-foreground/40 size-7" />
+          </div>
+          <p className="!text-sm !font-medium">No se pudo cargar la agencia</p>
+          {error ? (
+            <p className="text-destructive !text-xs">{error}</p>
+          ) : null}
+          <Button
             type="button"
-            onClick={() =>
-              void loadAgency()
-            }
-            className="mt-4 inline-flex h-8 items-center gap-1.5 rounded-lg border border-[#D7E1DC] px-3 text-[10px] font-semibold text-[#075E36]"
+            variant="outline"
+            className="!text-sm"
+            onClick={() => void loadAgency()}
           >
-            <RefreshCw
-              size={12}
-            />
-            Reintentar
-          </button>
+            Intentar de nuevo
+          </Button>
         </div>
       </div>
     );
   }
 
-  const canReview =
-    agency.status ===
-    "PENDING";
+  const canReview = agency.status === "PENDING";
+  const location = [agency.city, agency.province, agency.country]
+    .filter(Boolean)
+    .join(", ");
 
   return (
-    <div className="mx-auto w-full max-w-[1180px]">
-      <BackButton />
+    <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
+      <Breadcrumb>
+        <BreadcrumbList className="!text-sm">
+          <BreadcrumbItem>
+            <BreadcrumbLink
+              href="/dashboard"
+              className="flex items-center gap-1.5 !text-sm"
+            >
+              <Home className="size-3.5" />
+              Inicio
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbLink href="/dashboard/agencies" className="!text-sm">
+              Agencias
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage className="!text-sm">
+              {agency.commercialName}
+            </BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
 
-      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <p className="mb-1 text-[10px] font-medium text-[#075E36]">
-            Dashboard / Agencias / Detalle
-          </p>
-
-          <h1 className="!m-0 !text-[28px] !font-bold !leading-9 !tracking-[-0.025em] text-[#123A30]">
-            Revisión de agencia
+      <div className="flex flex-row items-start justify-between gap-4">
+        <div className="min-w-0">
+          <h1 className="!m-0 !max-w-none !text-2xl !leading-8 !font-semibold !tracking-tight">
+            Detalle de agencia
           </h1>
-
-          <p className="mt-1 text-[11px] leading-5 text-[#66706B]">
-            Revisa la información y el documento enviado antes de tomar una decisión.
+          <p className="text-muted-foreground mt-0.5 !text-sm !leading-5">
+            Revisa la información y el documento de verificación.
           </p>
         </div>
-
-        <StatusBadge
-          status={
-            agency.status
-          }
-        />
       </div>
 
-      {error && (
-        <div className="mb-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-[10px] text-red-700">
+      {error ? (
+        <p
+          className="border-destructive/20 bg-destructive/5 text-destructive rounded-lg border px-3 py-2 !text-sm"
+          role="alert"
+        >
           {error}
-        </div>
-      )}
+        </p>
+      ) : null}
 
-      <section className="overflow-hidden rounded-xl border border-[#DDE2DF] bg-white">
-        <div className="relative h-[190px] bg-[#EEF4EF]">
+      <section className="bg-card overflow-hidden rounded-xl">
+        <div className="bg-muted relative aspect-[21/9] max-h-56 w-full overflow-hidden sm:aspect-[3/1]">
           {agency.coverUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
             <img
-              src={
-                agency.coverUrl
-              }
-              alt="Portada de la agencia"
-              className="h-full w-full object-cover"
+              src={agency.coverUrl}
+              alt=""
+              className="size-full object-cover"
             />
           ) : (
-            <div className="flex h-full items-center justify-center text-[#91A69A]">
-              <Building2
-                size={34}
-              />
+            <div className="text-muted-foreground/25 flex size-full items-center justify-center">
+              <Building2 className="size-10" />
             </div>
           )}
         </div>
 
-        <div className="px-5 pb-5 sm:px-6">
-          <div className="-mt-8 flex items-end gap-3">
-            <div className="flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-xl border-4 border-white bg-[#EAF5ED] text-[#075E36] shadow-sm">
-              {agency.logoUrl ? (
-                <img
-                  src={
-                    agency.logoUrl
-                  }
-                  alt="Logo de la agencia"
-                  className="h-full w-full object-cover"
-                />
-              ) : (
-                <Building2
-                  size={27}
-                />
-              )}
-            </div>
-
-            <div className="min-w-0 pb-1">
-              <div className="flex items-center gap-1.5">
-                <h2 className="!m-0 truncate !text-[18px] !font-semibold !leading-6 text-[#123A30]">
-                  {
-                    agency.commercialName
-                  }
-                </h2>
-
-                {agency.status ===
-                  "APPROVED" && (
-                  <BadgeCheck
-                    size={16}
-                    className="text-[#075E36]"
-                  />
-                )}
-              </div>
-
-              <p className="text-[10px] text-[#66706B]">
-                {
-                  agency.agencyName
-                }
-              </p>
-            </div>
+        <div className="flex flex-col gap-4 p-5 sm:flex-row sm:items-start sm:gap-5 sm:p-6">
+          <div className="bg-muted ring-background flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl ring-1 sm:size-20">
+            {agency.logoUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={agency.logoUrl}
+                alt=""
+                className="size-full object-cover"
+              />
+            ) : (
+              <Building2 className="text-muted-foreground size-7" />
+            )}
           </div>
 
-          {agency.description && (
-            <p className="mt-5 max-w-4xl text-[11px] leading-5 text-[#66706B]">
-              {
-                agency.description
-              }
-            </p>
-          )}
-
-          <div className="mt-5 grid gap-3 md:grid-cols-2 lg:grid-cols-3">
-            <InfoCard
-              title="Contacto"
-            >
-              <InfoRow
-                icon={
-                  <Mail size={13} />
-                }
-                value={
-                  agency.email
-                }
-              />
-
-              <InfoRow
-                icon={
-                  <Phone size={13} />
-                }
-                value={
-                  agency.phone
-                }
-              />
-
-              <InfoRow
-                icon={
-                  <Globe2 size={13} />
-                }
-                value={
-                  agency.website
-                }
-              />
-            </InfoCard>
-
-            <InfoCard
-              title="Ubicación"
-            >
-              <InfoRow
-                icon={
-                  <MapPin size={13} />
-                }
-                value={[
-                  agency.city,
-                  agency.province,
-                  agency.country,
-                ]
-                  .filter(
-                    Boolean,
-                  )
-                  .join(
-                    ", ",
-                  )}
-              />
-
-              <InfoRow
-                icon={
-                  <MapPin size={13} />
-                }
-                value={
-                  agency.exactAddress
-                }
-              />
-            </InfoCard>
-
-            <InfoCard
-              title="Información"
-            >
-              <InfoRow
-                icon={
-                  <Building2 size={13} />
-                }
-                value={businessTypeLabel(
-                  agency,
-                )}
-              />
-
-              <InfoRow
-                icon={
-                  <ShieldCheck size={13} />
-                }
-                value={
-                  agency.acceptedTerms
-                    ? "Términos aceptados"
-                    : "Términos no aceptados"
-                }
-              />
-
-              <InfoRow
-                icon={
-                  <FileText size={13} />
-                }
-                value={`Registrada: ${formatDate(
-                  agency.createdAt,
-                )}`}
-              />
-            </InfoCard>
-          </div>
-
-          <div className="mt-5 grid gap-3 md:grid-cols-2">
-            <TagSection
-              title="Categorías"
-              values={agency.categories.map(
-                (
-                  item,
-                ) =>
-                  item.name,
-              )}
-            />
-
-            <TagSection
-              title="Idiomas"
-              values={agency.languages.map(
-                (
-                  item,
-                ) =>
-                  item.name,
-              )}
-            />
-          </div>
-
-          <div className="mt-5 rounded-lg border border-[#E3E7E5] bg-[#FBFCFB] p-4">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <div className="flex items-center gap-2">
-                  <FileText
-                    size={15}
-                    className="text-[#075E36]"
-                  />
-
-                  <p className="text-[11px] font-semibold text-[#252B28]">
-                    Documento de verificación
+          <div className="min-w-0 flex-1 space-y-3">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-2">
+                  <p className="!m-0 !text-lg !leading-7 !font-semibold !tracking-tight">
+                    {agency.commercialName}
                   </p>
+                  {agency.status === "APPROVED" ? (
+                    <BadgeCheck
+                      className="text-primary size-5 shrink-0"
+                      aria-label="Agencia verificada"
+                    />
+                  ) : null}
                 </div>
-
-                <p className="mt-1 text-[9px] leading-4 text-[#7A837F]">
-                  El documento está almacenado de forma privada y el acceso generado es temporal.
+                <p className="text-muted-foreground mt-0.5 !text-sm">
+                  {agency.agencyName}
                 </p>
               </div>
-
-              <button
-                type="button"
-                disabled={
-                  openingDocument ||
-                  !agency.verificationDocumentUrl
-                }
-                onClick={() =>
-                  void openDocument()
-                }
-                className="inline-flex h-8 shrink-0 items-center justify-center gap-1.5 rounded-lg border border-[#0A6A42] bg-white px-3 text-[10px] font-semibold text-[#075E36] transition hover:bg-[#EFF8F3] disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                <ExternalLink
-                  size={12}
-                />
-
-                {openingDocument
-                  ? "Abriendo..."
-                  : "Ver documento"}
-              </button>
+              <StatusBadge status={agency.status} />
             </div>
+
+            <div className="text-muted-foreground flex flex-wrap items-center gap-x-2 gap-y-1 !text-sm">
+              <span>{businessTypeLabel(agency.businessType)}</span>
+              {location ? (
+                <>
+                  <span aria-hidden="true">·</span>
+                  <span className="inline-flex items-center gap-1">
+                    <MapPin className="size-3.5 shrink-0" />
+                    {location}
+                  </span>
+                </>
+              ) : null}
+            </div>
+
+            {agency.description ? (
+              <p className="text-muted-foreground max-w-3xl !text-sm !leading-6">
+                {agency.description}
+              </p>
+            ) : null}
+
+            {agency.status === "APPROVED" ? (
+              <p className="text-primary !text-xs !font-medium">
+                Agencia aprobada · puede operar dentro de LaRutica
+              </p>
+            ) : null}
+
+            {agency.status === "REJECTED" ? (
+              <p className="text-destructive !text-xs !font-medium">
+                Agencia rechazada · el propietario puede corregirla y reenviar
+              </p>
+            ) : null}
           </div>
         </div>
       </section>
 
-      {canReview && (
-        <section className="mt-4 rounded-xl border border-[#DDE2DF] bg-white p-4">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <div>
-              <p className="text-[12px] font-semibold text-[#252B28]">
-                Decisión de revisión
-              </p>
-
-              <p className="mt-1 text-[10px] leading-4 text-[#66706B]">
-                Aprueba la agencia si la información y documentación son correctas, o recházala para que pueda corregirse y reenviarse.
-              </p>
-            </div>
-
-            <div className="flex gap-2">
-              <button
-                type="button"
-                disabled={
-                  reviewing
-                }
-                onClick={() => {
-                  const confirmed =
-                    window.confirm(
-                      `¿Deseas rechazar la agencia "${agency.commercialName}"?`,
-                    );
-
-                  if (
-                    confirmed
-                  ) {
-                    void reject();
-                  }
-                }}
-                className="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-[#E7BDBD] bg-white px-4 text-[10px] font-semibold text-[#A63737] transition hover:bg-[#FFF2F2] disabled:opacity-50"
-              >
-                <X
-                  size={13}
-                />
-                Rechazar
-              </button>
-
-              <button
-                type="button"
-                disabled={
-                  reviewing
-                }
-                onClick={() => {
-                  const confirmed =
-                    window.confirm(
-                      `¿Deseas aprobar la agencia "${agency.commercialName}"?`,
-                    );
-
-                  if (
-                    confirmed
-                  ) {
-                    void approve();
-                  }
-                }}
-                className="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg bg-[#075E36] px-4 text-[10px] font-semibold text-white transition hover:bg-[#064D2D] disabled:opacity-50"
-              >
-                <Check
-                  size={13}
-                />
-
-                {reviewing
-                  ? "Procesando..."
-                  : "Aprobar"}
-              </button>
-            </div>
+      <div className="grid gap-6 lg:grid-cols-2">
+        <section className="bg-card rounded-xl p-5">
+          <h2 className="!m-0 !max-w-none !text-base !leading-6 !font-semibold !tracking-normal">
+            Contacto y ubicación
+          </h2>
+          <div className="mt-2 divide-y">
+            <InfoRow icon={Mail} label="Correo" value={agency.email} />
+            <InfoRow icon={Phone} label="Teléfono" value={agency.phone} />
+            <InfoRow icon={Globe2} label="Sitio web" value={agency.website} />
+            <InfoRow icon={MapPin} label="Ubicación" value={location} />
+            <InfoRow
+              icon={MapPin}
+              label="Dirección exacta"
+              value={agency.exactAddress}
+            />
           </div>
         </section>
-      )}
 
-      {agency.status ===
-        "APPROVED" && (
-        <ResultMessage
-          type="approved"
-          text="Esta agencia ya fue aprobada y puede operar dentro de LaRutica."
-        />
-      )}
-
-      {agency.status ===
-        "REJECTED" && (
-        <ResultMessage
-          type="rejected"
-          text="Esta agencia fue rechazada. El propietario puede corregirla y enviarla nuevamente a revisión."
-        />
-      )}
-    </div>
-  );
-}
-
-function BackButton() {
-  const router =
-    useRouter();
-
-  return (
-    <button
-      type="button"
-      onClick={() =>
-        router.push(
-          "/dashboard/agencies",
-        )
-      }
-      className="mb-3 inline-flex items-center gap-1.5 text-[10px] font-semibold text-[#075E36] hover:underline"
-    >
-      <ArrowLeft
-        size={13}
-      />
-      Volver a agencias
-    </button>
-  );
-}
-
-function InfoCard({
-  title,
-  children,
-}: {
-  title: string;
-  children:
-    React.ReactNode;
-}) {
-  return (
-    <div className="rounded-lg border border-[#E3E7E5] bg-[#FBFCFB] p-3.5">
-      <p className="text-[11px] font-semibold text-[#252B28]">
-        {title}
-      </p>
-
-      <div className="mt-2.5 space-y-2">
-        {children}
-      </div>
-    </div>
-  );
-}
-
-function InfoRow({
-  icon,
-  value,
-}: {
-  icon:
-    React.ReactNode;
-
-  value:
-    string | null;
-}) {
-  return (
-    <div className="flex items-start gap-2 text-[10px] leading-4 text-[#66706B]">
-      <span className="mt-0.5 shrink-0 text-[#075E36]">
-        {icon}
-      </span>
-
-      <span>
-        {value ||
-          "Sin información"}
-      </span>
-    </div>
-  );
-}
-
-function TagSection({
-  title,
-  values,
-}: {
-  title: string;
-  values: string[];
-}) {
-  return (
-    <div className="rounded-lg border border-[#E3E7E5] bg-[#FBFCFB] p-3.5">
-      <p className="text-[11px] font-semibold text-[#252B28]">
-        {title}
-      </p>
-
-      <div className="mt-2.5 flex flex-wrap gap-1.5">
-        {values.length >
-        0 ? (
-          values.map(
-            (
-              value,
-            ) => (
-              <span
-                key={
-                  value
-                }
-                className="rounded-md bg-[#EAF5ED] px-2 py-1 text-[9px] font-medium text-[#075E36]"
-              >
-                {
-                  value
-                }
-              </span>
-            ),
-          )
-        ) : (
-          <span className="text-[9px] text-[#87908C]">
-            Sin información
-          </span>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function StatusBadge({
-  status,
-}: {
-  status:
-    AgencyStatus;
-}) {
-  const config: Record<
-    AgencyStatus,
-    {
-      label: string;
-      className: string;
-    }
-  > = {
-    DRAFT: {
-      label:
-        "Borrador",
-
-      className:
-        "border-[#DDE2DF] bg-[#F5F6F5] text-[#59615D]",
-    },
-
-    PENDING: {
-      label:
-        "En revisión",
-
-      className:
-        "border-[#F1D49A] bg-[#FFF8E8] text-[#886617]",
-    },
-
-    APPROVED: {
-      label:
-        "Aprobada",
-
-      className:
-        "border-[#CBE5D4] bg-[#EAF6EE] text-[#075E36]",
-    },
-
-    REJECTED: {
-      label:
-        "Rechazada",
-
-      className:
-        "border-[#F2CACA] bg-[#FFF0F0] text-[#A63737]",
-    },
-
-    INACTIVE: {
-      label:
-        "Inactiva",
-
-      className:
-        "border-[#DDE2DF] bg-[#F1F2F1] text-[#727A76]",
-    },
-  };
-
-  const current =
-    config[
-      status
-    ];
-
-  return (
-    <span
-      className={`inline-flex h-7 items-center rounded-full border px-2.5 text-[9px] font-semibold ${current.className}`}
-    >
-      {
-        current.label
-      }
-    </span>
-  );
-}
-
-function businessTypeLabel(
-  agency: Agency,
-) {
-  switch (
-    agency.businessType
-  ) {
-    case "AGENCY":
-      return "Agencia";
-
-    case "TOUR_OPERATOR":
-      return "Operador turístico";
-
-    case "TRANSPORT":
-      return "Transporte";
-
-    case "INDEPENDENT_GUIDE":
-      return "Guía independiente";
-
-    default:
-      return agency.businessType;
-  }
-}
-
-function formatDate(
-  value: string,
-) {
-  const date =
-    new Date(
-      value,
-    );
-
-  if (
-    Number.isNaN(
-      date.getTime(),
-    )
-  ) {
-    return "—";
-  }
-
-  return new Intl.DateTimeFormat(
-    "es-CR",
-    {
-      day:
-        "2-digit",
-
-      month:
-        "2-digit",
-
-      year:
-        "numeric",
-    },
-  ).format(
-    date,
-  );
-}
-
-function ResultMessage({
-  type,
-  text,
-}: {
-  type:
-    | "approved"
-    | "rejected";
-
-  text:
-    string;
-}) {
-  return (
-    <div
-      className={[
-        "mt-4 rounded-lg border px-4 py-3 text-[10px]",
-
-        type ===
-        "approved"
-          ? "border-[#CBE5D4] bg-[#F1FAF4] text-[#075E36]"
-          : "border-[#F2CACA] bg-[#FFF4F4] text-[#A63737]",
-      ].join(
-        " ",
-      )}
-    >
-      {text}
-    </div>
-  );
-}
-
-function LoadingState() {
-  return (
-    <div className="mx-auto w-full max-w-[1180px]">
-      <div className="mb-4 h-3 w-28 animate-pulse rounded bg-[#E7ECE9]" />
-
-      <div className="mb-4">
-        <div className="h-7 w-56 animate-pulse rounded bg-[#E3E8E5]" />
-
-        <div className="mt-2 h-3 w-96 max-w-full animate-pulse rounded bg-[#EEF1EF]" />
-      </div>
-
-      <div className="overflow-hidden rounded-xl border border-[#DDE2DF] bg-white">
-        <div className="h-[190px] animate-pulse bg-[#EEF4EF]" />
-
-        <div className="space-y-4 p-6">
-          <div className="h-16 w-72 max-w-full animate-pulse rounded bg-[#EEF1EF]" />
-
-          <div className="grid gap-3 md:grid-cols-3">
-            {Array.from({
-              length: 3,
-            }).map(
-              (
-                _,
-                index,
-              ) => (
-                <div
-                  key={
-                    index
-                  }
-                  className="h-28 animate-pulse rounded-lg bg-[#F3F5F4]"
-                />
-              ),
-            )}
+        <section className="bg-card rounded-xl p-5">
+          <h2 className="!m-0 !max-w-none !text-base !leading-6 !font-semibold !tracking-normal">
+            Información de la cuenta
+          </h2>
+          <div className="mt-2 divide-y">
+            <InfoRow
+              icon={Building2}
+              label="Tipo de negocio"
+              value={businessTypeLabel(agency.businessType)}
+            />
+            <InfoRow
+              icon={ShieldCheck}
+              label="Términos"
+              value={
+                agency.acceptedTerms
+                  ? "Términos aceptados"
+                  : "Términos no aceptados"
+              }
+            />
+            <InfoRow
+              icon={FileText}
+              label="Fecha de registro"
+              value={formatDate(agency.createdAt)}
+            />
           </div>
+
+          <Separator className="my-5" />
+
+          <div className="space-y-5">
+            <TagList
+              title="Categorías"
+              values={agency.categories.map((item) => item.name)}
+            />
+            <TagList
+              title="Idiomas"
+              values={agency.languages.map((item) => item.name)}
+            />
+          </div>
+        </section>
+      </div>
+
+      <section className="bg-card rounded-xl p-5">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 className="!m-0 !max-w-none !text-base !leading-6 !font-semibold !tracking-normal">
+              Documento de verificación
+            </h2>
+            <p className="text-muted-foreground mt-1 !text-sm">
+              El documento está almacenado de forma privada y el acceso generado
+              es temporal.
+            </p>
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            className="shrink-0 gap-2 !text-sm"
+            disabled={openingDocument || !agency.verificationDocumentUrl}
+            onClick={() => void openDocument()}
+          >
+            <ExternalLink className="size-4" />
+            {openingDocument ? "Abriendo…" : "Ver documento"}
+          </Button>
         </div>
+      </section>
+
+      {canReview ? (
+        <section className="bg-card flex flex-col gap-4 rounded-xl p-5 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 className="!m-0 !max-w-none !text-base !leading-6 !font-semibold !tracking-normal">
+              Decisión de revisión
+            </h2>
+            <p className="text-muted-foreground mt-1 !text-sm">
+              Aprueba la agencia si la información y documentación son correctas,
+              o recházala para que pueda corregirse.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              className="text-destructive hover:text-destructive gap-2 !text-sm"
+              disabled={reviewing}
+              onClick={() => {
+                if (
+                  window.confirm(
+                    `¿Deseas rechazar la agencia "${agency.commercialName}"?`,
+                  )
+                ) {
+                  void reject();
+                }
+              }}
+            >
+              <X className="size-4" />
+              Rechazar
+            </Button>
+            <Button
+              type="button"
+              className="gap-2 !text-sm"
+              disabled={reviewing}
+              onClick={() => {
+                if (
+                  window.confirm(
+                    `¿Deseas aprobar la agencia "${agency.commercialName}"?`,
+                  )
+                ) {
+                  void approve();
+                }
+              }}
+            >
+              <Check className="size-4" />
+              {reviewing ? "Procesando…" : "Aprobar"}
+            </Button>
+          </div>
+        </section>
+      ) : null}
+
+      <div>
+        <Button asChild variant="ghost" className="!text-sm">
+          <Link href="/dashboard/agencies">Volver a agencias</Link>
+        </Button>
       </div>
     </div>
   );
