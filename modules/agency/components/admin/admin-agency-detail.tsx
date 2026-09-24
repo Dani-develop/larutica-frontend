@@ -5,7 +5,6 @@ import {
   BadgeCheck,
   Building2,
   Check,
-  ExternalLink,
   FileText,
   Globe2,
   Home,
@@ -29,6 +28,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { useAdminAgency } from "../../hooks/admin/useAdminAgency";
 import type { Agency, AgencyStatus, BusinessType } from "../../types/agency.types";
+import { VerificationDocumentViewer } from "./verification-document-viewer";
 
 const statusBadgeClass: Record<AgencyStatus, string> = {
   DRAFT: "bg-slate-100 text-slate-700 border-slate-200",
@@ -210,12 +210,10 @@ export default function AdminAgencyDetail({
     agency,
     loading,
     reviewing,
-    openingDocument,
     error,
     loadAgency,
     approve,
     reject,
-    openDocument,
   } = useAdminAgency(agencyId);
   const [lightbox, setLightbox] = useState<{
     src: string;
@@ -496,29 +494,11 @@ export default function AdminAgencyDetail({
         </section>
       </div>
 
-      <section className="bg-card rounded-xl p-5">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h2 className="!m-0 !max-w-none !text-base !leading-6 !font-semibold !tracking-normal">
-              Documento de verificación
-            </h2>
-            <p className="text-muted-foreground mt-1 !text-sm">
-              El documento está almacenado de forma privada y el acceso generado
-              es temporal.
-            </p>
-          </div>
-          <Button
-            type="button"
-            variant="outline"
-            className="shrink-0 gap-2 !text-sm"
-            disabled={openingDocument || !agency.verificationDocumentUrl}
-            onClick={() => void openDocument()}
-          >
-            <ExternalLink className="size-4" />
-            {openingDocument ? "Abriendo…" : "Ver documento"}
-          </Button>
-        </div>
-      </section>
+      <VerificationDocumentViewer
+        agencyId={agency.id}
+        hasDocument={Boolean(agency.verificationDocumentUrl)}
+        documentPath={agency.verificationDocumentUrl}
+      />
 
       {canReview ? (
         <section className="bg-card flex flex-col gap-4 rounded-xl p-5 sm:flex-row sm:items-center sm:justify-between">
