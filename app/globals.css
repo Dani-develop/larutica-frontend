@@ -47,7 +47,7 @@
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.129 0.042 264.695);
   --primary: #0d684e;
-  --primary-foreground: oklch(0.984 0.003 247.858);
+  --primary-foreground: #ffffff;
   --secondary: oklch(0.968 0.007 247.896);
   --secondary-foreground: oklch(0.208 0.042 265.755);
   --muted: oklch(0.968 0.007 247.896);
@@ -115,6 +115,11 @@ button,a,input,select { -webkit-tap-highlight-color:transparent; }
 [data-slot="card"] :focus-visible,
 [data-slot="button"]:focus-visible {
   outline: none;
+}
+/* Unlayered landing CSS beats Tailwind utilities; keep primary CTAs readable. */
+[data-slot="button"][data-variant="default"],
+a[data-slot="button"][data-variant="default"] {
+  color: #ffffff;
 }
 .skip-link { position:fixed; left:1rem; top:-5rem; z-index:99; padding:.75rem 1rem; background:#fff; border:2px solid var(--ink); border-radius:.6rem; }
 .skip-link:focus { top:1rem; }

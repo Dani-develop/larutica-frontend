@@ -40,7 +40,7 @@ export function AuthShell({ eyebrow, title, children }: AuthShellProps) {
       <div className="flex flex-1 flex-col overflow-y-auto">
         <div className="mb-2 px-8 pt-10 lg:hidden">
           <Link href="/" className="flex items-center gap-2">
-            <span className="flex size-9 items-center justify-center rounded-[50%_50%_44%_56%] bg-primary text-xs font-bold text-primary-foreground">
+            <span className="flex size-9 items-center justify-center rounded-[50%_50%_44%_56%] bg-primary text-xs font-bold text-white">
               LR
             </span>
             <span className="text-sm font-semibold">{SITE.name}</span>
