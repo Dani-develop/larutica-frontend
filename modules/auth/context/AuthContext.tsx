@@ -69,7 +69,7 @@ async function apiRequest<T>(path: string, init: RequestInit = {}): Promise<T> {
       ...init.headers,
     },
   });
-  const payload = await response.json() as { data?: T; error?: string };
+  const payload = await response.json().catch(() => ({})) as { data?: T; error?: string };
   if (!response.ok) throw new HttpError(payload.error ?? "No se pudo completar la solicitud.", response.status);
   return payload.data as T;
 }

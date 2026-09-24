@@ -154,17 +154,32 @@ function ChangePasswordForm({
   onSuccess: (message: string) => void;
   onError: (message: string) => void;
 }) {
+  const [currentPassword, setCurrentPassword] = useState("");
   const [password, setPassword] = useState("");
   const [confirmation, setConfirmation] = useState("");
   const [submitting, setSubmitting] = useState(false);
+
+  const clearFields = () => {
+    setCurrentPassword("");
+    setPassword("");
+    setConfirmation("");
+  };
 
   return (
     <form
       className="space-y-6"
       onSubmit={async (event) => {
         event.preventDefault();
+        if (!currentPassword) {
+          onError("Escribe tu contraseña actual.");
+          return;
+        }
         if (password.length < 8) {
           onError("La contraseña debe tener al menos 8 caracteres.");
+          return;
+        }
+        if (password === currentPassword) {
+          onError("La nueva contraseña debe ser distinta a la actual.");
           return;
         }
         if (password !== confirmation) {
@@ -178,15 +193,14 @@ function ChangePasswordForm({
             method: "PATCH",
             credentials: "same-origin",
             headers: { "content-type": "application/json" },
-            body: JSON.stringify({ password }),
+            body: JSON.stringify({ currentPassword, password }),
           });
           const payload = (await response.json()) as { error?: string };
           if (!response.ok) {
             onError(payload.error ?? "No se pudo actualizar la contraseña.");
             return;
           }
-          setPassword("");
-          setConfirmation("");
+          clearFields();
           onSuccess("Contraseña actualizada correctamente.");
         } catch {
           onError("No se pudo actualizar la contraseña.");
@@ -196,6 +210,21 @@ function ChangePasswordForm({
       }}
     >
       <FieldGroup className="gap-4">
+        <Field>
+          <FieldLabel htmlFor="current-password" className="!text-sm">
+            Contraseña actual
+          </FieldLabel>
+          <Input
+            id="current-password"
+            className="!h-9 !text-sm"
+            type="password"
+            value={currentPassword}
+            onChange={(event) => setCurrentPassword(event.target.value)}
+            placeholder="Tu contraseña actual"
+            autoComplete="current-password"
+            required
+          />
+        </Field>
         <Field>
           <FieldLabel htmlFor="new-password" className="!text-sm">
             Nueva contraseña
@@ -222,7 +251,7 @@ function ChangePasswordForm({
             type="password"
             value={confirmation}
             onChange={(event) => setConfirmation(event.target.value)}
-            placeholder="Repite la contraseña"
+            placeholder="Repite la nueva contraseña"
             minLength={8}
             autoComplete="new-password"
             required
@@ -236,10 +265,7 @@ function ChangePasswordForm({
           variant="outline"
           className="!text-sm"
           disabled={submitting}
-          onClick={() => {
-            setPassword("");
-            setConfirmation("");
-          }}
+          onClick={clearFields}
         >
           Limpiar
         </Button>

@@ -7,8 +7,6 @@ import {
 } from "@simplewebauthn/browser";
 import { Cloud, KeyRound, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useWebAuthnSupport } from "@/modules/auth/hooks/useWebAuthnSupport";
 import { passkeyErrorMessage } from "@/modules/auth/utils/passkeyErrors";
@@ -27,8 +25,16 @@ async function passkeyRequest<T>(path: string, init: RequestInit = {}): Promise<
     credentials: "same-origin",
     headers: init.body ? { "content-type": "application/json" } : undefined,
   });
-  const payload = (await response.json()) as { data?: T; error?: string };
-  if (!response.ok) throw new Error(payload.error ?? "No se pudo completar la solicitud.");
+  // Un 404 del backend puede devolver HTML en lugar de JSON.
+  const payload = (await response.json().catch(() => ({}))) as { data?: T; error?: string };
+  if (!response.ok) {
+    throw new Error(
+      payload.error
+        ?? (response.status === 404
+          ? "El servidor todavía no tiene habilitadas las passkeys."
+          : "No se pudo completar la solicitud."),
+    );
+  }
   return payload.data as T;
 }
 
@@ -48,7 +54,6 @@ export function PasskeysPanel({
   onError: (message: string) => void;
 }) {
   const [passkeys, setPasskeys] = useState<Passkey[] | null>(null);
-  const [name, setName] = useState("");
   const [busy, setBusy] = useState(false);
   const supported = useWebAuthnSupport();
 
@@ -129,7 +134,7 @@ export function PasskeysPanel({
 
       {supported ? (
         <form
-          className="space-y-4"
+          className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between"
           onSubmit={async (event) => {
             event.preventDefault();
             setBusy(true);
@@ -141,10 +146,9 @@ export function PasskeysPanel({
               const response = await startRegistration({ optionsJSON: options });
               const created = await passkeyRequest<Passkey>("/api/auth/passkey/register/verify", {
                 method: "POST",
-                body: JSON.stringify({ flowId, response, name }),
+                body: JSON.stringify({ flowId, response }),
               });
               setPasskeys((current) => [...(current ?? []), created]);
-              setName("");
               onSuccess("Passkey registrada. Ya puedes usarla para iniciar sesión.");
             } catch (error) {
               onError(passkeyErrorMessage(error, "No se pudo registrar la passkey."));
@@ -153,22 +157,9 @@ export function PasskeysPanel({
             }
           }}
         >
-          <FieldGroup>
-            <Field>
-              <FieldLabel htmlFor="passkey-name" className="!text-sm">
-                Nombre (opcional)
-              </FieldLabel>
-              <Input
-                id="passkey-name"
-                className="!h-9 !text-sm"
-                value={name}
-                onChange={(event) => setName(event.target.value)}
-                placeholder="Ej. MacBook, iPhone"
-                maxLength={60}
-                autoComplete="off"
-              />
-            </Field>
-          </FieldGroup>
+          <p className="text-muted-foreground !m-0 !text-xs">
+            Se guardará con el nombre de este dispositivo.
+          </p>
           <div className="flex justify-end">
             <Button type="submit" className="!text-sm" disabled={busy}>
               <KeyRound aria-hidden="true" />

@@ -10,6 +10,7 @@ import { isoBase64URL } from "@simplewebauthn/server/helpers";
 import { ApiError } from "@/lib/api/errors";
 import { clientOrigin } from "@/lib/api/request-origin";
 import { getSupabaseAdminClient } from "./admin-client";
+import { passkeyDeviceName } from "./passkey-device-name";
 import type { ProfileRow } from "./profiles";
 import { createOpaqueToken, hashOpaqueToken } from "./session";
 
@@ -92,13 +93,6 @@ async function consumeChallenge(flowId: unknown, flowKind: FlowKind) {
   return data as { challenge: string; user_id: string | null; expires_at: string };
 }
 
-function parsePasskeyName(value: unknown) {
-  const name = typeof value === "string" ? value.trim() : "";
-  if (!name) return "Passkey";
-  if (name.length > 60) throw new ApiError("El nombre debe tener máximo 60 caracteres.", 400);
-  return name;
-}
-
 export async function listPasskeys(userId: string): Promise<PublicPasskey[]> {
   const { data, error } = await getSupabaseAdminClient()
     .from("user_passkeys")
@@ -158,9 +152,8 @@ export async function createRegistrationOptions(request: Request, profile: Profi
 export async function verifyRegistration(
   request: Request,
   userId: string,
-  body: { flowId?: unknown; response?: unknown; name?: unknown },
+  body: { flowId?: unknown; response?: unknown },
 ): Promise<PublicPasskey> {
-  const name = parsePasskeyName(body.name);
   const flow = await consumeChallenge(body.flowId, "registration");
   if (flow.user_id !== userId) throw new ApiError("La solicitud de passkey no es válida.", 400);
 
@@ -179,7 +172,7 @@ export async function verifyRegistration(
   }
   if (!verification.verified) throw new ApiError("No se pudo verificar la passkey.", 400);
 
-  const { credential, credentialDeviceType, credentialBackedUp } = verification.registrationInfo;
+  const { aaguid, credential, credentialDeviceType, credentialBackedUp } = verification.registrationInfo;
   const { data, error } = await getSupabaseAdminClient()
     .from("user_passkeys")
     .insert({
@@ -190,7 +183,7 @@ export async function verifyRegistration(
       transports: credential.transports ?? [],
       device_type: credentialDeviceType,
       backed_up: credentialBackedUp,
-      name,
+      name: passkeyDeviceName(aaguid, request.headers.get("user-agent")),
     })
     .select("*")
     .single();

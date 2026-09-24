@@ -15,7 +15,7 @@ export function AuthShell({ eyebrow, title, children }: AuthShellProps) {
           className="absolute inset-0 bg-cover bg-center"
           style={{
             backgroundImage:
-              'linear-gradient(180deg, rgba(8,77,58,.15), rgba(8,77,58,.72)), url("https://images.unsplash.com/photo-1516026672322-bc52d61a55d5?auto=format&fit=crop&w=1400&q=80")',
+              'linear-gradient(180deg, rgba(8,77,58,.15), rgba(8,77,58,.72)), url("/playa.jpg")',
           }}
         />
         <div className="absolute inset-x-0 bottom-0 p-12 pb-14 text-white">
