@@ -1,11 +1,14 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import {
+  useRouter,
+} from "next/navigation";
 
-import AgencyForm from "../../../../modules/agency/components/agency-form";
+import AgencyForm from "@/modules/agency/components/agency-form";
 
 export default function NewAgencyPage() {
-  const router = useRouter();
+  const router =
+    useRouter();
 
   return (
     <div className="mx-auto w-full max-w-[1180px]">
@@ -21,8 +24,11 @@ export default function NewAgencyPage() {
       </div>
 
       <AgencyForm
+        mode="create"
         onCancel={() =>
-          router.push("/dashboard/my-agency")
+          router.push(
+            "/dashboard/my-agency",
+          )
         }
       />
     </div>

@@ -28,15 +28,26 @@ import {
   Zap,
 } from "lucide-react";
 
-import { useAgency } from "../hooks/useAgency";
+import {
+  useAgency,
+} from "../hooks/useAgency";
 
 import type {
+  Agency,
   AgencyFormData,
   BusinessType,
 } from "../types/agency.types";
 
 interface AgencyFormProps {
   onCancel: () => void;
+
+  mode?:
+    | "create"
+    | "edit";
+
+  initialAgency?:
+    | Agency
+    | null;
 }
 
 const initialForm: AgencyFormData = {
@@ -67,6 +78,92 @@ const initialForm: AgencyFormData = {
 
   acceptedTerms: false,
 };
+
+function agencyToFormData(
+  agency: Agency,
+): AgencyFormData {
+  return {
+    agencyName:
+      agency.agencyName,
+
+    commercialName:
+      agency.commercialName,
+
+    businessType:
+      agency.businessType,
+
+    description:
+      agency.description ??
+      "",
+
+    email:
+      agency.email ??
+      "",
+
+    phone:
+      agency.phone ??
+      "",
+
+    website:
+      agency.website ??
+      "",
+
+    country:
+      agency.country ??
+      "Costa Rica",
+
+    province:
+      agency.province ??
+      "",
+
+    city:
+      agency.city ??
+      "",
+
+    exactAddress:
+      agency.exactAddress ??
+      "",
+
+    logoUrl:
+      agency.logoUrl ??
+      "",
+
+    coverUrl:
+      agency.coverUrl ??
+      "",
+
+    verificationDocumentUrl:
+      agency.verificationDocumentUrl ??
+      "",
+
+    instagramUrl:
+      agency.instagramUrl ??
+      "",
+
+    facebookUrl:
+      agency.facebookUrl ??
+      "",
+
+    whatsapp:
+      agency.whatsapp ??
+      "",
+
+    categoryIds:
+      agency.categories.map(
+        (category) =>
+          category.id,
+      ),
+
+    languageIds:
+      agency.languages.map(
+        (language) =>
+          language.id,
+      ),
+
+    acceptedTerms:
+      agency.acceptedTerms,
+  };
+}
 
 const businessTypes: Array<{
   value: BusinessType;
@@ -136,125 +233,227 @@ const languages = [
 
 export default function AgencyForm({
   onCancel,
+  mode = "create",
+  initialAgency = null,
 }: AgencyFormProps) {
   const {
     createAgency,
+    updateAgency,
     saving,
     error,
-  } = useAgency();
+  } =
+    useAgency();
 
-  const [form, setForm] =
-    useState<AgencyFormData>(initialForm);
+  const [
+    form,
+    setForm,
+  ] =
+    useState<AgencyFormData>(
+      initialAgency
+        ? agencyToFormData(
+            initialAgency,
+          )
+        : initialForm,
+    );
 
-  const [successMessage, setSuccessMessage] =
-    useState<string | null>(null);
+  const [
+    successMessage,
+    setSuccessMessage,
+  ] =
+    useState<
+      string | null
+    >(null);
 
-  const [languagesOpen, setLanguagesOpen] =
+  const [
+    languagesOpen,
+    setLanguagesOpen,
+  ] =
     useState(false);
 
-  const updateField = <K extends keyof AgencyFormData>(
+  const updateField = <
+    K extends keyof AgencyFormData,
+  >(
     field: K,
     value: AgencyFormData[K],
   ) => {
-    setForm((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
+    setForm(
+      (previous) => ({
+        ...previous,
+        [field]: value,
+      }),
+    );
   };
 
-  const toggleCategory = (id: number) => {
-    setForm((prev) => ({
-      ...prev,
-      categoryIds: prev.categoryIds.includes(id)
-        ? prev.categoryIds.filter(
-            (item) => item !== id,
-          )
-        : [...prev.categoryIds, id],
-    }));
-  };
-
-  const toggleLanguage = (id: number) => {
-    setForm((prev) => ({
-      ...prev,
-      languageIds: prev.languageIds.includes(id)
-        ? prev.languageIds.filter(
-            (item) => item !== id,
-          )
-        : [...prev.languageIds, id],
-    }));
-  };
-
-  const saveDraft = async () => {
-    try {
-      setSuccessMessage(null);
-
-      await createAgency({
-        ...form,
-        action: "DRAFT",
-      });
-
-      setSuccessMessage(
-        "La agencia se guardó como borrador.",
-      );
-    } catch {
-      // useAgency ya maneja el mensaje de error.
-    }
-  };
-
-  const submitAgency = async (
-    event: FormEvent<HTMLFormElement>,
+  const toggleCategory = (
+    id: number,
   ) => {
-    event.preventDefault();
+    setForm(
+      (previous) => ({
+        ...previous,
 
-    try {
-      setSuccessMessage(null);
-
-      await createAgency({
-        ...form,
-        action: "SUBMIT",
-      });
-
-      setSuccessMessage(
-        "La agencia fue enviada para revisión.",
-      );
-    } catch {
-      // useAgency ya maneja el mensaje de error.
-    }
+        categoryIds:
+          previous.categoryIds.includes(
+            id,
+          )
+            ? previous.categoryIds.filter(
+                (item) =>
+                  item !== id,
+              )
+            : [
+                ...previous.categoryIds,
+                id,
+              ],
+      }),
+    );
   };
+
+  const toggleLanguage = (
+    id: number,
+  ) => {
+    setForm(
+      (previous) => ({
+        ...previous,
+
+        languageIds:
+          previous.languageIds.includes(
+            id,
+          )
+            ? previous.languageIds.filter(
+                (item) =>
+                  item !== id,
+              )
+            : [
+                ...previous.languageIds,
+                id,
+              ],
+      }),
+    );
+  };
+
+  const saveDraft =
+    async () => {
+      try {
+        setSuccessMessage(
+          null,
+        );
+
+        const payload = {
+          ...form,
+          action:
+            "DRAFT" as const,
+        };
+
+        if (
+          mode === "edit"
+        ) {
+          await updateAgency(
+            payload,
+          );
+
+          setSuccessMessage(
+            "Los cambios se guardaron correctamente.",
+          );
+        } else {
+          await createAgency(
+            payload,
+          );
+
+          setSuccessMessage(
+            "La agencia se guardó como borrador.",
+          );
+        }
+      } catch {
+        // useAgency maneja el error.
+      }
+    };
+
+  const submitAgency =
+    async (
+      event: FormEvent<HTMLFormElement>,
+    ) => {
+      event.preventDefault();
+
+      try {
+        setSuccessMessage(
+          null,
+        );
+
+        const payload = {
+          ...form,
+          action:
+            "SUBMIT" as const,
+        };
+
+        if (
+          mode === "edit"
+        ) {
+          await updateAgency(
+            payload,
+          );
+
+          setSuccessMessage(
+            "La agencia fue actualizada y enviada para revisión.",
+          );
+        } else {
+          await createAgency(
+            payload,
+          );
+
+          setSuccessMessage(
+            "La agencia fue enviada para revisión.",
+          );
+        }
+      } catch {
+        // useAgency maneja el error.
+      }
+    };
 
   const previewName =
     form.commercialName.trim() ||
     form.agencyName.trim() ||
     "Aventura Verde CR";
 
-  const previewLocation = useMemo(() => {
-    const location = [
+  const previewLocation =
+    useMemo(() => {
+      const location = [
+        form.city,
+        form.province,
+      ]
+        .filter(Boolean)
+        .join(", ");
+
+      return (
+        location ||
+        "La Fortuna, Alajuela"
+      );
+    }, [
       form.city,
       form.province,
-    ]
-      .filter(Boolean)
-      .join(", ");
-
-    return location || "La Fortuna, Alajuela";
-  }, [form.city, form.province]);
+    ]);
 
   const selectedLanguageNames =
     languages
-      .filter((language) =>
-        form.languageIds.includes(language.id),
+      .filter(
+        (language) =>
+          form.languageIds.includes(
+            language.id,
+          ),
       )
-      .map((language) => language.name);
+      .map(
+        (language) =>
+          language.name,
+      );
 
   return (
     <form
-      onSubmit={submitAgency}
+      onSubmit={
+        submitAgency
+      }
       className="space-y-3"
     >
       <div className="grid gap-4 lg:grid-cols-[minmax(0,3.15fr)_minmax(250px,1fr)]">
-
         {/* COLUMNA PRINCIPAL */}
         <div className="space-y-3">
-
           {/* 1. DATOS GENERALES */}
           <SectionCard
             number="1"
@@ -266,14 +465,22 @@ export default function AgencyForm({
                 required
               >
                 <input
-                  value={form.agencyName}
-                  onChange={(event) =>
+                  value={
+                    form.agencyName
+                  }
+                  onChange={(
+                    event,
+                  ) =>
                     updateField(
                       "agencyName",
-                      event.target.value,
+                      event
+                        .target
+                        .value,
                     )
                   }
-                  className={inputClass}
+                  className={
+                    inputClass
+                  }
                   placeholder="Ej. Aventura Verde CR"
                 />
               </Field>
@@ -283,66 +490,91 @@ export default function AgencyForm({
                 required
               >
                 <input
-                  value={form.commercialName}
-                  onChange={(event) =>
+                  value={
+                    form.commercialName
+                  }
+                  onChange={(
+                    event,
+                  ) =>
                     updateField(
                       "commercialName",
-                      event.target.value,
+                      event
+                        .target
+                        .value,
                     )
                   }
-                  className={inputClass}
+                  className={
+                    inputClass
+                  }
                   placeholder="Ej. Aventura Verde Costa Rica"
                 />
               </Field>
             </div>
 
             <div className="mt-3">
-              <p className={labelClass}>
+              <p
+                className={
+                  labelClass
+                }
+              >
                 Tipo de negocio
                 <Required />
               </p>
 
               <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
-                {businessTypes.map((type) => {
-                  const selected =
-                    form.businessType === type.value;
+                {businessTypes.map(
+                  (type) => {
+                    const selected =
+                      form.businessType ===
+                      type.value;
 
-                  return (
-                    <button
-                      key={type.value}
-                      type="button"
-                      onClick={() =>
-                        updateField(
-                          "businessType",
-                          type.value,
-                        )
-                      }
-                      className={[
-                        "flex h-8 items-center gap-1.5 rounded-md border px-2.5 text-left text-[11px] font-medium transition-colors",
-                        selected
-                          ? "border-[#0A6A42] bg-[#EFF8F3] text-[#075E36]"
-                          : "border-[#DDE2DF] bg-white text-[#252B28] hover:border-[#8AB5A0] hover:bg-[#FAFCFB]",
-                      ].join(" ")}
-                    >
-                      <span
+                    return (
+                      <button
+                        key={
+                          type.value
+                        }
+                        type="button"
+                        onClick={() =>
+                          updateField(
+                            "businessType",
+                            type.value,
+                          )
+                        }
                         className={[
-                          "flex size-3.5 shrink-0 items-center justify-center rounded-full border",
-                          selected
-                            ? "border-[#08643B]"
-                            : "border-[#AAB2AE]",
-                        ].join(" ")}
-                      >
-                        {selected && (
-                          <span className="size-1.5 rounded-full bg-[#08643B]" />
-                        )}
-                      </span>
+                          "flex h-8 items-center gap-1.5 rounded-md border px-2.5 text-left text-[11px] font-medium transition-colors",
 
-                      <span className="truncate">
-                        {type.label}
-                      </span>
-                    </button>
-                  );
-                })}
+                          selected
+                            ? "border-[#0A6A42] bg-[#EFF8F3] text-[#075E36]"
+                            : "border-[#DDE2DF] bg-white text-[#252B28] hover:border-[#8AB5A0] hover:bg-[#FAFCFB]",
+                        ].join(
+                          " ",
+                        )}
+                      >
+                        <span
+                          className={[
+                            "flex size-3.5 shrink-0 items-center justify-center rounded-full border",
+
+                            selected
+                              ? "border-[#08643B]"
+                              : "border-[#AAB2AE]",
+                          ].join(
+                            " ",
+                          )}
+                        >
+                          {selected && (
+                            <span className="size-1.5 rounded-full bg-[#08643B]" />
+                          )}
+                        </span>
+
+                        <span className="truncate">
+                          {
+                            type.label
+                          }
+                        </span>
+                      </button>
+                    );
+                  },
+                )}
               </div>
             </div>
 
@@ -353,12 +585,20 @@ export default function AgencyForm({
               >
                 <div className="relative">
                   <textarea
-                    value={form.description}
-                    maxLength={600}
-                    onChange={(event) =>
+                    value={
+                      form.description
+                    }
+                    maxLength={
+                      600
+                    }
+                    onChange={(
+                      event,
+                    ) =>
                       updateField(
                         "description",
-                        event.target.value,
+                        event
+                          .target
+                          .value,
                       )
                     }
                     className={`${textareaClass} pb-5`}
@@ -366,7 +606,12 @@ export default function AgencyForm({
                   />
 
                   <span className="absolute bottom-1.5 right-2.5 text-[10px] text-[#87908C]">
-                    {form.description.length} / 600
+                    {
+                      form
+                        .description
+                        .length
+                    }{" "}
+                    / 600
                   </span>
                 </div>
               </Field>
@@ -380,7 +625,10 @@ export default function AgencyForm({
                     type="button"
                     onClick={() =>
                       setLanguagesOpen(
-                        (previous) => !previous,
+                        (
+                          previous,
+                        ) =>
+                          !previous,
                       )
                     }
                     className={`${inputClass} flex items-center justify-between text-left`}
@@ -393,7 +641,9 @@ export default function AgencyForm({
                       }
                     >
                       {selectedLanguageNames.length
-                        ? selectedLanguageNames.join(", ")
+                        ? selectedLanguageNames.join(
+                            ", ",
+                          )
                         : "Selecciona uno o más idiomas"}
                     </span>
 
@@ -405,7 +655,9 @@ export default function AgencyForm({
                   {languagesOpen && (
                     <div className="absolute left-0 right-0 top-[40px] z-20 rounded-lg border border-[#DDE2DF] bg-white p-1.5 shadow-lg">
                       {languages.map(
-                        (language) => {
+                        (
+                          language,
+                        ) => {
                           const selected =
                             form.languageIds.includes(
                               language.id,
@@ -413,7 +665,9 @@ export default function AgencyForm({
 
                           return (
                             <button
-                              key={language.id}
+                              key={
+                                language.id
+                              }
                               type="button"
                               onClick={() =>
                                 toggleLanguage(
@@ -425,15 +679,21 @@ export default function AgencyForm({
                               <span
                                 className={[
                                   "flex size-3.5 items-center justify-center rounded border text-[8px]",
+
                                   selected
                                     ? "border-[#08643B] bg-[#08643B] text-white"
                                     : "border-[#B5BCB8]",
-                                ].join(" ")}
+                                ].join(
+                                  " ",
+                                )}
                               >
-                                {selected && "✓"}
+                                {selected &&
+                                  "✓"}
                               </span>
 
-                              {language.name}
+                              {
+                                language.name
+                              }
                             </button>
                           );
                         },
@@ -445,7 +705,11 @@ export default function AgencyForm({
             </div>
 
             <div className="mt-3">
-              <p className={labelClass}>
+              <p
+                className={
+                  labelClass
+                }
+              >
                 Categorías de servicio
                 <Required />
               </p>
@@ -458,25 +722,36 @@ export default function AgencyForm({
                     icon: Icon,
                   }) => {
                     const selected =
-                      form.categoryIds.includes(id);
+                      form.categoryIds.includes(
+                        id,
+                      );
 
                     return (
                       <button
                         key={id}
                         type="button"
                         onClick={() =>
-                          toggleCategory(id)
+                          toggleCategory(
+                            id,
+                          )
                         }
                         className={[
                           "flex h-8 items-center justify-center gap-1.5 rounded-md border px-2 text-[11px] font-medium transition-colors",
+
                           selected
                             ? "border-[#0A6A42] bg-[#EFF8F3] text-[#075E36]"
                             : "border-[#DDE2DF] bg-white text-[#252B28] hover:border-[#8AB5A0] hover:bg-[#FAFCFB]",
-                        ].join(" ")}
+                        ].join(
+                          " ",
+                        )}
                       >
                         <Icon
-                          size={13}
-                          strokeWidth={1.8}
+                          size={
+                            13
+                          }
+                          strokeWidth={
+                            1.8
+                          }
                           className="shrink-0 text-[#075E36]"
                         />
 
@@ -503,14 +778,22 @@ export default function AgencyForm({
               >
                 <input
                   type="email"
-                  value={form.email}
-                  onChange={(event) =>
+                  value={
+                    form.email
+                  }
+                  onChange={(
+                    event,
+                  ) =>
                     updateField(
                       "email",
-                      event.target.value,
+                      event
+                        .target
+                        .value,
                     )
                   }
-                  className={inputClass}
+                  className={
+                    inputClass
+                  }
                   placeholder="ejemplo@aventuraverde.cr"
                 />
               </Field>
@@ -521,18 +804,27 @@ export default function AgencyForm({
               >
                 <div className="flex h-9 overflow-hidden rounded-lg border border-[#DDE2DF] bg-white transition focus-within:border-[#08643B] focus-within:ring-2 focus-within:ring-[#08643B]/10">
                   <div className="flex items-center gap-1 border-r border-[#DDE2DF] px-2.5 text-[11px] font-medium text-[#252B28]">
-                    <span>CR</span>
+                    <span>
+                      CR
+                    </span>
+
                     <span className="text-[8px] text-[#66706B]">
                       ▼
                     </span>
                   </div>
 
                   <input
-                    value={form.phone}
-                    onChange={(event) =>
+                    value={
+                      form.phone
+                    }
+                    onChange={(
+                      event,
+                    ) =>
                       updateField(
                         "phone",
-                        event.target.value,
+                        event
+                          .target
+                          .value,
                       )
                     }
                     className="min-w-0 flex-1 px-3 text-[12px] text-[#252B28] outline-none placeholder:text-[#9AA19D]"
@@ -543,14 +835,22 @@ export default function AgencyForm({
 
               <Field label="Sitio web (opcional)">
                 <input
-                  value={form.website}
-                  onChange={(event) =>
+                  value={
+                    form.website
+                  }
+                  onChange={(
+                    event,
+                  ) =>
                     updateField(
                       "website",
-                      event.target.value,
+                      event
+                        .target
+                        .value,
                     )
                   }
-                  className={inputClass}
+                  className={
+                    inputClass
+                  }
                   placeholder="https://www.ejemplo.com"
                 />
               </Field>
@@ -560,14 +860,22 @@ export default function AgencyForm({
                 required
               >
                 <select
-                  value={form.country}
-                  onChange={(event) =>
+                  value={
+                    form.country
+                  }
+                  onChange={(
+                    event,
+                  ) =>
                     updateField(
                       "country",
-                      event.target.value,
+                      event
+                        .target
+                        .value,
                     )
                   }
-                  className={inputClass}
+                  className={
+                    inputClass
+                  }
                 >
                   <option value="Costa Rica">
                     Costa Rica
@@ -580,14 +888,22 @@ export default function AgencyForm({
                 required
               >
                 <select
-                  value={form.province}
-                  onChange={(event) =>
+                  value={
+                    form.province
+                  }
+                  onChange={(
+                    event,
+                  ) =>
                     updateField(
                       "province",
-                      event.target.value,
+                      event
+                        .target
+                        .value,
                     )
                   }
-                  className={inputClass}
+                  className={
+                    inputClass
+                  }
                 >
                   <option value="">
                     Selecciona
@@ -628,14 +944,22 @@ export default function AgencyForm({
                 required
               >
                 <input
-                  value={form.city}
-                  onChange={(event) =>
+                  value={
+                    form.city
+                  }
+                  onChange={(
+                    event,
+                  ) =>
                     updateField(
                       "city",
-                      event.target.value,
+                      event
+                        .target
+                        .value,
                     )
                   }
-                  className={inputClass}
+                  className={
+                    inputClass
+                  }
                   placeholder="La Fortuna"
                 />
               </Field>
@@ -647,20 +971,32 @@ export default function AgencyForm({
                 required
               >
                 <input
-                  value={form.exactAddress}
-                  onChange={(event) =>
+                  value={
+                    form.exactAddress
+                  }
+                  onChange={(
+                    event,
+                  ) =>
                     updateField(
                       "exactAddress",
-                      event.target.value,
+                      event
+                        .target
+                        .value,
                     )
                   }
-                  className={inputClass}
+                  className={
+                    inputClass
+                  }
                   placeholder="Ej. 200 metros norte del parque central"
                 />
               </Field>
 
               <div>
-                <p className={labelClass}>
+                <p
+                  className={
+                    labelClass
+                  }
+                >
                   Redes sociales{" "}
                   <span className="font-normal text-[#66706B]">
                     (opcional)
@@ -669,10 +1005,20 @@ export default function AgencyForm({
 
                 <div className="grid gap-2 sm:grid-cols-3">
                   <SocialInput
-                    icon={<AtSign size={13} />}
-                    value={form.instagramUrl}
+                    icon={
+                      <AtSign
+                        size={
+                          13
+                        }
+                      />
+                    }
+                    value={
+                      form.instagramUrl
+                    }
                     placeholder="@aventuraverdecr"
-                    onChange={(value) =>
+                    onChange={(
+                      value,
+                    ) =>
                       updateField(
                         "instagramUrl",
                         value,
@@ -681,10 +1027,20 @@ export default function AgencyForm({
                   />
 
                   <SocialInput
-                    icon={<Globe2 size={13} />}
-                    value={form.facebookUrl}
+                    icon={
+                      <Globe2
+                        size={
+                          13
+                        }
+                      />
+                    }
+                    value={
+                      form.facebookUrl
+                    }
                     placeholder="/aventuraverdecr"
-                    onChange={(value) =>
+                    onChange={(
+                      value,
+                    ) =>
                       updateField(
                         "facebookUrl",
                         value,
@@ -693,10 +1049,20 @@ export default function AgencyForm({
                   />
 
                   <SocialInput
-                    icon={<MessageCircle size={13} />}
-                    value={form.whatsapp}
+                    icon={
+                      <MessageCircle
+                        size={
+                          13
+                        }
+                      />
+                    }
+                    value={
+                      form.whatsapp
+                    }
                     placeholder="+506 6000 0000"
-                    onChange={(value) =>
+                    onChange={(
+                      value,
+                    ) =>
                       updateField(
                         "whatsapp",
                         value,
@@ -717,8 +1083,12 @@ export default function AgencyForm({
               <UploadBox
                 title="Subir logo"
                 subtitle="JPG, PNG o SVG. Máx. 2MB"
-                value={form.logoUrl}
-                onChange={(value) =>
+                value={
+                  form.logoUrl
+                }
+                onChange={(
+                  value,
+                ) =>
                   updateField(
                     "logoUrl",
                     value,
@@ -727,13 +1097,19 @@ export default function AgencyForm({
                 preview={
                   form.logoUrl ? (
                     <img
-                      src={form.logoUrl}
+                      src={
+                        form.logoUrl
+                      }
                       alt="Logo"
                       className="size-10 rounded-full object-cover"
                     />
                   ) : (
                     <div className="flex size-10 items-center justify-center rounded-full bg-[#075E36] text-white">
-                      <Mountain size={20} />
+                      <Mountain
+                        size={
+                          20
+                        }
+                      />
                     </div>
                   )
                 }
@@ -743,8 +1119,12 @@ export default function AgencyForm({
               <UploadBox
                 title="Imagen de portada"
                 subtitle="JPG, PNG. Recomendado 1600x600px. Máx. 5MB"
-                value={form.coverUrl}
-                onChange={(value) =>
+                value={
+                  form.coverUrl
+                }
+                onChange={(
+                  value,
+                ) =>
                   updateField(
                     "coverUrl",
                     value,
@@ -753,13 +1133,17 @@ export default function AgencyForm({
                 preview={
                   form.coverUrl ? (
                     <img
-                      src={form.coverUrl}
+                      src={
+                        form.coverUrl
+                      }
                       alt="Portada"
                       className="h-10 w-full rounded-md object-cover"
                     />
                   ) : (
                     <ImageIcon
-                      size={25}
+                      size={
+                        25
+                      }
                       className="text-[#075E36]"
                     />
                   )
@@ -774,7 +1158,9 @@ export default function AgencyForm({
                 value={
                   form.verificationDocumentUrl
                 }
-                onChange={(value) =>
+                onChange={(
+                  value,
+                ) =>
                   updateField(
                     "verificationDocumentUrl",
                     value,
@@ -782,7 +1168,9 @@ export default function AgencyForm({
                 }
                 preview={
                   <FileText
-                    size={26}
+                    size={
+                      26
+                    }
                     className="text-[#66706B]"
                   />
                 }
@@ -793,11 +1181,17 @@ export default function AgencyForm({
             <label className="mt-3 flex cursor-pointer items-center gap-2">
               <input
                 type="checkbox"
-                checked={form.acceptedTerms}
-                onChange={(event) =>
+                checked={
+                  form.acceptedTerms
+                }
+                onChange={(
+                  event,
+                ) =>
                   updateField(
                     "acceptedTerms",
-                    event.target.checked,
+                    event
+                      .target
+                      .checked,
                   )
                 }
                 className="size-4 accent-[#075E36]"
@@ -827,17 +1221,35 @@ export default function AgencyForm({
 
             <div className="mt-4 space-y-4">
               <InfoRow
-                icon={<ShieldCheck size={16} />}
+                icon={
+                  <ShieldCheck
+                    size={
+                      16
+                    }
+                  />
+                }
                 text="Tu agencia será revisada por administración antes de activarse."
               />
 
               <InfoRow
-                icon={<BadgeCheck size={16} />}
+                icon={
+                  <BadgeCheck
+                    size={
+                      16
+                    }
+                  />
+                }
                 text="Necesitarás información real y medios de contacto válidos."
               />
 
               <InfoRow
-                icon={<Sparkles size={16} />}
+                icon={
+                  <Sparkles
+                    size={
+                      16
+                    }
+                  />
+                }
                 text="Luego podrás crear publicaciones, promociones y gestionar reservas."
               />
             </div>
@@ -852,14 +1264,18 @@ export default function AgencyForm({
               <div className="h-28 overflow-hidden rounded-lg bg-[#EEF4EF]">
                 {form.coverUrl ? (
                   <img
-                    src={form.coverUrl}
+                    src={
+                      form.coverUrl
+                    }
                     alt="Portada de la agencia"
                     className="h-full w-full object-cover"
                   />
                 ) : (
                   <div className="flex h-full items-center justify-center">
                     <ImageIcon
-                      size={28}
+                      size={
+                        28
+                      }
                       className="text-[#91A69A]"
                     />
                   </div>
@@ -869,13 +1285,19 @@ export default function AgencyForm({
               <div className="absolute -bottom-5 left-3 flex size-11 items-center justify-center overflow-hidden rounded-full border-[3px] border-white bg-white shadow-sm">
                 {form.logoUrl ? (
                   <img
-                    src={form.logoUrl}
+                    src={
+                      form.logoUrl
+                    }
                     alt="Logo"
                     className="h-full w-full object-cover"
                   />
                 ) : (
                   <div className="flex size-9 items-center justify-center rounded-full bg-[#075E36] text-white">
-                    <Mountain size={18} />
+                    <Mountain
+                      size={
+                        18
+                      }
+                    />
                   </div>
                 )}
               </div>
@@ -884,40 +1306,63 @@ export default function AgencyForm({
             <div className="pt-7">
               <div className="flex items-center gap-1.5">
                 <h4 className="text-[14px] font-bold leading-5 text-[#252B28]">
-                  {previewName}
+                  {
+                    previewName
+                  }
                 </h4>
 
                 <BadgeCheck
-                  size={14}
+                  size={
+                    14
+                  }
                   className="text-[#075E36]"
                 />
               </div>
 
               <p className="mt-0.5 text-[10px] leading-4 text-[#66706B]">
                 Agencia de turismo ·{" "}
-                {previewLocation}
+                {
+                  previewLocation
+                }
               </p>
 
               <div className="mt-2 flex flex-wrap gap-1">
-                {form.categoryIds.length > 0 ? (
+                {form
+                  .categoryIds
+                  .length >
+                0 ? (
                   form.categoryIds
-                    .slice(0, 3)
-                    .map((id) => {
-                      const category =
-                        categories.find(
-                          (item) =>
-                            item.id === id,
-                        );
+                    .slice(
+                      0,
+                      3,
+                    )
+                    .map(
+                      (
+                        id,
+                      ) => {
+                        const category =
+                          categories.find(
+                            (
+                              item,
+                            ) =>
+                              item.id ===
+                              id,
+                          );
 
-                      return category ? (
-                        <span
-                          key={category.id}
-                          className="rounded bg-[#E7F3E9] px-1.5 py-0.5 text-[9px] font-medium text-[#075E36]"
-                        >
-                          {category.name}
-                        </span>
-                      ) : null;
-                    })
+                        return category ? (
+                          <span
+                            key={
+                              category.id
+                            }
+                            className="rounded bg-[#E7F3E9] px-1.5 py-0.5 text-[9px] font-medium text-[#075E36]"
+                          >
+                            {
+                              category.name
+                            }
+                          </span>
+                        ) : null;
+                      },
+                    )
                 ) : (
                   <>
                     <span className="rounded bg-[#E7F3E9] px-1.5 py-0.5 text-[9px] text-[#075E36]">
@@ -944,7 +1389,9 @@ export default function AgencyForm({
                 <div className="grid grid-cols-2 divide-x divide-[#D7E7D9]">
                   <div className="flex items-center gap-1.5 pr-2">
                     <Star
-                      size={12}
+                      size={
+                        12
+                      }
                       className="text-[#075E36]"
                     />
 
@@ -959,7 +1406,9 @@ export default function AgencyForm({
 
                   <div className="flex items-center gap-1.5 pl-2">
                     <Leaf
-                      size={12}
+                      size={
+                        12
+                      }
                       className="text-[#075E36]"
                     />
 
@@ -971,7 +1420,9 @@ export default function AgencyForm({
 
                 <div className="mt-2 flex items-center gap-1.5 border-t border-[#D7E7D9] pt-2">
                   <Zap
-                    size={12}
+                    size={
+                      12
+                    }
                     className="text-[#075E36]"
                   />
 
@@ -998,7 +1449,9 @@ export default function AgencyForm({
 
       {successMessage && (
         <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-[11px] text-emerald-700">
-          {successMessage}
+          {
+            successMessage
+          }
         </div>
       )}
 
@@ -1006,8 +1459,12 @@ export default function AgencyForm({
       <div className="flex flex-col gap-2.5 border-t border-[#E0E4E1] pt-3 sm:flex-row sm:items-center">
         <button
           type="button"
-          onClick={onCancel}
-          disabled={saving}
+          onClick={
+            onCancel
+          }
+          disabled={
+            saving
+          }
           className="h-9 min-w-[140px] rounded-lg border border-[#66706B] bg-white px-5 text-[11px] font-semibold text-[#252B28] transition hover:bg-[#F7F8F7] disabled:opacity-50"
         >
           Cancelar
@@ -1019,18 +1476,31 @@ export default function AgencyForm({
             onClick={() =>
               void saveDraft()
             }
-            disabled={saving}
+            disabled={
+              saving
+            }
             className="h-9 min-w-[165px] rounded-lg border border-[#075E36] bg-white px-5 text-[11px] font-semibold text-[#075E36] transition hover:bg-[#EFF8F3] disabled:opacity-50"
           >
-            Guardar borrador
+            {saving
+              ? "Guardando..."
+              : mode ===
+                  "edit"
+                ? "Guardar cambios"
+                : "Guardar borrador"}
           </button>
 
           <button
             type="submit"
-            disabled={saving}
+            disabled={
+              saving
+            }
             className="inline-flex h-9 min-w-[200px] items-center justify-center gap-2 rounded-lg bg-[#075E36] px-5 text-[11px] font-semibold text-white transition hover:bg-[#064D2D] disabled:opacity-50"
           >
-            <Send size={13} />
+            <Send
+              size={
+                13
+              }
+            />
 
             {saving
               ? "Guardando..."
@@ -1049,7 +1519,8 @@ function SectionCard({
 }: {
   number: string;
   title: string;
-  children: React.ReactNode;
+  children:
+    React.ReactNode;
 }) {
   return (
     <section className="rounded-xl border border-[#DDE2DF] bg-white p-4">
@@ -1075,14 +1546,21 @@ function Field({
 }: {
   label: string;
   required?: boolean;
-  children: React.ReactNode;
+  children:
+    React.ReactNode;
 }) {
   return (
     <label className="block">
-      <span className={labelClass}>
+      <span
+        className={
+          labelClass
+        }
+      >
         {label}
 
-        {required && <Required />}
+        {required && (
+          <Required />
+        )}
       </span>
 
       {children}
@@ -1104,10 +1582,16 @@ function SocialInput({
   placeholder,
   onChange,
 }: {
-  icon: React.ReactNode;
+  icon:
+    React.ReactNode;
+
   value: string;
+
   placeholder: string;
-  onChange: (value: string) => void;
+
+  onChange: (
+    value: string,
+  ) => void;
 }) {
   return (
     <div className="flex h-9 overflow-hidden rounded-lg border border-[#DDE2DF] bg-white transition focus-within:border-[#08643B] focus-within:ring-2 focus-within:ring-[#08643B]/10">
@@ -1117,10 +1601,17 @@ function SocialInput({
 
       <input
         value={value}
-        onChange={(event) =>
-          onChange(event.target.value)
+        onChange={(
+          event,
+        ) =>
+          onChange(
+            event.target
+              .value,
+          )
         }
-        placeholder={placeholder}
+        placeholder={
+          placeholder
+        }
         className="min-w-0 flex-1 bg-transparent px-2.5 text-[11px] text-[#252B28] outline-none placeholder:text-[#9AA19D]"
       />
     </div>
@@ -1137,23 +1628,36 @@ function UploadBox({
   info = false,
 }: {
   title: string;
+
   subtitle: string;
+
   value: string;
-  onChange: (value: string) => void;
-  preview: React.ReactNode;
+
+  onChange: (
+    value: string,
+  ) => void;
+
+  preview:
+    React.ReactNode;
+
   text: string;
+
   info?: boolean;
 }) {
   return (
     <div>
-      <p className={`${labelClass} flex items-center gap-1`}>
+      <p
+        className={`${labelClass} flex items-center gap-1`}
+      >
         {title}
 
         <Required />
 
         {info && (
           <Info
-            size={11}
+            size={
+              11
+            }
             className="text-[#66706B]"
           />
         )}
@@ -1164,7 +1668,11 @@ function UploadBox({
           type="button"
           className="absolute right-2 top-2 flex size-6 items-center justify-center rounded-md border border-[#DDE2DF] bg-white text-[#075E36] transition hover:bg-[#EFF8F3]"
         >
-          <UploadCloud size={12} />
+          <UploadCloud
+            size={
+              12
+            }
+          />
         </button>
 
         <div className="mb-1.5 flex min-h-9 items-center justify-center">
@@ -1180,9 +1688,17 @@ function UploadBox({
 
           <input
             type="text"
-            value={value}
-            onChange={(event) =>
-              onChange(event.target.value)
+            value={
+              value
+            }
+            onChange={(
+              event,
+            ) =>
+              onChange(
+                event
+                  .target
+                  .value,
+              )
             }
             className="sr-only"
           />
@@ -1200,7 +1716,9 @@ function InfoRow({
   icon,
   text,
 }: {
-  icon: React.ReactNode;
+  icon:
+    React.ReactNode;
+
   text: string;
 }) {
   return (

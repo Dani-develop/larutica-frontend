@@ -1,7 +1,7 @@
 "use client";
 
 import { useDashboardRole } from "@/components/dashboard/dashboard-role-context";
-import { CreatePublicationPage } from "@/modules/agency/publications/components/CreatePublicationPage";
+import { CreatePublicationPage } from "@/modules/publications/components/CreatePublicationPage";
 import { CreateRoutePage } from "@/modules/transport/routes/components/CreateRoutePage";
 
 export default function Page() {
