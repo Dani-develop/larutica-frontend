@@ -14,6 +14,13 @@ export type Reservation = {
   publicationId: string
   publicationTitle: string
   destination: string | null
+  passengerName?: string
+  passengerEmail?: string
+  passengerPhone?: string | null
+  agencyName?: string
+  agencyPhone?: string | null
+  agencyEmail?: string | null
+  meetingPoint?: string | null
 }
 
 export type CreateReservationPayload = {

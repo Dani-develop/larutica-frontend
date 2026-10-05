@@ -1,12 +1,12 @@
 "use client";
 
 import { useDashboardRole } from "@/components/dashboard/dashboard-role-context";
-import { TravelerReservationsPage } from "@/components/dashboard/TravelerViews";
+import { Reservations } from "@/modules/booking/Reservations";
 import { DashboardSectionPage } from "@/components/dashboard/DashboardSectionPage";
 
 export default function Page() {
   const { role } = useDashboardRole();
-  if (role === "Viajero") return <TravelerReservationsPage />;
+  if (role === "Viajero") return <Reservations worker />;
   return (
     <DashboardSectionPage
       title="Pendientes"

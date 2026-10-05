@@ -15,14 +15,16 @@ const RESERVATION_SELECT = `
   status,
   created_at,
   updated_at,
+  profiles ( full_name, email, phone ),
   publication_departures (
     start_at,
     publications (
       id,
       title,
       destination,
+      meeting_point,
       agencies (
-        owner_user_id
+        owner_user_id, commercial_name, phone, email
       )
     )
   )
@@ -43,13 +45,21 @@ export type ReservationRecord = {
   publicationTitle: string;
   destination: string | null;
   ownerUserId: string | null;
+  passengerName?: string;
+  passengerEmail?: string;
+  passengerPhone?: string | null;
+  agencyName?: string;
+  agencyPhone?: string | null;
+  agencyEmail?: string | null;
+  meetingPoint?: string | null;
 };
 
-type AgencyEmbed = { owner_user_id: string };
+type AgencyEmbed = { owner_user_id: string; commercial_name?: string; phone?: string; email?: string };
 type PublicationEmbed = {
   id: string;
   title: string | null;
   destination: string | null;
+  meeting_point?: string;
   agencies: AgencyEmbed | AgencyEmbed[] | null;
 };
 type DepartureEmbed = {
@@ -65,6 +75,7 @@ type ReservationRow = {
   status: ReservationStatus;
   created_at: string;
   updated_at: string;
+  profiles?: { full_name: string; email: string; phone: string | null } | { full_name: string; email: string; phone: string | null }[] | null;
   publication_departures: DepartureEmbed | DepartureEmbed[] | null;
 };
 
@@ -94,6 +105,7 @@ export function toReservationRecord(row: ReservationRow): ReservationRecord {
   const departure = one(row.publication_departures);
   const publication = one(departure?.publications ?? null);
   const agency = one(publication?.agencies ?? null);
+  const passenger = one(row.profiles);
   const unitPrice = Number(row.unit_price);
   const numberOfPeople = row.number_of_people;
   return {
@@ -111,6 +123,13 @@ export function toReservationRecord(row: ReservationRow): ReservationRecord {
     publicationTitle: publication?.title ?? "Reserva",
     destination: publication?.destination ?? null,
     ownerUserId: agency?.owner_user_id ?? null,
+    passengerName: passenger?.full_name,
+    passengerEmail: passenger?.email,
+    passengerPhone: passenger?.phone,
+    agencyName: agency?.commercial_name,
+    agencyPhone: agency?.phone,
+    agencyEmail: agency?.email,
+    meetingPoint: publication?.meeting_point,
   };
 }
 
@@ -129,6 +148,13 @@ export function toPublicReservation(record: ReservationRecord) {
     publicationId: record.publicationId,
     publicationTitle: record.publicationTitle,
     destination: record.destination,
+    passengerName: record.passengerName,
+    passengerEmail: record.passengerEmail,
+    passengerPhone: record.passengerPhone,
+    agencyName: record.agencyName,
+    agencyPhone: record.agencyPhone,
+    agencyEmail: record.agencyEmail,
+    meetingPoint: record.meetingPoint,
   };
 }
 
@@ -200,6 +226,11 @@ export async function createReservationRecord(
   departureId: string,
   numberOfPeople: number,
 ): Promise<ReservationRecord> {
+  const { data: departure, error: availabilityError } = await admin.from("publication_departures")
+    .select("publications!inner(agencies!inner(status))").eq("id", departureId)
+    .eq("publications.agencies.status", "APPROVED").maybeSingle();
+  if (availabilityError) throw availabilityError;
+  if (!departure) throw new ApiError("El proveedor ya no está disponible para recibir reservas.", 409);
   const { data, error } = await admin.rpc("create_reservation", {
     p_passenger_id: passengerId,
     p_departure_id: departureId,

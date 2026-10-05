@@ -73,8 +73,12 @@ export async function PATCH(request: Request, context: RouteContext) {
 
     if (patch.numberOfPeople !== undefined) {
       guardPolicy(() => assertCanChangePartySize(role, userId, reservation));
-      await updateReservationPartySize(admin, id, patch.numberOfPeople);
     }
+
+    // Validate the whole request before making any change.
+    if (patch.status === "CONFIRMED") guardPolicy(() => assertCanConfirm(role, userId, reservation));
+    if (patch.status === "CANCELLED") guardPolicy(() => assertCanCancel(role, userId, reservation));
+    if (patch.numberOfPeople !== undefined) await updateReservationPartySize(admin, id, patch.numberOfPeople);
 
     if (patch.status === "CONFIRMED") {
       guardPolicy(() => assertCanConfirm(role, userId, reservation));

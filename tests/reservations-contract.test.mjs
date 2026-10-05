@@ -3,6 +3,7 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 import {
   assertCanCancel,
+  assertCanConfirm,
   assertTravelerCanCreate,
   canDeleteReservation,
   filterVisibleReservations,
@@ -121,6 +122,15 @@ test("el cliente expone el CRUD y Mis reservas deja los datos fijos", async () =
   assert.match(reservationsPage, /No tienes reservas por venir/);
   assert.match(reservationsPage, /role="alert"/);
   assert.doesNotMatch(reservationsPage, /pub-arenal-01/);
-  assert.match(landing, /createReservation\(\{/);
-  assert.match(landing, /useReservations/);
+  assert.match(landing, /Catalog/);
+});
+
+test('solo el trabajador propietario o Admin pueden confirmar antes de la salida', () => {
+  const pending = {...own, status:'PENDING', departureStartAt:future};
+  assert.throws(() => assertCanConfirm('Viajero','viajero-1',pending), e => e.status === 403);
+  assert.throws(() => assertCanConfirm('Agencia','agencia-2',pending), e => e.status === 403);
+  assert.doesNotThrow(() => assertCanConfirm('Agencia','agencia-1',pending));
+  assert.doesNotThrow(() => assertCanConfirm('Admin','admin-1',pending));
+  assert.throws(() => assertCanConfirm('Agencia','agencia-1',{...pending,status:'CANCELLED'}));
+  assert.throws(() => assertCanConfirm('Agencia','agencia-1',{...pending,departureStartAt:'2020-01-01'}));
 });

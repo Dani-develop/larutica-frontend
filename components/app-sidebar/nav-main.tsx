@@ -1,7 +1,6 @@
 "use client";
 
 import { ChevronRight } from "lucide-react";
-import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import {
@@ -82,7 +81,7 @@ export function NavMain({ role }: Props) {
                             isActive={active}
                             tooltip={item.label}
                           >
-                            <Link
+                            <a
                               href={item.href}
                               onClick={() => {
                                 if (isMobile) {
@@ -92,7 +91,7 @@ export function NavMain({ role }: Props) {
                             >
                               <Icon className="size-4" />
                               <span>{item.label}</span>
-                            </Link>
+                            </a>
                           </SidebarMenuButton>
                           {item.badge !== undefined && (
                             <SidebarMenuBadge>{item.badge}</SidebarMenuBadge>

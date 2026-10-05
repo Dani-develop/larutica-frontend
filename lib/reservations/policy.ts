@@ -149,6 +149,9 @@ export function departureHasStarted(departureStartAt: string, now = Date.now()) 
 }
 
 export function assertCanConfirm(role: string, userId: string, reservation: ReservationMutation, now = Date.now()) {
+  if (role !== "Agencia" && role !== "Transporte" && role !== "Admin") {
+    throw new ReservationPolicyError("Solo el proveedor puede confirmar tu reserva.", 403);
+  }
   assertKnownActor(role, userId, reservation);
   if (reservation.status !== "PENDING") {
     throw new ReservationPolicyError("Solo una reserva pendiente se puede confirmar.", 400);
@@ -160,6 +163,9 @@ export function assertCanConfirm(role: string, userId: string, reservation: Rese
 
 export function assertCanCancel(role: string, userId: string, reservation: ReservationMutation) {
   assertKnownActor(role, userId, reservation);
+  if (departureHasStarted(reservation.departureStartAt)) {
+    throw new ReservationPolicyError("La salida ya comenzó. No se puede cancelar.", 400);
+  }
   if (reservation.status !== "PENDING" && reservation.status !== "CONFIRMED") {
     throw new ReservationPolicyError("Esta reserva ya no se puede cancelar.", 400);
   }
