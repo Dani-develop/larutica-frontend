@@ -47,11 +47,7 @@ type PublicationRow = {
 
   created_at: string;
   updated_at: string;
-};
-
-type PublicationLanguageRow = {
-  publication_id: string;
-  language_id: number;
+  publication_languages: { language_id: number; languages: LanguageRow | LanguageRow[] | null }[];
 };
 
 type LanguageRow = {
@@ -191,7 +187,8 @@ export async function GET(
           default_capacity,
           status,
           created_at,
-          updated_at
+          updated_at,
+          publication_languages(language_id,languages(id,name,code,active))
         `,
       )
       .eq(
@@ -242,147 +239,14 @@ export async function GET(
       );
     }
 
-    const publicationIds =
-      publicationRows.map(
-        (publication) =>
-          publication.id,
-      );
-
-    /*
-     * Obtener relaciones
-     * publicación -> idioma.
-     */
-    const {
-      data:
-        publicationLanguages,
-      error:
-        publicationLanguagesError,
-    } = await supabase
-      .from(
-        "publication_languages",
-      )
-      .select(
-        `
-          publication_id,
-          language_id
-        `,
-      )
-      .in(
-        "publication_id",
-        publicationIds,
-      );
-
-    if (
-      publicationLanguagesError
-    ) {
-      console.error(
-        "Error consultando idiomas de publicaciones:",
-        publicationLanguagesError,
-      );
-
-      throw new ApiError(
-        "No se pudieron consultar los idiomas de las publicaciones.",
-        500,
-      );
-    }
-
-    const relationRows =
-      (
-        publicationLanguages ??
-        []
-      ) as PublicationLanguageRow[];
-
-    /*
-     * Extraer IDs únicos de idiomas.
-     */
-    const languageIds =
-      Array.from(
-        new Set(
-          relationRows.map(
-            (relation) =>
-              relation.language_id,
-          ),
-        ),
-      );
-
-    let languages:
-      LanguageRow[] = [];
-
-    /*
-     * Consultar información de los
-     * idiomas únicamente si existen
-     * relaciones.
-     */
-    if (
-      languageIds.length > 0
-    ) {
-      const {
-        data: languageData,
-        error: languagesError,
-      } = await supabase
-        .from("languages")
-        .select(
-          `
-            id,
-            name,
-            code,
-            active
-          `,
-        )
-        .in(
-          "id",
-          languageIds,
-        );
-
-      if (languagesError) {
-        console.error(
-          "Error consultando idiomas:",
-          languagesError,
-        );
-
-        throw new ApiError(
-          "No se pudieron consultar los idiomas.",
-          500,
-        );
-      }
-
-      languages =
-        (
-          languageData ?? []
-        ) as LanguageRow[];
-    }
-
-    /*
-     * Construir una respuesta cómoda
-     * para el frontend.
-     *
-     * Así el frontend no necesita
-     * conocer los nombres snake_case
-     * utilizados en Supabase.
-     */
     const responseData =
       publicationRows.map(
         (publication) => {
-          const relations =
-            relationRows.filter(
-              (relation) =>
-                relation.publication_id ===
-                publication.id,
-            );
-
-          const publicationLanguageIds =
-            relations.map(
-              (relation) =>
-                relation.language_id,
-            );
-
-          const publicationLanguages =
-            languages.filter(
-              (language) =>
-                publicationLanguageIds.includes(
-                  language.id,
-                ),
-            );
+          const relations = publication.publication_languages ?? [];
+          const publicationLanguageIds = relations.map(relation => relation.language_id);
+          const publicationLanguages = relations.flatMap(relation =>
+            Array.isArray(relation.languages) ? relation.languages : relation.languages ? [relation.languages] : [],
+          );
 
           return {
             id:

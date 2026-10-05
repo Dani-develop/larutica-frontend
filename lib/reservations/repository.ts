@@ -170,35 +170,18 @@ export async function listReservationRecords(
 ): Promise<ReservationRecord[]> {
   await markElapsed(admin);
   const scope = listScope(role);
-  let query = admin.from("reservations").select(RESERVATION_SELECT).order("created_at", { ascending: false });
+  // Inner joins make ownership filtering apply to reservations themselves.
+  const selection = scope === "owned-agency"
+    ? RESERVATION_SELECT.replace("publication_departures (", "publication_departures!inner (")
+      .replace("publications (", "publications!inner (")
+      .replace("agencies (", "agencies!inner (")
+    : RESERVATION_SELECT;
+  let query = admin.from("reservations").select(selection).order("created_at", { ascending: false });
 
   if (scope === "own") {
     query = query.eq("passenger_id", userId);
   } else if (scope === "owned-agency") {
-    const { data: agency, error: agencyError } = await admin
-      .from("agencies")
-      .select("id")
-      .eq("owner_user_id", userId)
-      .maybeSingle();
-    if (agencyError) throw agencyError;
-    if (!agency) return [];
-
-    const { data: publications, error: publicationsError } = await admin
-      .from("publications")
-      .select("id")
-      .eq("agency_id", agency.id);
-    if (publicationsError) throw publicationsError;
-    const publicationIds = (publications ?? []).map((publication) => publication.id);
-    if (publicationIds.length === 0) return [];
-
-    const { data: departures, error: departuresError } = await admin
-      .from("publication_departures")
-      .select("id")
-      .in("publication_id", publicationIds);
-    if (departuresError) throw departuresError;
-    const departureIds = (departures ?? []).map((departure) => departure.id);
-    if (departureIds.length === 0) return [];
-    query = query.in("departure_id", departureIds);
+    query = query.eq("publication_departures.publications.agencies.owner_user_id", userId);
   }
 
   const { data, error } = await query;

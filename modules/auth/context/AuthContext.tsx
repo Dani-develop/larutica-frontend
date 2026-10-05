@@ -6,6 +6,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
@@ -79,6 +80,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<SystemUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const authChannel = useRef<BroadcastChannel | null>(null);
 
   const applySession = useCallback((payload: SessionPayload | null) => {
     setSession(payload?.session ?? null);
@@ -106,21 +108,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const channel = typeof BroadcastChannel === "undefined"
       ? null
       : new BroadcastChannel("larutica-auth");
+    authChannel.current = channel;
     channel?.addEventListener("message", loadSession);
     const expired = () => { void loadSession(); };
     window.addEventListener("larutica-auth-expired", expired);
     return () => {
       channel?.removeEventListener("message", loadSession);
       channel?.close();
+      authChannel.current = null;
       window.removeEventListener("larutica-auth-expired", expired);
     };
   }, [loadSession]);
 
   const broadcast = useCallback(() => {
-    if (typeof BroadcastChannel === "undefined") return;
-    const channel = new BroadcastChannel("larutica-auth");
-    channel.postMessage("changed");
-    channel.close();
+    authChannel.current?.postMessage("changed");
   }, []);
 
   const signIn = useCallback(async (input: SignInDto) => {
