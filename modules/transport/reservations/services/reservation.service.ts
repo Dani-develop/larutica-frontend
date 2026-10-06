@@ -11,9 +11,17 @@ export type Reservation = {
   createdAt: string
   updatedAt: string
   departureStartAt: string
+  departureStatus?: string
   publicationId: string
   publicationTitle: string
   destination: string | null
+  passengerName?: string
+  passengerEmail?: string
+  passengerPhone?: string | null
+  agencyName?: string
+  agencyPhone?: string | null
+  agencyEmail?: string | null
+  meetingPoint?: string | null
 }
 
 export type CreateReservationPayload = {
@@ -45,8 +53,11 @@ async function parseResponse<T>(response: Response): Promise<T> {
   return body
 }
 
-export async function listReservations(): Promise<Reservation[]> {
-  const response = await fetch('/api/reservations', {
+export async function listReservations(options: { mine?: boolean; departureId?: string } = {}): Promise<Reservation[]> {
+  const params = new URLSearchParams();
+  if (options.mine) params.set('scope', 'mine');
+  if (options.departureId) params.set('departureId', options.departureId);
+  const response = await fetch(`/api/reservations${params.size ? `?${params}` : ''}`, {
     method: 'GET',
     credentials: 'include',
   })

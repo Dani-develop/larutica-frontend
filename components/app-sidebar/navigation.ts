@@ -57,6 +57,13 @@ export const navGroups: NavGroup[] = [
     label: "General",
     items: [
       {
+        href: "/dashboard/reservations",
+        label: "Reservas",
+        icon: CalendarDays,
+        roles: ["Agencia", "Transporte", "Admin"],
+        primary: true,
+      },
+      {
         href: "/dashboard",
         label: "Inicio",
         icon: Home,
@@ -91,7 +98,7 @@ export const navGroups: NavGroup[] = [
         primary: true,
       },
       {
-        href: "/dashboard/reviews",
+        href: "/mis-reservas",
         label: "Mis reservas",
         icon: CalendarDays,
         roles: ["Viajero"],

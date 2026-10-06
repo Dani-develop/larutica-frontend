@@ -1,9 +1,8 @@
 "use client";
 
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { KeyRound } from "lucide-react";
+import { useState, useEffect } from "react";
+import { safeBookingReturn } from "@/modules/auth/utils/returnTo";
+import { Eye, EyeOff, KeyRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
@@ -14,20 +13,23 @@ import { passkeyErrorMessage } from "@/modules/auth/utils/passkeyErrors";
 import { signInValidators } from "@/modules/auth/validators/authValidators";
 
 export default function LoginForm() {
-  const router = useRouter();
+  const [returnTo, setReturnTo] = useState('/dashboard');
+  useEffect(() => {setReturnTo(safeBookingReturn(new URLSearchParams(window.location.search).get('next')));}, []);
   const { signIn, signInWithPasskey } = useAuth();
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const passkeySupported = useWebAuthnSupport();
 
   return (
     <AuthShell eyebrow="Acceso" title="Iniciar sesión">
       <p className="mb-6 -mt-6 text-sm text-muted-foreground">
-        Accede con la cuenta almacenada de forma segura en Supabase.
+        {returnTo === '/dashboard' ? 'Ingresa para acceder a tu cuenta.' : returnTo === '/mis-reservas' ? 'Inicia sesión para consultar tus reservas y la respuesta del proveedor.' : 'Inicia sesión para continuar con tu reserva. Conservaremos la salida y las personas que elegiste.'}
       </p>
 
       <form
         className="flex flex-col gap-5"
+        aria-busy={submitting}
         onSubmit={async (event) => {
           event.preventDefault();
           setError(null);
@@ -43,7 +45,7 @@ export default function LoginForm() {
           setSubmitting(true);
           try {
             await signIn(parsed.data);
-            router.replace("/dashboard");
+            window.location.assign(returnTo);
           } catch (nextError) {
             setError(nextError instanceof Error ? nextError.message : "No se pudo iniciar sesión.");
           } finally {
@@ -52,10 +54,10 @@ export default function LoginForm() {
         }}
       >
         <FieldGroup><Field><FieldLabel htmlFor="email">Correo electrónico</FieldLabel><Input id="email" name="email" type="email" placeholder="correo@ejemplo.com" autoComplete="email" required /></Field></FieldGroup>
-        <FieldGroup><Field><FieldLabel htmlFor="password">Contraseña</FieldLabel><Input id="password" name="password" type="password" placeholder="••••••••" autoComplete="current-password" required /></Field></FieldGroup>
+        <FieldGroup><Field><FieldLabel htmlFor="password">Contraseña</FieldLabel><div className="relative"><Input id="password" name="password" type={showPassword ? 'text' : 'password'} className="h-11 pr-12" placeholder="••••••••" autoComplete="current-password" required /><button type="button" className="absolute inset-y-0 right-0 flex min-w-11 items-center justify-center rounded-md focus-visible:outline-2 focus-visible:outline-offset-2" aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'} aria-pressed={showPassword} onClick={() => setShowPassword(value => !value)}>{showPassword ? <EyeOff size={18} aria-hidden="true"/> : <Eye size={18} aria-hidden="true"/>}</button></div></Field></FieldGroup>
         {error ? <p className="text-sm text-destructive" role="alert">{error}</p> : null}
-        <p className="-mt-2 text-right text-sm"><Link href="/forgot-password" className="font-medium text-primary underline-offset-4 hover:underline">¿Olvidaste tu contraseña?</Link></p>
-        <Button type="submit" className="mt-1 w-full" disabled={submitting}>{submitting ? "Validando..." : "Continuar al dashboard"}</Button>
+        <p className="-mt-2 text-right text-sm"><a href="/forgot-password" className="font-medium text-primary underline-offset-4 hover:underline">¿Olvidaste tu contraseña?</a></p>
+        <Button type="submit" className="mt-1 w-full" disabled={submitting}>{submitting ? "Validando..." : "Iniciar sesión"}</Button>
       </form>
 
       {passkeySupported ? (
@@ -73,7 +75,7 @@ export default function LoginForm() {
               setSubmitting(true);
               try {
                 await signInWithPasskey();
-                router.replace("/dashboard");
+                window.location.assign(returnTo);
               } catch (nextError) {
                 setError(passkeyErrorMessage(nextError, "No se pudo iniciar sesión con la passkey."));
               } finally {
@@ -82,12 +84,12 @@ export default function LoginForm() {
             }}
           >
             <KeyRound aria-hidden="true" />
-            Iniciar sesión con passkey
+            Usar llave de acceso (passkey)
           </Button>
         </>
       ) : null}
 
-      <p className="mt-6 text-center text-sm text-muted-foreground">¿No tienes cuenta?{" "}<Link href="/register" className="font-medium text-primary underline-offset-4 hover:underline">Registrarse</Link></p>
+      <p className="mt-6 text-center text-sm text-muted-foreground">¿No tienes cuenta?{" "}<a href={`/register?next=${encodeURIComponent(returnTo)}`} className="font-medium text-primary underline-offset-4 hover:underline">Registrarse</a></p>
     </AuthShell>
   );
 }

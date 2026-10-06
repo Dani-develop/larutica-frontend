@@ -21,6 +21,7 @@ export async function POST(request: Request) {
       throw new ApiError(authErrorMessage(error ?? "No se pudo iniciar sesión."), 401);
     }
 
+    const discardSession = discardSupabaseSession(data.session);
     try {
       const appSession = await createAppSession(data.user.id);
       return jsonWithSession(
@@ -28,7 +29,7 @@ export async function POST(request: Request) {
         appSession.opaqueToken,
       );
     } finally {
-      await discardSupabaseSession(data.session);
+      await discardSession;
     }
   } catch (error) {
     return apiErrorResponse(error);

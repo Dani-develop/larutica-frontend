@@ -296,7 +296,7 @@ export async function GET(request: Request) {
 
     const { data: agency, error: agencyError } = await admin
       .from("agencies")
-      .select("*")
+      .select("*,agency_service_categories(category_id,service_categories(id,name,active)),agency_languages(language_id,languages(id,name,code,active))")
       .eq("owner_user_id", ownerUserId)
       .maybeSingle();
 
@@ -318,43 +318,12 @@ export async function GET(request: Request) {
       );
     }
 
-    const { data: categories, error: categoriesError } = await admin
-      .from("agency_service_categories")
-      .select(`
-        category_id,
-        service_categories (
-          id,
-          name,
-          active
-        )
-      `)
-      .eq("agency_id", agency.id);
-
-    if (categoriesError) {
-      throw categoriesError;
-    }
-
-    const { data: languages, error: languagesError } = await admin
-      .from("agency_languages")
-      .select(`
-        language_id,
-        languages (
-          id,
-          name,
-          code,
-          active
-        )
-      `)
-      .eq("agency_id", agency.id);
-
-    if (languagesError) {
-      throw languagesError;
-    }
+    const { agency_service_categories: categories, agency_languages: languages, ...agencyFields } = agency;
 
     return Response.json(
       {
         data: {
-          agency,
+          agency: agencyFields,
           categories: categories ?? [],
           languages: languages ?? [],
         },

@@ -65,7 +65,7 @@ export async function PATCH(request: Request, context: RouteContext) {
   try {
     assertSameOrigin(request);
     const { id } = await context.params;
-    const body = await request.json();
+    const body = await request.json().catch(() => { throw new ApiError("No pudimos leer la solicitud. Revisa los datos e intenta de nuevo.", 400); });
     const patch = guardPolicy(() => parsePatchReservationBody(body));
     const { admin, appSession, reservation } = await loadVisibleReservation(request, id);
     const role = appSession.profile.role;
@@ -73,8 +73,12 @@ export async function PATCH(request: Request, context: RouteContext) {
 
     if (patch.numberOfPeople !== undefined) {
       guardPolicy(() => assertCanChangePartySize(role, userId, reservation));
-      await updateReservationPartySize(admin, id, patch.numberOfPeople);
     }
+
+    // Validate the whole request before making any change.
+    if (patch.status === "CONFIRMED") guardPolicy(() => assertCanConfirm(role, userId, reservation));
+    if (patch.status === "CANCELLED") guardPolicy(() => assertCanCancel(role, userId, reservation));
+    if (patch.numberOfPeople !== undefined) await updateReservationPartySize(admin, id, patch.numberOfPeople);
 
     if (patch.status === "CONFIRMED") {
       guardPolicy(() => assertCanConfirm(role, userId, reservation));
