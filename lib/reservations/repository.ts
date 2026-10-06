@@ -18,6 +18,7 @@ const RESERVATION_SELECT = `
   profiles ( full_name, email, phone ),
   publication_departures (
     start_at,
+    status,
     publications (
       id,
       title,
@@ -41,6 +42,7 @@ export type ReservationRecord = {
   createdAt: string;
   updatedAt: string;
   departureStartAt: string;
+  departureStatus: string;
   publicationId: string;
   publicationTitle: string;
   destination: string | null;
@@ -64,6 +66,7 @@ type PublicationEmbed = {
 };
 type DepartureEmbed = {
   start_at: string;
+  status: string;
   publications: PublicationEmbed | PublicationEmbed[] | null;
 };
 type ReservationRow = {
@@ -119,6 +122,7 @@ export function toReservationRecord(row: ReservationRow): ReservationRecord {
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     departureStartAt: departure?.start_at ?? "",
+    departureStatus: departure?.status ?? "",
     publicationId: publication?.id ?? "",
     publicationTitle: publication?.title ?? "Reserva",
     destination: publication?.destination ?? null,
@@ -145,6 +149,7 @@ export function toPublicReservation(record: ReservationRecord) {
     createdAt: record.createdAt,
     updatedAt: record.updatedAt,
     departureStartAt: record.departureStartAt,
+    departureStatus: record.departureStatus,
     publicationId: record.publicationId,
     publicationTitle: record.publicationTitle,
     destination: record.destination,
@@ -167,6 +172,7 @@ export async function listReservationRecords(
   admin: SupabaseClient,
   role: string,
   userId: string,
+  departureId?: string,
 ): Promise<ReservationRecord[]> {
   await markElapsed(admin);
   const scope = listScope(role);
@@ -176,7 +182,9 @@ export async function listReservationRecords(
       .replace("publications (", "publications!inner (")
       .replace("agencies (", "agencies!inner (")
     : RESERVATION_SELECT;
-  let query = admin.from("reservations").select(selection).order("created_at", { ascending: false });
+  let query = admin.from("reservations").select(selection)
+    .order("created_at", { ascending: scope !== "own" }).order("id", { ascending: true });
+  if (departureId) query = query.eq("departure_id", departureId);
 
   if (scope === "own") {
     query = query.eq("passenger_id", userId);
@@ -184,9 +192,16 @@ export async function listReservationRecords(
     query = query.eq("publication_departures.publications.agencies.owner_user_id", userId);
   }
 
-  const { data, error } = await query;
-  if (error) throw error;
-  return (data as ReservationRow[] | null ?? [])
+  const rows: ReservationRow[] = [];
+  // Supabase caps each response; fetch every page so older requests are not lost.
+  for (let from = 0; ; from += 1000) {
+    const { data, error } = await query.range(from, from + 999);
+    if (error) throw error;
+    const page = data as ReservationRow[] | null ?? [];
+    rows.push(...page);
+    if (page.length < 1000) break;
+  }
+  return rows
     .map(toReservationRecord)
     .filter((reservation) => canReadReservation(role, userId, reservation));
 }
@@ -209,6 +224,12 @@ export async function createReservationRecord(
   departureId: string,
   numberOfPeople: number,
 ): Promise<ReservationRecord> {
+  // A retry belongs to this passenger, never to another user's reservation.
+  const { data: existing, error: existingError } = await admin.from("reservations")
+    .select(RESERVATION_SELECT).eq("passenger_id", passengerId).eq("departure_id", departureId)
+    .in("status", ["PENDING", "CONFIRMED"]).order("created_at", { ascending: false }).limit(1).maybeSingle();
+  if (existingError) throw existingError;
+  if (existing) return toReservationRecord(existing as ReservationRow);
   const { data: departure, error: availabilityError } = await admin.from("publication_departures")
     .select("publications!inner(agencies!inner(status))").eq("id", departureId)
     .eq("publications.agencies.status", "APPROVED").maybeSingle();

@@ -31,8 +31,14 @@ export async function GET(request: Request) {
     const role = appSession.profile.role;
     const userId = appSession.session.userId;
     guardPolicy(() => listScope(role));
+    const params = new URL(request.url).searchParams;
+    const mine = params.get("scope") === "mine";
+    const departureId = params.get("departureId") ?? undefined;
+    if (departureId && !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(departureId)) {
+      throw new ApiError("La salida no es válida.", 400);
+    }
     const admin = getSupabaseAdminClient();
-    const reservations = await listReservationRecords(admin, role, userId);
+    const reservations = await listReservationRecords(admin, mine ? "Viajero" : role, userId, departureId);
     return Response.json(
       { data: reservations.map(toPublicReservation) },
       { headers: { "cache-control": "no-store" } },
@@ -50,7 +56,7 @@ export async function POST(request: Request) {
     assertSameOrigin(request);
     const appSession = await requireAppSession(request);
     guardPolicy(() => assertTravelerCanCreate(appSession.profile.role));
-    const body = await request.json();
+    const body = await request.json().catch(() => { throw new ApiError("No pudimos leer la solicitud. Revisa los datos e intenta de nuevo.", 400); });
     const input = guardPolicy(() => parseCreateReservationBody(body, appSession.session.userId));
     const admin = getSupabaseAdminClient();
     const reservation = await createReservationRecord(

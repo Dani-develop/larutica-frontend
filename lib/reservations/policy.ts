@@ -23,6 +23,7 @@ export type ReservationVisibility = {
 export type ReservationMutation = ReservationVisibility & {
   status: ReservationStatus;
   departureStartAt: string;
+  departureStatus?: string;
 };
 
 export type CreateReservationInput = {
@@ -51,15 +52,15 @@ function assertAllowedKeys(record: Record<string, unknown>, allowed: ReadonlySet
 }
 
 function assertPositiveInteger(value: unknown): number {
-  if (typeof value !== "number" || !Number.isInteger(value) || value <= 0) {
-    throw new ReservationPolicyError("El número de personas debe ser mayor que cero.", 400);
+  if (typeof value !== "number" || !Number.isSafeInteger(value) || value <= 0 || value > 2147483647) {
+    throw new ReservationPolicyError("Indica un número válido de personas, mayor que cero.", 400);
   }
   return value;
 }
 
 export function assertTravelerCanCreate(role: string) {
-  if (role !== "Viajero") {
-    throw new ReservationPolicyError("Solo un viajero puede crear una reserva.", 403);
+  if (!["Viajero", "Agencia", "Transporte", "Admin"].includes(role)) {
+    throw new ReservationPolicyError("Tu cuenta no puede crear una reserva.", 403);
   }
 }
 
@@ -101,6 +102,9 @@ export function parsePatchReservationBody(body: unknown): PatchReservationInput 
   if (record.numberOfPeople === undefined && record.status === undefined) {
     throw new ReservationPolicyError("No hay cambios para aplicar.", 400);
   }
+  if (record.numberOfPeople !== undefined && record.status !== undefined) {
+    throw new ReservationPolicyError("Cambia primero las personas o el estado de la reserva, una cosa a la vez.", 400);
+  }
 
   const patch: PatchReservationInput = {};
   if (record.numberOfPeople !== undefined) {
@@ -117,6 +121,7 @@ export function parsePatchReservationBody(body: unknown): PatchReservationInput 
 
 export function canReadReservation(role: string, userId: string, reservation: ReservationVisibility) {
   if (role === "Admin") return true;
+  if (["Viajero", "Agencia", "Transporte"].includes(role) && reservation.passengerId === userId) return true;
   if (role === "Viajero") return reservation.passengerId === userId;
   if (role === "Agencia" || role === "Transporte") return reservation.ownerUserId === userId;
   return false;
@@ -135,7 +140,7 @@ export function canDeleteReservation(role: string) {
 }
 
 function assertKnownActor(role: string, userId: string, reservation: ReservationVisibility) {
-  const isPassenger = role === "Viajero" && reservation.passengerId === userId;
+  const isPassenger = ["Viajero", "Agencia", "Transporte", "Admin"].includes(role) && reservation.passengerId === userId;
   const isOwner = (role === "Agencia" || role === "Transporte") && reservation.ownerUserId === userId;
   const isAdmin = role === "Admin";
   if (!isPassenger && !isOwner && !isAdmin) {
@@ -152,7 +157,13 @@ export function assertCanConfirm(role: string, userId: string, reservation: Rese
   if (role !== "Agencia" && role !== "Transporte" && role !== "Admin") {
     throw new ReservationPolicyError("Solo el proveedor puede confirmar tu reserva.", 403);
   }
+  if (role !== "Admin" && reservation.ownerUserId !== userId) {
+    throw new ReservationPolicyError("Solo quien organiza esta experiencia puede confirmar la reserva.", 403);
+  }
   assertKnownActor(role, userId, reservation);
+  if (reservation.departureStatus && reservation.departureStatus !== "ACTIVE") {
+    throw new ReservationPolicyError("Esta salida ya no está disponible. No se puede confirmar la reserva.", 400);
+  }
   if (reservation.status !== "PENDING") {
     throw new ReservationPolicyError("Solo una reserva pendiente se puede confirmar.", 400);
   }
@@ -172,7 +183,7 @@ export function assertCanCancel(role: string, userId: string, reservation: Reser
 }
 
 export function assertCanChangePartySize(role: string, userId: string, reservation: ReservationMutation, now = Date.now()) {
-  const isPassenger = role === "Viajero" && reservation.passengerId === userId;
+  const isPassenger = ["Viajero", "Agencia", "Transporte", "Admin"].includes(role) && reservation.passengerId === userId;
   const isAdmin = role === "Admin";
   if (!isPassenger && !isAdmin) {
     throw new ReservationPolicyError("No puedes cambiar el número de personas de esta reserva.", 403);

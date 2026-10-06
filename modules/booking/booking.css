@@ -2,6 +2,16 @@
 @media(max-width:800px){.booking-hero{margin:0 16px;grid-template-columns:1fr}.booking-hero>div{padding:30px}.booking-hero img{height:220px;min-height:0}.booking-header{padding:18px;gap:12px;align-items:start}.booking-header nav{gap:12px;flex-wrap:wrap;justify-content:end;font-size:.8rem}.booking-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.booking-section-heading{display:block}.booking-section-heading>p{margin-top:14px}.booking-detail-grid{grid-template-columns:1fr}.booking-panel{position:static}.booking-reservation dl{grid-template-columns:1fr 1fr}.booking-detail-photo{height:270px}}
 @media(max-width:520px){.booking-grid,.booking-search{grid-template-columns:1fr}.booking-container{padding:34px 18px}.booking-brand{font-size:1.5rem}.booking-brand span{display:none}.booking-header nav{gap:10px}.booking-hero h1{font-size:2.2rem}.booking-card-image img{height:230px}.booking-reservation-header{display:block}.booking-reservation dl{grid-template-columns:1fr}.booking-panel,.booking-reservation{padding:20px}.booking-steps{gap:10px;font-size:.8rem}.booking-success{padding:24px;margin:20px 0}}
 /* Isolate the public reservation flow from the legacy landing selectors. */
+.larutica-auth h1{max-width:none;font-size:clamp(1.75rem,3vw,2.25rem);line-height:1.2;letter-spacing:-.035em}
+.larutica-auth .auth-return{display:block}
+.booking-site .booking-header nav{display:flex}
+.booking-site .booking-header nav a{min-height:44px;display:inline-flex;align-items:center}
+.booking-site .booking-header nav a[aria-current]{color:#0d684e;text-decoration:underline;text-underline-offset:6px;text-decoration-thickness:2px}
+.booking-site .booking-empty h1,.booking-site .booking-empty h2,.booking-site .booking-empty h3{max-width:720px;margin:0 auto 16px;text-wrap:balance}
+.booking-site .booking-empty>p{max-width:600px;margin:0 auto 20px}
+.booking-access{max-width:880px;margin:24px auto;padding:clamp(28px,5vw,56px) 24px;background:white;border-style:solid}
+.booking-access .booking-actions{justify-content:center}
+.booking-site .booking-footer a{display:inline-flex;align-items:center;min-height:44px}
 .booking-site .booking-card{position:static;display:block;padding:0;box-shadow:none;gap:0}
 .booking-site .booking-footer{color:#17352d}
 .booking-site .booking-footer p{color:#52645b}

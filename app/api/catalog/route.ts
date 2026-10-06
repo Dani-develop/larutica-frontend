@@ -19,7 +19,8 @@ export async function GET(request: Request) {
     const { data, error } = await query;
     if (error) throw error;
     const now = Date.now();
-    const rows = (data ?? []).filter(p => p.price_per_person !== null);
+    const rows = (data ?? []).filter(p => p.price_per_person !== null)
+      .filter(p => id || p.publication_departures.some(d => d.status === 'ACTIVE' && Date.parse(d.start_at) > now));
     const departures = rows.flatMap(p => p.publication_departures).filter(d => d.status === 'ACTIVE' && Date.parse(d.start_at) > now);
     const used = new Map<string, number>();
     const departureIds = departures.map(d => d.id);

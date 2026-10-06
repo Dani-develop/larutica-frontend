@@ -42,9 +42,9 @@ test("la migración crea reservas con cupo, precio copiado y sin acceso público
   assert.match(sql, /revoke all on function public\.create_reservation/i);
 });
 
-test("un rol distinto de Viajero no puede crear y el listado respeta el alcance", () => {
+test("los roles actuales pueden reservar y el listado respeta el alcance", () => {
   for (const role of ["Agencia", "Transporte", "Admin"]) {
-    assert.throws(() => assertTravelerCanCreate(role), ReservationPolicyError);
+    assert.doesNotThrow(() => assertTravelerCanCreate(role));
   }
   assert.doesNotThrow(() => assertTravelerCanCreate("Viajero"));
 
@@ -88,7 +88,7 @@ test("cancelar conserva la fila, el viajero no la borra y no se cambia la salida
   assert.match(collection, /assertSameOrigin/);
   assert.match(collection, /getSupabaseAdminClient/);
   assert.match(repository, /\.eq\("passenger_id", userId\)/);
-  assert.match(repository, /\.in\("departure_id", departureIds\)/);
+  assert.match(repository, /publication_departures\.publications\.agencies\.owner_user_id/);
   assert.match(detail, /updateReservationStatus\(admin, id, "CANCELLED", reservation\.status\)/);
   assert.match(detail, /canDeleteReservation/);
   assert.doesNotMatch(
