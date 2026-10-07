@@ -14,6 +14,7 @@ export type Reservation = {
   publicationId: string
   publicationTitle: string
   destination: string | null
+  rating: number | null
 }
 
 export type CreateReservationPayload = {

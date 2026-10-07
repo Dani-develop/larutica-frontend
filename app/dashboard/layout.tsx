@@ -22,12 +22,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { UserAvatar } from "@/components/app-sidebar/nav-user";
 import { getInitials } from "@/components/app-sidebar/user-avatar-utils";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import {
   DashboardRoleProvider,
   useDashboardRole,
 } from "@/components/dashboard/dashboard-role-context";
 import { useAuth } from "@/modules/auth/context/AuthContext";
+import { travelerDashboardTarget } from "@/modules/landing/lib/travelerRoutes";
 import { useEffect } from "react";
 
 const AppSidebar = dynamic(
@@ -135,14 +136,20 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const { session, user, loading, error, signOut } = useAuth();
+  const search = searchParams.toString();
 
   useEffect(() => {
     if (!loading && !session) router.replace("/login");
     if (!loading && session && user?.status === "Inactivo") {
       void signOut().then(() => router.replace("/login?reason=inactive"));
     }
-  }, [loading, router, session, signOut, user?.status]);
+    if (!loading && session && user?.role === "Viajero" && user.status !== "Inactivo") {
+      router.replace(travelerDashboardTarget(pathname, search));
+    }
+  }, [loading, pathname, router, search, session, signOut, user?.role, user?.status]);
 
   if (loading) {
     return <div className="grid min-h-screen place-items-center text-sm text-muted-foreground">Validando sesión...</div>;
@@ -155,6 +162,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   }
   if (error || !user) {
     return <div className="grid min-h-screen place-items-center p-6 text-center text-sm text-destructive">{error ?? "No se encontró el perfil asociado a esta sesión."}</div>;
+  }
+  if (user.role === "Viajero") {
+    return <div className="grid min-h-screen place-items-center text-sm text-muted-foreground">Abriendo tu viaje...</div>;
   }
 
   return (

@@ -2,17 +2,11 @@
 
 import {
   useParams,
-  useSearchParams,
 } from "next/navigation";
 
 import {
   useDashboardRole,
 } from "@/components/dashboard/dashboard-role-context";
-
-import {
-  TravelerDetailsPage,
-  TravelerPurchasePage,
-} from "@/components/dashboard/TravelerViews";
 
 import {
   PublicationDetail,
@@ -35,44 +29,11 @@ export default function Page() {
       id: string;
     }>();
 
-  const searchParams =
-    useSearchParams();
-
   const id =
     typeof params?.id ===
     "string"
       ? params.id
       : "";
-
-  if (
-    role ===
-      "Viajero" &&
-    searchParams.get(
-      "mode",
-    ) ===
-      "details"
-  ) {
-    return (
-      <TravelerDetailsPage
-        publicationId={
-          id
-        }
-      />
-    );
-  }
-
-  if (
-    role ===
-    "Viajero"
-  ) {
-    return (
-      <TravelerPurchasePage
-        publicationId={
-          id
-        }
-      />
-    );
-  }
 
   if (
     role ===

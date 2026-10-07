@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { KeyRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -10,15 +10,22 @@ import { Input } from "@/components/ui/input";
 import { AuthShell } from "@/components/auth/AuthShell";
 import { useAuth } from "@/modules/auth/context/AuthContext";
 import { useWebAuthnSupport } from "@/modules/auth/hooks/useWebAuthnSupport";
+import { loginDestination } from "@/modules/landing/lib/travelerRoutes";
 import { passkeyErrorMessage } from "@/modules/auth/utils/passkeyErrors";
 import { signInValidators } from "@/modules/auth/validators/authValidators";
 
 export default function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { signIn, signInWithPasskey } = useAuth();
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const passkeySupported = useWebAuthnSupport();
+  const next = searchParams.get("next");
+
+  function goAfterLogin(role: string) {
+    router.replace(loginDestination(role, next));
+  }
 
   return (
     <AuthShell eyebrow="Acceso" title="Iniciar sesión">
@@ -42,8 +49,8 @@ export default function LoginForm() {
           }
           setSubmitting(true);
           try {
-            await signIn(parsed.data);
-            router.replace("/dashboard");
+            const signedIn = await signIn(parsed.data);
+            goAfterLogin(signedIn.role);
           } catch (nextError) {
             setError(nextError instanceof Error ? nextError.message : "No se pudo iniciar sesión.");
           } finally {
@@ -72,8 +79,8 @@ export default function LoginForm() {
               setError(null);
               setSubmitting(true);
               try {
-                await signInWithPasskey();
-                router.replace("/dashboard");
+                const signedIn = await signInWithPasskey();
+                goAfterLogin(signedIn.role);
               } catch (nextError) {
                 setError(passkeyErrorMessage(nextError, "No se pudo iniciar sesión con la passkey."));
               } finally {

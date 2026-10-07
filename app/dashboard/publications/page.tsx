@@ -5,10 +5,6 @@ import {
 } from "@/components/dashboard/dashboard-role-context";
 
 import {
-  TravelerExplorePage,
-} from "@/components/dashboard/TravelerViews";
-
-import {
   PublicationsList,
 } from "@/modules/publications/components/PublicationsList";
 
@@ -23,15 +19,6 @@ export default function Page() {
     role,
   } =
     useDashboardRole();
-
-  if (
-    role ===
-    "Viajero"
-  ) {
-    return (
-      <TravelerExplorePage />
-    );
-  }
 
   if (
     role ===

@@ -1,9 +1,7 @@
 import {
   BarChart3,
-  Bookmark,
   Building2,
   Bus,
-  CalendarDays,
   ClipboardCheck,
   FileText,
   Home,
@@ -61,7 +59,7 @@ export const navGroups: NavGroup[] = [
         label: "Inicio",
         icon: Home,
         exact: true,
-        roles: ["Viajero", "Agencia", "Transporte", "Admin"],
+        roles: ["Agencia", "Transporte", "Admin"],
         primary: true,
       },
       {
@@ -69,32 +67,6 @@ export const navGroups: NavGroup[] = [
         label: "Gráficas",
         icon: BarChart3,
         roles: ["Admin"],
-      },
-    ],
-  },
-
-  {
-    label: "Mi viaje",
-    items: [
-      {
-        href: "/dashboard/publications",
-        label: "Explorar",
-        icon: MapPin,
-        roles: ["Viajero"],
-        primary: true,
-      },
-      {
-        href: "/dashboard/promotions",
-        label: "Guardados",
-        icon: Bookmark,
-        roles: ["Viajero"],
-        primary: true,
-      },
-      {
-        href: "/dashboard/reviews",
-        label: "Mis reservas",
-        icon: CalendarDays,
-        roles: ["Viajero"],
       },
     ],
   },
@@ -216,7 +188,7 @@ export const navGroups: NavGroup[] = [
         href: "/dashboard/profile",
         label: "Mi perfil",
         icon: UserRound,
-        roles: ["Viajero", "Agencia", "Transporte", "Admin"],
+        roles: ["Agencia", "Transporte", "Admin"],
         primary: true,
       },
     ],

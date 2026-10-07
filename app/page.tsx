@@ -2,8 +2,20 @@
 
 import Link from "next/link";
 import { FormEvent, useEffect, useRef, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import {
+  TravelerDetailsPage,
+  TravelerExplorePage,
+  TravelerProfilePage,
+  TravelerPurchasePage,
+  TravelerReservationsPage,
+  TravelerSavedPage,
+} from "@/components/dashboard/TravelerViews";
+import { useAuth } from "@/modules/auth/context/AuthContext";
+import { TripMenu } from "@/modules/landing/components/TripMenu";
 import { TransportConfirmView } from "@/modules/landing/components/TransportConfirmView";
 import { TransportDetailView } from "@/modules/landing/components/TransportDetailView";
+import { parseTrip, tripPath } from "@/modules/landing/lib/travelerRoutes";
 import { matchRoutes, publishedRoutes } from "@/modules/landing/lib/routeSearch";
 import { useReservations } from "@/modules/transport/reservations/hooks/useReservations";
 import type { TransportReservation } from "@/modules/transport/reservations/models/Reservation";
@@ -26,6 +38,13 @@ const publications = [
 ];
 
 export default function Home() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const { session, user, loading: authLoading } = useAuth();
+  const trip = parseTrip(searchParams.get("viaje"));
+  const publicationId = searchParams.get("publicacion") ?? "";
+  const showTrip = Boolean(trip && !authLoading && session && user?.role === "Viajero");
+  const tripMenuActive = trip === "guardados" || trip === "reservas" || trip === "perfil" ? trip : null;
   const [view, setView] = useState<View>("explore");
   const [status, setStatus] = useState("Explora opciones seleccionadas para ti.");
   const [saved, setSaved] = useState<number[]>([]);
@@ -68,7 +87,20 @@ export default function Home() {
     document.documentElement.classList.toggle("high-contrast", highContrast);
   }, [largeText, highContrast]);
 
+  useEffect(() => {
+    if (!trip || authLoading) return;
+    if (!session) {
+      const next = `/${window.location.search}`;
+      router.replace(`/login?next=${encodeURIComponent(next)}`);
+      return;
+    }
+    if (user?.role !== "Viajero") router.replace("/");
+  }, [trip, authLoading, session, user?.role, router]);
+
   function navigate(next: View, nextStatus?: string) {
+    if (searchParams.get("viaje") || searchParams.get("publicacion") || searchParams.get("provider")) {
+      router.replace("/");
+    }
     setView(next);
     setStatus(nextStatus ?? `Pantalla ${screenName(next)} abierta.`);
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -133,6 +165,14 @@ export default function Home() {
     setStatus(exists ? `${title} se eliminó de tus guardados.` : `${title} se guardó en tu viaje.`);
   }
 
+  function openExplore() {
+    if (user?.role === "Viajero") {
+      router.push(tripPath("explorar"));
+      return;
+    }
+    navigate("explore");
+  }
+
   return (
     <>
       <a className="skip-link" href="#main">Ir al contenido principal</a>
@@ -141,8 +181,17 @@ export default function Home() {
           <span className="brand-mark" aria-hidden="true" /><span>LaRutica</span>
         </button>
         <nav aria-label="Navegación principal">
-          <button className={view === "explore" || view === "detail" || view === "route-detail" || view === "route-confirm" ? "nav-active" : ""} onClick={() => navigate("explore")} aria-current={view === "explore" ? "page" : undefined}>Explorar</button>
+          <button className={trip === "explorar" || (!trip && (view === "explore" || view === "detail" || view === "route-detail" || view === "route-confirm")) ? "nav-active" : ""} onClick={openExplore} aria-current={trip === "explorar" || (!trip && view === "explore") ? "page" : undefined}>Explorar</button>
           <button onClick={() => { navigate("explore"); setStatus("Sección Destinos abierta: 18 destinos disponibles."); window.setTimeout(() => document.getElementById("destinos")?.scrollIntoView(), 100); }}>Destinos</button>
+          {!authLoading && user?.role === "Viajero" ? (
+            <TripMenu
+              active={tripMenuActive}
+              onSelect={(id) => {
+                router.push(tripPath(id));
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }}
+            />
+          ) : null}
           <button onClick={() => setHelpOpen(true)}>Ayuda</button>
         </nav>
         <div className="header-actions">
@@ -153,9 +202,17 @@ export default function Home() {
       <p className="global-status sr-only" role="status" aria-live="polite">{status}</p>
 
       <main id="main">
-        {view === "explore" && <ExploreView onSearch={search} searchInput={searchInput} status={status} saved={saved} onSave={toggleSaved} onDetail={() => navigate("detail")} headingRef={mainHeading} category={category} onCategoryChange={(next) => { setCategory(next); if (next === "transport") { setRouteQuery(""); setStatus("Rutas de transporte publicadas."); } else { setStatus("Explora opciones seleccionadas para ti."); } }} routes={visibleRoutes} featuredRoute={featuredRoute} onOpenRoute={openRoute} onSearchTransport={openTransportSearch} isTransport={category === "transport"} />}
-        {view === "detail" && <DetailView onBack={() => navigate("explore")} setStatus={setStatus} headingRef={mainHeading} />}
-        {view === "route-detail" && selectedRoute && (
+        {trip && authLoading ? <p className="trip-status">Validando sesión...</p> : null}
+        {trip && !authLoading && !showTrip ? <p className="trip-status">Redirigiendo...</p> : null}
+        {showTrip && trip === "explorar" ? <TravelerExplorePage /> : null}
+        {showTrip && trip === "guardados" ? <TravelerSavedPage /> : null}
+        {showTrip && trip === "reservas" ? <TravelerReservationsPage /> : null}
+        {showTrip && trip === "perfil" ? <TravelerProfilePage /> : null}
+        {showTrip && trip === "detalle" ? <TravelerDetailsPage publicationId={publicationId} /> : null}
+        {showTrip && trip === "compra" ? <TravelerPurchasePage publicationId={publicationId} /> : null}
+        {!trip && view === "explore" && <ExploreView onSearch={search} searchInput={searchInput} status={status} saved={saved} onSave={toggleSaved} onDetail={() => navigate("detail")} headingRef={mainHeading} category={category} onCategoryChange={(next) => { setCategory(next); if (next === "transport") { setRouteQuery(""); setStatus("Rutas de transporte publicadas."); } else { setStatus("Explora opciones seleccionadas para ti."); } }} routes={visibleRoutes} featuredRoute={featuredRoute} onOpenRoute={openRoute} onSearchTransport={openTransportSearch} isTransport={category === "transport"} />}
+        {!trip && view === "detail" && <DetailView onBack={() => navigate("explore")} setStatus={setStatus} headingRef={mainHeading} />}
+        {!trip && view === "route-detail" && selectedRoute && (
           <TransportDetailView
             route={selectedRoute}
             defaultDate={bookingDate}
@@ -180,24 +237,33 @@ export default function Home() {
             }}
           />
         )}
-        {view === "route-confirm" && lastReservation && (
+        {!trip && view === "route-confirm" && lastReservation && (
           <TransportConfirmView
             reservation={lastReservation}
             headingRef={mainHeading}
             onBack={() => { setCategory("transport"); navigate("explore"); }}
           />
         )}
-        {view === "agency" && <AgencyView onPublish={() => navigate("publish")} onPromote={() => navigate("promotion")} setStatus={setStatus} headingRef={mainHeading} />}
-        {view === "transport" && <TransportView onPublish={() => navigate("publish")} onPromote={() => navigate("promotion")} setStatus={setStatus} headingRef={mainHeading} />}
-        {view === "publish" && <PublishView onBack={() => navigate(providerHome())} onComplete={() => { setStatus("Publicación guardada y enviada a revisión."); navigate(providerHome()); }} headingRef={mainHeading} />}
-        {view === "promotion" && <PromotionView onBack={() => navigate(providerHome())} onComplete={() => { setStatus("Simulación completada: promoción activa por 7 días."); navigate(providerHome()); }} headingRef={mainHeading} />}
-        {view === "admin" && <AdminView approved={approved} setApproved={setApproved} setStatus={setStatus} headingRef={mainHeading} />}
+        {!trip && view === "agency" && <AgencyView onPublish={() => navigate("publish")} onPromote={() => navigate("promotion")} setStatus={setStatus} headingRef={mainHeading} />}
+        {!trip && view === "transport" && <TransportView onPublish={() => navigate("publish")} onPromote={() => navigate("promotion")} setStatus={setStatus} headingRef={mainHeading} />}
+        {!trip && view === "publish" && <PublishView onBack={() => navigate(providerHome())} onComplete={() => { setStatus("Publicación guardada y enviada a revisión."); navigate(providerHome()); }} headingRef={mainHeading} />}
+        {!trip && view === "promotion" && <PromotionView onBack={() => navigate(providerHome())} onComplete={() => { setStatus("Simulación completada: promoción activa por 7 días."); navigate(providerHome()); }} headingRef={mainHeading} />}
+        {!trip && view === "admin" && <AdminView approved={approved} setApproved={setApproved} setStatus={setStatus} headingRef={mainHeading} />}
       </main>
 
       <button className="help-fab" type="button" onClick={() => setHelpOpen(true)}>¿Necesitas ayuda?</button>
       {helpOpen && <HelpDialog onClose={() => setHelpOpen(false)} />}
       {accessOpen && <AccessDialog largeText={largeText} setLargeText={setLargeText} highContrast={highContrast} setHighContrast={setHighContrast} onClose={() => setAccessOpen(false)} />}
-      <footer><button className="brand brand-button footer-brand" type="button" onClick={() => navigate("explore")}><span className="brand-mark" aria-hidden="true" />LaRutica</button><p>Prototipo académico · Costa Rica · 2026</p><button className="footer-link" type="button" onClick={() => setAccessOpen(true)}>Opciones de accesibilidad</button></footer>
+      <footer>
+        <Link className="brand footer-brand" href="/" aria-label="LaRutica, volver al inicio">
+          <span className="brand-mark" aria-hidden="true" />LaRutica
+        </Link>
+        <p>Prototipo académico · Costa Rica · 2026</p>
+        <div className="footer-links">
+          <Link className="footer-link" href="/terminos">Términos y condiciones</Link>
+          <button className="footer-link" type="button" onClick={() => setAccessOpen(true)}>Opciones de accesibilidad</button>
+        </div>
+      </footer>
     </>
   );
 }

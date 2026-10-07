@@ -25,6 +25,9 @@ const RESERVATION_SELECT = `
         owner_user_id
       )
     )
+  ),
+  reservation_ratings (
+    rating
   )
 `;
 
@@ -43,6 +46,7 @@ export type ReservationRecord = {
   publicationTitle: string;
   destination: string | null;
   ownerUserId: string | null;
+  rating: number | null;
 };
 
 type AgencyEmbed = { owner_user_id: string };
@@ -66,6 +70,7 @@ type ReservationRow = {
   created_at: string;
   updated_at: string;
   publication_departures: DepartureEmbed | DepartureEmbed[] | null;
+  reservation_ratings: { rating: number } | { rating: number }[] | null;
 };
 
 function one<T>(value: T | T[] | null | undefined): T | null {
@@ -111,6 +116,7 @@ export function toReservationRecord(row: ReservationRow): ReservationRecord {
     publicationTitle: publication?.title ?? "Reserva",
     destination: publication?.destination ?? null,
     ownerUserId: agency?.owner_user_id ?? null,
+    rating: one(row.reservation_ratings)?.rating ?? null,
   };
 }
 
@@ -129,6 +135,7 @@ export function toPublicReservation(record: ReservationRecord) {
     publicationId: record.publicationId,
     publicationTitle: record.publicationTitle,
     destination: record.destination,
+    rating: record.rating,
   };
 }
 
