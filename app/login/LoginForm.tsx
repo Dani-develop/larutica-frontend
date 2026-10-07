@@ -1,5 +1,9 @@
 "use client";
 
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useState } from "react";
+import { KeyRound } from "lucide-react";
 import { useState, useEffect } from "react";
 import { safeBookingReturn } from "@/modules/auth/utils/returnTo";
 import { Eye, EyeOff, KeyRound } from "lucide-react";
@@ -9,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { AuthShell } from "@/components/auth/AuthShell";
 import { useAuth } from "@/modules/auth/context/AuthContext";
 import { useWebAuthnSupport } from "@/modules/auth/hooks/useWebAuthnSupport";
+import { loginDestination } from "@/modules/landing/lib/travelerRoutes";
 import { passkeyErrorMessage } from "@/modules/auth/utils/passkeyErrors";
 import { signInValidators } from "@/modules/auth/validators/authValidators";
 
@@ -20,6 +25,11 @@ export default function LoginForm() {
   const [submitting, setSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const passkeySupported = useWebAuthnSupport();
+  const next = searchParams.get("next");
+
+  function goAfterLogin(role: string) {
+    router.replace(loginDestination(role, next));
+  }
 
   return (
     <AuthShell eyebrow="Acceso" title="Iniciar sesión">

@@ -1,9 +1,7 @@
 import {
   BarChart3,
-  Bookmark,
   Building2,
   Bus,
-  CalendarDays,
   ClipboardCheck,
   FileText,
   Home,
@@ -68,7 +66,7 @@ export const navGroups: NavGroup[] = [
         label: "Inicio",
         icon: Home,
         exact: true,
-        roles: ["Viajero", "Agencia", "Transporte", "Admin"],
+        roles: ["Agencia", "Transporte", "Admin"],
         primary: true,
       },
       {
@@ -223,7 +221,7 @@ export const navGroups: NavGroup[] = [
         href: "/dashboard/profile",
         label: "Mi perfil",
         icon: UserRound,
-        roles: ["Viajero", "Agencia", "Transporte", "Admin"],
+        roles: ["Agencia", "Transporte", "Admin"],
         primary: true,
       },
     ],

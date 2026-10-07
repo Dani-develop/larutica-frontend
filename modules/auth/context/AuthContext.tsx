@@ -31,8 +31,8 @@ type AuthContextValue = {
   user: SystemUser | null;
   loading: boolean;
   error: string | null;
-  signIn: (input: SignInDto) => Promise<void>;
-  signInWithPasskey: () => Promise<void>;
+  signIn: (input: SignInDto) => Promise<SystemUser>;
+  signInWithPasskey: () => Promise<SystemUser>;
   signUp: (input: SignUpDto) => Promise<{ requiresEmailConfirmation: boolean }>;
   signOut: () => Promise<void>;
   refreshSession: () => Promise<void>;
@@ -132,6 +132,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
     applySession(payload);
     broadcast();
+    return payload.user;
   }, [applySession, broadcast]);
 
   const signInWithPasskey = useCallback(async () => {
@@ -147,6 +148,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
     applySession(payload);
     broadcast();
+    return payload.user;
   }, [applySession, broadcast]);
 
   const signUp = useCallback(async (input: SignUpDto) => {

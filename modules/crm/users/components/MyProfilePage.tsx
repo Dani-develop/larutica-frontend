@@ -277,7 +277,8 @@ function ChangePasswordForm({
   );
 }
 
-export function MyProfilePage() {
+export function MyProfilePage({ appearance = "dashboard" }: { appearance?: "dashboard" | "landing" }) {
+  const landing = appearance === "landing";
   const { user: profile, saveProfile } = useAuth();
   const [tab, setTab] = useState<ProfileTab>("info");
   const [formKey, setFormKey] = useState(0);
@@ -312,30 +313,33 @@ export function MyProfilePage() {
   };
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
-      <Breadcrumb>
-        <BreadcrumbList className="!text-sm">
-          <BreadcrumbItem>
-            <BreadcrumbLink
-              href="/dashboard"
-              className="flex items-center gap-1.5 !text-sm"
-            >
-              <Home className="size-3.5" />
-              Inicio
-            </BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbPage className="!text-sm">Mi perfil</BreadcrumbPage>
-          </BreadcrumbItem>
-        </BreadcrumbList>
-      </Breadcrumb>
+    <div className={landing ? "page-shell trip-profile" : "mx-auto flex w-full max-w-3xl flex-col gap-6"}>
+      {landing ? null : (
+        <Breadcrumb>
+          <BreadcrumbList className="!text-sm">
+            <BreadcrumbItem>
+              <BreadcrumbLink
+                href="/dashboard"
+                className="flex items-center gap-1.5 !text-sm"
+              >
+                <Home className="size-3.5" />
+                Inicio
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbPage className="!text-sm">Mi perfil</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
+      )}
 
-      <div>
-        <h1 className="!m-0 !max-w-none !text-2xl !leading-8 !font-semibold !tracking-tight">
+      <div className={landing ? "trip-profile-heading" : undefined}>
+        {landing ? <p className="eyebrow">Mi viaje</p> : null}
+        <h1 className={landing ? "detail-title" : "!m-0 !max-w-none !text-2xl !leading-8 !font-semibold !tracking-tight"}>
           Mi perfil
         </h1>
-        <p className="text-muted-foreground mt-0.5 !text-sm !leading-5">
+        <p className={landing ? "detail-intro" : "text-muted-foreground mt-0.5 !text-sm !leading-5"}>
           Consulta tu cuenta, edita tus datos, cambia tu contraseña o administra tus passkeys.
         </p>
       </div>
@@ -354,11 +358,11 @@ export function MyProfilePage() {
         </p>
       ) : null}
 
-      <div className="bg-card overflow-hidden rounded-xl">
+      <div className={landing ? "trip-profile-card" : "bg-card overflow-hidden rounded-xl"}>
         <div
           role="tablist"
           aria-label="Opciones de perfil"
-          className="flex gap-1 overflow-x-auto border-b px-2 pt-2"
+          className={landing ? "filter-row" : "flex gap-1 overflow-x-auto border-b px-2 pt-2"}
         >
           {TABS.map((item) => (
             <button
@@ -366,12 +370,14 @@ export function MyProfilePage() {
               type="button"
               role="tab"
               aria-selected={tab === item.id}
-              className={cn(
-                "shrink-0 rounded-t-md px-4 py-2.5 !text-sm !font-medium transition-colors",
-                tab === item.id
-                  ? "text-foreground border-primary border-b-2"
-                  : "text-muted-foreground hover:text-foreground",
-              )}
+              className={landing
+                ? tab === item.id ? "chip chip-active" : "chip"
+                : cn(
+                    "shrink-0 rounded-t-md px-4 py-2.5 !text-sm !font-medium transition-colors",
+                    tab === item.id
+                      ? "text-foreground border-primary border-b-2"
+                      : "text-muted-foreground hover:text-foreground",
+                  )}
               onClick={() => {
                 setTab(item.id);
                 clearMessage();
@@ -382,7 +388,7 @@ export function MyProfilePage() {
           ))}
         </div>
 
-        <div className="p-5" role="tabpanel">
+        <div className={landing ? "trip-profile-panel" : "p-5"} role="tabpanel">
           {tab === "info" ? (
             <ProfileInfoPanel profile={profile} />
           ) : null}

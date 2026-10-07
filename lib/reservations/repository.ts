@@ -28,6 +28,9 @@ const RESERVATION_SELECT = `
         owner_user_id, commercial_name, phone, email
       )
     )
+  ),
+  reservation_ratings (
+    rating
   )
 `;
 
@@ -80,6 +83,7 @@ type ReservationRow = {
   updated_at: string;
   profiles?: { full_name: string; email: string; phone: string | null } | { full_name: string; email: string; phone: string | null }[] | null;
   publication_departures: DepartureEmbed | DepartureEmbed[] | null;
+  reservation_ratings: { rating: number } | { rating: number }[] | null;
 };
 
 function one<T>(value: T | T[] | null | undefined): T | null {

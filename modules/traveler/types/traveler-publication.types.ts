@@ -26,4 +26,8 @@ export type TravelerPublication = {
   serviceType:
     | "EXCURSION"
     | "TRANSPORT";
+
+  providerName?: string;
+
+  providerSlug?: string;
 };
