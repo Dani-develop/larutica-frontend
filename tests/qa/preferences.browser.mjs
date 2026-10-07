@@ -18,7 +18,10 @@ for(const {failed,logged} of [{failed:false,logged:false},{failed:true,logged:fa
  });
  await page.goto('http://localhost:3000/');await page.getByRole('heading',{name:item.title}).waitFor();
  const before=catalogs;await page.getByRole('button',{name:'Selecciona tu idioma',exact:true}).click();
- await page.getByRole('radio',{name:'English'}).click();
+ await page.getByRole('dialog').waitFor();
+ const flags=await page.locator('.preference-option .preference-flag').evaluateAll(es=>es.map(e=>({width:e.getBoundingClientRect().width,height:e.getBoundingClientRect().height})));assert.ok(flags.every(f=>f.width<=24&&f.height<=24),'Flags never exceed icon dimensions');
+ if(!failed&&!logged)await page.screenshot({path:'C:/Users/josed/Desktop/LaRutica/.locale-desktop.png'});
+ await page.getByRole('radio',{name:'English'}).locator('..').click();
  assert.equal(await page.locator('html').getAttribute('lang'),'en');
  await page.getByRole('heading',{name:'Experiences for your next trip'}).waitFor();
  assert.equal(await page.getByText(item.description,{exact:true}).count(),1,'Provider content is preserved');
@@ -29,9 +32,9 @@ for(const {failed,logged} of [{failed:false,logged:false},{failed:true,logged:fa
   assert.equal(await page.getByRole('radio',{name:'Costa Rican colón (CRC)'}).isDisabled(),true);
   await page.keyboard.press('Escape');assert.match(await page.locator('.card-footer strong').innerText(),/USD/);
  }else{
-  await page.getByRole('radio',{name:'Costa Rican colón (CRC)'}).click();
+  await page.getByRole('radio',{name:'Costa Rican colón (CRC)'}).locator('..').click();
   assert.match(await page.locator('.card-footer strong').innerText(),/≈ CRC\s*10,000\.00/);
-  await page.getByRole('button',{name:'Choose your currency: CRC'}).click();await page.getByRole('radio',{name:'Euro (EUR)'}).click();
+  await page.getByRole('button',{name:'Choose your currency: CRC'}).click();await page.getByRole('radio',{name:'Euro (EUR)'}).locator('..').click();
   assert.match(await page.locator('.card-footer strong').innerText(),/≈ EUR\s*18\.00/);
   assert.equal(catalogs,before,'Preference changes do not refetch catalog');assert.equal(fx,1,'Rates reused');
   await page.reload();await page.getByRole('heading',{name:item.title}).waitFor();
