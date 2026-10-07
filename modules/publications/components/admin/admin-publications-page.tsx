@@ -10,7 +10,15 @@ import {
 import {
   RefreshCw,
   Search,
+  SlidersHorizontal,
 } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 
 import AdminPublicationsTable from "./admin-publications-table";
 
@@ -104,69 +112,50 @@ export default function AdminPublicationsPage() {
         <p className="mt-1 text-[11px] leading-5 text-[#66706B]">{t("Revisa y administra las publicaciones enviadas por las agencias. ")}</p>
       </div>
 
-      <section className="mb-3 rounded-xl border border-[#DDE2DF] bg-white p-3">
-        <div className="flex flex-col gap-2.5 lg:flex-row lg:items-center">
-          <div className="relative min-w-0 flex-1">
-            <Search
-              size={14}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-[#87908C]"
-            />
-
-            <input
-              value={search}
-              onChange={(
-                event,
-              ) =>
-                setSearch(
-                  event.target.value,
-                )
-              }
-              placeholder={t("Buscar por título o destino...")}
-              className="h-9 w-full rounded-lg border border-[#DDE2DF] bg-white pl-9 pr-3 text-[11px] text-[#252B28] outline-none transition placeholder:text-[#9AA19D] focus:border-[#08643B] focus:ring-2 focus:ring-[#08643B]/10"
-            />
-          </div>
-
-          <div className="flex flex-wrap gap-1.5">
-            {statusOptions.map(
-              (
-                option,
-              ) => {
-                const active =
-                  status ===
-                  option.value;
-
-                return (
-                  <button
-                    key={
-                      option.value ||
-                      "all"
-                    }
-                    type="button"
-                    onClick={() =>
-                      setStatus(
-                        option.value,
-                      )
-                    }
-                    className={[
-                      "h-8 rounded-lg border px-3 text-[10px] font-semibold transition",
-
-                      active
-                        ? "border-[#0A6A42] bg-[#EFF8F3] text-[#075E36]"
-                        : "border-[#DDE2DF] bg-white text-[#66706B] hover:border-[#A8BDB2]",
-                    ].join(
-                      " ",
-                    )}
-                  >
-                    {
-                      t(option.label)
-                    }
-                  </button>
-                );
-              },
-            )}
-          </div>
+      <div className="mb-6 flex items-center gap-3">
+        <div className="relative min-w-0 flex-1">
+          <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
+          <Input
+            type="search"
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            placeholder={t("Buscar por título o destino...")}
+            aria-label={t("Buscar por título o destino...")}
+            className="!h-9 !text-sm pl-9"
+          />
         </div>
-      </section>
+        <Sheet>
+          <SheetTrigger asChild>
+            <Button type="button" variant="outline" className="shrink-0 gap-2 !text-sm">
+              <SlidersHorizontal className="size-4" aria-hidden="true" />{t("Filtros")}
+              {status ? <><span className="size-2 rounded-full bg-primary" aria-hidden="true" /><span className="sr-only">{t(statusOptions.find(option => option.value === status)?.label ?? "")}</span></> : null}
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="right" className="flex w-[320px] max-w-full flex-col gap-0 p-0 sm:w-[360px] sm:max-w-[360px]">
+            <SheetHeader className="border-b px-6 py-5">
+              <SheetTitle className="!m-0 !max-w-none !text-base !font-semibold !leading-6 !tracking-normal">{t("Filtros")}</SheetTitle>
+              <SheetDescription className="sr-only">{t("Filtra las publicaciones por estado.")}</SheetDescription>
+            </SheetHeader>
+            <div className="flex flex-1 flex-col gap-6 overflow-y-auto p-6">
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="publication-status-filter" className="!text-sm !font-medium">{t("Estado")}</Label>
+                <Select value={status || "all"} onValueChange={(value) => setStatus(value === "all" ? "" : value as AdminPublicationStatus)}>
+                  <SelectTrigger id="publication-status-filter" className="w-full !text-sm">
+                    <SelectValue placeholder={t("Todos los estados")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {statusOptions.map(option => <SelectItem key={option.value || "all"} value={option.value || "all"}>{t(option.value ? option.label : "Todos los estados")}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <Separator />
+              <Button type="button" variant="ghost" className="w-full !text-sm text-muted-foreground" onClick={() => { setStatus(""); setSearch(""); }}>
+                {t("Limpiar filtros")}
+              </Button>
+            </div>
+          </SheetContent>
+        </Sheet>
+      </div>
 
       {error && (
         <div className="mb-3 flex items-center justify-between gap-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3">

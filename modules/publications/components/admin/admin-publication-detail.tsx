@@ -2,9 +2,8 @@
 
 import { DashboardBreadcrumb } from "@/components/dashboard/DashboardBreadcrumb";
 import { usePreferences } from "@/lib/preferences/Preferences";
-import { ArrowLeft, Building2, CalendarDays, Check, Clock3, ImageIcon, MapPin, RefreshCw, Users, X } from "lucide-react";
+import { Building2, CalendarDays, Check, Clock3, ImageIcon, MapPin, RefreshCw, Users, X } from "lucide-react";
 import { Tabs } from "radix-ui";
-import { useRouter } from "next/navigation";
 import { useAdminPublication } from "../../hooks/admin/useAdminPublication";
 import type { AdminPublicationStatus } from "../../services/admin/admin-publication.service";
 
@@ -24,7 +23,7 @@ export default function AdminPublicationDetail({ publicationId }: AdminPublicati
   if (!publication) {
     return (
       <div className="mx-auto w-full max-w-[1180px]">
-        <BackButton />
+        <DashboardBreadcrumb items={[{ label: "Publicaciones", href: "/dashboard/publications" }, { label: "Revisión de publicación" }]} />
         <div className="py-12 text-center">
           <ImageIcon size={32} className="mx-auto text-muted-foreground" aria-hidden="true" />
           <p className="mt-4 font-semibold">{t("No se pudo cargar la publicación")}</p>
@@ -52,7 +51,6 @@ export default function AdminPublicationDetail({ publicationId }: AdminPublicati
 
   return (
     <div className="mx-auto w-full max-w-[1180px] text-foreground">
-      <BackButton />
       <header className="border-b border-border pb-6">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <DashboardBreadcrumb items={[{ label: "Publicaciones", href: "/dashboard/publications" }, { label: "Revisión de publicación" }]} />
@@ -186,16 +184,6 @@ export default function AdminPublicationDetail({ publicationId }: AdminPublicati
         ) : null}
       </div>
     </div>
-  );
-}
-
-function BackButton() {
-  const { t } = usePreferences();
-  const router = useRouter();
-  return (
-    <button type="button" onClick={() => router.push("/dashboard/publications")} className="mb-4 inline-flex min-h-11 items-center gap-2 text-sm font-medium text-primary hover:underline focus-visible:outline-2 focus-visible:outline-offset-2">
-      <ArrowLeft size={16} aria-hidden="true" />{t("Volver a publicaciones")}
-    </button>
   );
 }
 
