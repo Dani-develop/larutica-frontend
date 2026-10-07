@@ -1,4 +1,5 @@
-import { isValidPhoneNumber } from "react-phone-number-input";
+// Shared by API validators: never load the React input component on the server.
+import { isValidPhoneNumber } from "libphonenumber-js";
 
 export const DEFAULT_PHONE_COUNTRY = "CR" as const;
 
