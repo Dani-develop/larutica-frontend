@@ -32,6 +32,7 @@ type PhoneNumberInputProps = {
   onBlur?: () => void;
   disabled?: boolean;
   "aria-invalid"?: boolean;
+  "aria-describedby"?: string;
   placeholder?: string;
   className?: string;
   defaultCountry?: typeof DEFAULT_PHONE_COUNTRY;
@@ -46,6 +47,7 @@ export function PhoneNumberInput({
   onBlur,
   disabled,
   "aria-invalid": ariaInvalid,
+  "aria-describedby": ariaDescribedBy,
   placeholder = "8888 8888",
   className,
   defaultCountry = DEFAULT_PHONE_COUNTRY,
@@ -76,6 +78,7 @@ export function PhoneNumberInput({
         required,
         autoComplete: "tel",
         "aria-invalid": ariaInvalid,
+        "aria-describedby": ariaDescribedBy,
       }}
     />
   );

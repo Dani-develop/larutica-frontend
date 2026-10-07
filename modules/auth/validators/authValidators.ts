@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { AUTH_ROLES } from "../models/auth";
+import { isOptionalPhoneNumber } from "@/lib/phoneValidation";
 
 export const signInValidators = z.object({
   email: z
@@ -26,7 +27,7 @@ export const signUpValidators = z
       .trim()
       .min(1, { message: "El correo es obligatorio" })
       .max(255, { message: "El correo no puede tener más de 255 caracteres" }),
-    phone: z.string().trim().max(30, { message: "El teléfono es demasiado largo" }),
+    phone: z.string().trim().max(30, { message: "El teléfono es demasiado largo" }).refine(isOptionalPhoneNumber, { message: "Ingresa un número de teléfono válido." }),
     companyName: z
       .string()
       .trim()
