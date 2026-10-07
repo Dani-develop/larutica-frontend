@@ -185,6 +185,16 @@ nav .trip-menu-panel button { display:flex; place-items:unset; justify-content:f
 .button-outline { background:transparent; border-color:var(--ink); color:var(--ink); }
 .button-primary { background:var(--green); color:white; box-shadow:0 7px 20px rgba(13,104,78,.24); }
 .button-primary:hover { background:var(--green-dark); }
+.button-danger { background:#9b271f; color:white; }
+.button-danger:hover { background:#7f201a; }
+.larutica-swal-popup { border-radius:1.2rem; color:var(--ink); font-family:inherit; }
+.larutica-swal-title { color:var(--ink); }
+.larutica-swal-text { color:var(--ink-muted); }
+.swal2-styled.larutica-swal-confirm { border-radius:999px; background:var(--green)!important; padding:.7rem 1.1rem; font-weight:800; }
+.swal2-styled.larutica-swal-confirm:hover { background:var(--green-dark)!important; }
+.swal2-styled.larutica-swal-cancel { border:1px solid var(--ink)!important; border-radius:999px; background:transparent!important; color:var(--ink)!important; padding:.7rem 1.1rem; font-weight:800; }
+.swal2-styled.larutica-swal-cancel:hover { background:#e5eee7!important; }
+.swal2-styled.larutica-swal-confirm:focus,.swal2-styled.larutica-swal-cancel:focus { box-shadow:0 0 0 3px rgba(13,104,78,.24)!important; }
 .hero { min-height:680px; padding:clamp(2rem,5vw,5rem); display:grid; grid-template-columns:1.15fr .85fr; gap:clamp(2rem,5vw,5rem); align-items:center; overflow:hidden; position:relative; }
 .hero::before { content:""; position:absolute; width:420px; height:420px; border-radius:50%; background:var(--lime); opacity:.33; top:-240px; left:30%; }
 .hero-copy { max-width:780px; position:relative; z-index:1; }
