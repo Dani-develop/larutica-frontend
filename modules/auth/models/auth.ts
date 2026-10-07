@@ -1,3 +1,5 @@
+import { PRIVACY_POLICY_VERSION } from "@/lib/privacyPolicy";
+
 export const AUTH_ROLES = ["Viajero", "Agencia", "Transporte"] as const;
 
 export type AuthRole = (typeof AUTH_ROLES)[number];
@@ -20,6 +22,8 @@ export type SignUpDto = {
   companyName: string;
   password: string;
   confirmPassword: string;
+  acceptPrivacyPolicy: boolean;
+  privacyPolicyVersion: string;
 };
 
 export const SignUpDtoDefaultValues: SignUpDto = {
@@ -30,6 +34,8 @@ export const SignUpDtoDefaultValues: SignUpDto = {
   companyName: "",
   password: "",
   confirmPassword: "",
+  acceptPrivacyPolicy: false,
+  privacyPolicyVersion: PRIVACY_POLICY_VERSION,
 };
 
 export const ROLE_OPTIONS: {

@@ -273,6 +273,7 @@ export default function Home() {
         <p>{t("Prototipo académico · Costa Rica · 2026")}</p>
         <div className="footer-links">
           <Link className="footer-link" href="/terminos">{t("Términos y condiciones")}</Link>
+          <Link className="footer-link" href="/privacidad">{t("Política de privacidad")}</Link>
           <button className="footer-link" type="button" onClick={() => setAccessOpen(true)}>{t("Opciones de accesibilidad")}</button>
           <button className="footer-help" type="button" onClick={() => setHelpOpen(true)}>{t("¿Necesitas ayuda?")}</button>
         </div>

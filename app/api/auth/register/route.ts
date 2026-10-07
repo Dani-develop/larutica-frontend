@@ -10,15 +10,16 @@ import {
   storePkceFlow,
 } from "@/lib/supabase/session";
 import { signUpValidators } from "@/modules/auth/validators/authValidators";
+import { PRIVACY_POLICY_VERSION } from "@/lib/privacyPolicy";
 
 export async function POST(request: Request) {
-  const remote = await proxyRemoteApiRequest(request);
-  if (remote) return remote;
-
   try {
     assertSameOrigin(request);
-    const parsed = signUpValidators.safeParse(await request.json());
+    const parsed = signUpValidators.safeParse(await request.clone().json());
     if (!parsed.success) throw new ApiError(parsed.error.issues[0]?.message ?? "Datos inválidos.", 400);
+
+    const remote = await proxyRemoteApiRequest(request);
+    if (remote) return remote;
 
     const flow = createOpaqueToken();
     const callback = clientUrl("/api/auth/callback", request);
@@ -34,6 +35,8 @@ export async function POST(request: Request) {
           role: parsed.data.role,
           phone: parsed.data.phone.trim(),
           business_name: parsed.data.companyName.trim(),
+          privacy_policy_accepted_at: new Date().toISOString(),
+          privacy_policy_version: PRIVACY_POLICY_VERSION,
         },
       },
     });

@@ -8,6 +8,7 @@ import { ArrowRight, Building2, Bus, Compass, Eye, EyeOff, LockKeyhole, Mail, Us
 import { safeBookingReturn } from "@/modules/auth/utils/returnTo";
 import { AuthShell } from "@/components/auth/AuthShell";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { PhoneNumberInput } from "@/components/ui/phone-input";
@@ -109,7 +110,7 @@ export default function RegisterForm() {
                 key={option.value}
                 type="button"
                 onClick={() => {
-                  form.reset({ ...form.state.values, role: option.value, companyName: option.value === "Viajero" ? "" : form.state.values.companyName });
+                  form.reset({ ...form.state.values, role: option.value, companyName: option.value === "Viajero" ? "" : form.state.values.companyName, acceptPrivacyPolicy: false });
                   setRole(option.value);
                 }}
                 className="group flex w-full cursor-pointer items-center gap-4 rounded-xl border border-border bg-background p-5 text-left transition-colors hover:border-primary hover:bg-primary/5 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
@@ -189,6 +190,22 @@ export default function RegisterForm() {
           </form.Field>
         </FieldGroup>
         {error ? <p className="text-sm text-destructive" role="alert">{t(error)}</p> : null}
+        <form.Field name="acceptPrivacyPolicy">
+          {(field) => {
+            const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
+            return (
+              <Field data-invalid={isInvalid}>
+                <div className="flex items-start gap-3">
+                  <Checkbox id={field.name} name={field.name} checked={field.state.value} onCheckedChange={(checked) => field.handleChange(checked === true)} onBlur={field.handleBlur} required aria-invalid={isInvalid} aria-describedby={isInvalid ? "privacy-policy-error" : undefined} className="mt-0.5" />
+                  <FieldLabel htmlFor={field.name} required className="inline leading-relaxed">
+                    He leído y acepto la{" "}<Link href="/privacidad" target="_blank" rel="noopener noreferrer" className="font-semibold text-primary underline underline-offset-4">Política de privacidad<span className="sr-only"> (se abre en una pestaña nueva)</span></Link>{" "}y autorizo el tratamiento de mis datos para las funciones de LaRutica descritas en ella.
+                  </FieldLabel>
+                </div>
+                {isInvalid ? <FieldError id="privacy-policy-error" errors={field.state.meta.errors} /> : null}
+              </Field>
+            );
+          }}
+        </form.Field>
         <form.Subscribe selector={(state) => state.isSubmitting}>
           {(isSubmitting) => <Button type="submit" className="mt-1 w-full" disabled={isSubmitting || authLoading}>{isSubmitting ? t("Creando cuenta...") : t("Crear cuenta")}</Button>}
         </form.Subscribe>

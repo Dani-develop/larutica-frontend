@@ -104,10 +104,10 @@ export default function TermsPage() {
         <section>
           <h2>8. Privacidad</h2>
           <p>
-            La información personal debe tratarse únicamente para los fines relacionados
-            con las funciones utilizadas y de acuerdo con la normativa aplicable. Como
-            este prototipo no sustituye una política de privacidad formal, no introduzcas
-            información sensible o datos de pago.
+            La recolección, el uso y la protección de tu información se describen en
+            nuestra <Link href="/privacidad" className="underline underline-offset-4">Política de privacidad</Link>.
+            Debes leerla y aceptarla antes de crear una cuenta. Evita introducir datos
+            sensibles o información de pago en el prototipo.
           </p>
         </section>
 
