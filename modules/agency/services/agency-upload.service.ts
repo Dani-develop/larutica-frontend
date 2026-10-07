@@ -41,7 +41,7 @@ async function readApiError(
       .catch(
         () =>
           null,
-      );
+      ) as { message?: string; error?: string } | null;
 
   return (
     body?.message ??

@@ -1,0 +1,17 @@
+import {test,beforeEach,after} from 'node:test';
+import assert from 'node:assert/strict';
+import {apiFetch,clearApiCache} from '../lib/api/browser-fetch.ts';
+const original=globalThis.fetch;const originalWindow=globalThis.window;let calls=0;globalThis.window={};
+beforeEach(()=>{clearApiCache();calls=0;globalThis.fetch=async()=>{calls++;return Response.json({version:calls});};});
+after(()=>{globalThis.fetch=original;if(originalWindow===undefined)delete globalThis.window;else globalThis.window=originalWindow;});
+test('consultas simultáneas comparten una petición y cada consumidor lee su JSON',async()=>{const [a,b]=await Promise.all([apiFetch('/api/admin/users'),apiFetch('/api/admin/users')]);assert.deepEqual(await a.json(),await b.json());assert.equal(calls,1);});
+test('volver a una pantalla reutiliza la consulta reciente',async()=>{await apiFetch('/api/traveler/saved');await apiFetch('/api/traveler/saved');assert.equal(calls,1);});
+test('un cambio invalida la respuesta antes y después de guardar',async()=>{await apiFetch('/api/traveler/saved');await apiFetch('/api/traveler/saved',{method:'POST'});assert.equal((await (await apiFetch('/api/traveler/saved')).json()).version,3);});
+test('cambiar de sesión borra las respuestas del usuario anterior',async()=>{await apiFetch('/api/reservations');clearApiCache();await apiFetch('/api/reservations');assert.equal(calls,2);});
+test('respuestas fallidas y sesiones no se guardan',async()=>{globalThis.fetch=async()=>{calls++;return Response.json({}, {status:401});};await apiFetch('/api/reservations');await apiFetch('/api/reservations');await apiFetch('/api/auth/session');await apiFetch('/api/auth/session');assert.equal(calls,4);});
+test('la caché caduca a los diez segundos',async()=>{const now=Date.now;let clock=0;Date.now=()=>clock;try{await apiFetch('/api/catalog');clock=10001;await apiFetch('/api/catalog');assert.equal(calls,2);}finally{Date.now=now;}});
+test('cancelar una consulta no cancela la de otro consumidor',async()=>{await Promise.all([apiFetch('/api/catalog',{signal:new AbortController().signal}),apiFetch('/api/catalog')]);assert.equal(calls,2);});
+test('una consulta antigua no vuelve a la caché después de una mutación',async()=>{let release;globalThis.fetch=()=>{calls++;return new Promise(resolve=>{release=()=>resolve(Response.json({version:1}));});};const old=apiFetch('/api/reservations');const resolveOld=release;globalThis.fetch=async()=>{calls++;return Response.json({version:2});};await apiFetch('/api/reservations',{method:'PATCH'});resolveOld();await old;assert.equal((await (await apiFetch('/api/reservations')).json()).version,2);assert.equal(calls,3);});
+
+test('cambio de sesión conserva únicamente el catálogo público y descarta reservas personales',async()=>{await apiFetch('/api/catalog');await apiFetch('/api/reservations');clearApiCache(true);await apiFetch('/api/catalog');await apiFetch('/api/reservations');assert.equal(calls,3);});
+test('catálogo iniciado antes de cargar sesión sigue compartido pero una mutación lo invalida',async()=>{let release;globalThis.fetch=()=>{calls++;return new Promise(resolve=>{release=()=>resolve(Response.json({version:1}));});};const first=apiFetch('/api/catalog');clearApiCache(true);const second=apiFetch('/api/catalog');release();await Promise.all([first,second]);assert.equal(calls,1);await apiFetch('/api/catalog');assert.equal(calls,1);globalThis.fetch=async()=>{calls++;return Response.json({version:2});};await apiFetch('/api/reservations',{method:'POST'});await apiFetch('/api/catalog');assert.equal(calls,3);});

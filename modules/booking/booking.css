@@ -24,3 +24,7 @@
 .booking-site h1{font-size:clamp(2rem,4vw,3rem)}
 .booking-site .booking-hero h1{font-size:clamp(2rem,4vw,3.3rem)}
 @media(max-width:520px){.booking-site .booking-brand .booking-wordmark{font-size:1.35rem}.booking-wordmark small{display:none!important}.booking-site .booking-brand{gap:6px}.booking-site .booking-brand>span:first-child{width:30px;height:30px}.booking-header nav{font-size:.875rem}.booking-header{flex-wrap:wrap}.booking-header nav{width:100%;justify-content:space-between}}
+
+.booking-site{min-height:100dvh;display:flex;flex-direction:column}.booking-site>main{flex:1}.booking-site>.booking-header,.booking-site>.booking-footer{flex-shrink:0}
+
+.booking-site.booking-embedded{min-height:0;background:white;width:100%}.booking-embedded .booking-container{width:100%;padding-top:32px}.trip-departure-info{font-size:.9rem;color:#52645b;line-height:1.5}.experience-card .card-footer{flex-wrap:wrap;gap:16px}.experience-card .trip-actions{flex-wrap:wrap}

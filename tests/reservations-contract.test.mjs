@@ -122,7 +122,7 @@ test("el cliente expone el CRUD y Mis reservas deja los datos fijos", async () =
   assert.match(reservationsPage, /No tienes reservas por venir/);
   assert.match(reservationsPage, /role="alert"/);
   assert.doesNotMatch(reservationsPage, /pub-arenal-01/);
-  assert.match(landing, /Catalog/);
+  assert.match(landing, /TravelerReservationsPage/);
 });
 
 test('solo el trabajador propietario o Admin pueden confirmar antes de la salida', () => {

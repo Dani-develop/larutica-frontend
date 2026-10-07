@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 
 import { Menu } from "lucide-react";
 import { usePathname } from "next/navigation";
@@ -54,7 +55,7 @@ export function BottomNav({ role }: Props) {
         const Icon = item.icon;
         const active = isItemActive(item, pathname);
         return (
-          <a
+          <Link
             key={`${item.href}-${item.label}`}
             href={item.href}
             aria-current={active ? "page" : undefined}
@@ -68,7 +69,7 @@ export function BottomNav({ role }: Props) {
               aria-hidden="true"
             />
             <span className="max-w-full truncate">{item.label}</span>
-          </a>
+          </Link>
         );
       })}
 

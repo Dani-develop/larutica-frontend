@@ -12,7 +12,7 @@ async function render(pathname) {
   );
 }
 for (const [pathname, expected] of [
-  ["/", "Tu próxima historia"],
+  ["/", "Encuentra tours"],
   ["/mis-reservas", "Validando tu sesión"],
   ["/experiencias/00000000-0000-4000-8000-000000000001", "Consultando disponibilidad"],
   ["/login", "Iniciar sesión"],
@@ -20,6 +20,8 @@ for (const [pathname, expected] of [
   ["/forgot-password", "Recuperar contraseña"],
   ["/update-password", "Nueva contraseña"],
   ["/dashboard", "Validando sesión"],
+  ...['/dashboard/my-agency','/dashboard/my-agency/new','/dashboard/my-agency/edit','/dashboard/users','/dashboard/users/new','/dashboard/users/00000000-0000-4000-8000-000000000001','/dashboard/users/00000000-0000-4000-8000-000000000001/edit','/dashboard/agencies','/dashboard/agencies/new','/dashboard/agencies/00000000-0000-4000-8000-000000000001','/dashboard/agencies/00000000-0000-4000-8000-000000000001/edit','/dashboard/publications','/dashboard/publications/new','/dashboard/publications/00000000-0000-4000-8000-000000000001','/dashboard/publications/00000000-0000-4000-8000-000000000001/edit','/dashboard/reservations','/dashboard/profile','/dashboard/reviews','/dashboard/promotions','/dashboard/destinations','/dashboard/graficas'].map(path => [path, 'Validando sesión']),
+  ['/terminos', 'LaRutica'],
 ]) {
   test(`renderiza ${pathname}`, async () => {
     const response = await render(pathname);

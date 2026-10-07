@@ -1,3 +1,4 @@
+import { publicationDepartures } from "./availability";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { ApiError } from "@/lib/api/errors";
 import type { TravelerPublication } from "@/modules/traveler/types/traveler-publication.types";
@@ -50,21 +51,15 @@ export async function listTravelerPublications(
 
   const ids = rows.map((row) => row.id);
   const agencyIds = [...new Set(rows.map((row) => row.agency_id))];
-  const { data: agencyData, error: agencyError } = await admin
-    .from("agencies")
-    .select("id, agency_name, commercial_name")
-    .in("id", agencyIds)
-    .eq("status", "APPROVED");
-  if (agencyError) throw agencyError;
-  const agenciesById = new Map(
-    ((agencyData ?? []) as AgencyRow[]).map((agency) => [agency.id, agency]),
-  );
-
-  const { data: publicationLanguageData, error: publicationLanguageError } = await admin
-    .from("publication_languages")
-    .select("publication_id, language_id")
-    .in("publication_id", ids);
-  if (publicationLanguageError) throw publicationLanguageError;
+  const [departures, agencyResult, languageResult] = await Promise.all([
+    publicationDepartures(admin, ids),
+    admin.from("agencies").select("id, agency_name, commercial_name").in("id", agencyIds).eq("status", "APPROVED"),
+    admin.from("publication_languages").select("publication_id, language_id").in("publication_id", ids),
+  ]);
+  if (agencyResult.error) throw agencyResult.error;
+  if (languageResult.error) throw languageResult.error;
+  const agenciesById = new Map(((agencyResult.data ?? []) as AgencyRow[]).map(agency => [agency.id, agency]));
+  const publicationLanguageData = languageResult.data;
 
   const publicationLanguages = (publicationLanguageData ?? []) as PublicationLanguageRow[];
   const languageIds = [...new Set(publicationLanguages.map((row) => row.language_id))];
@@ -90,7 +85,7 @@ export async function listTravelerPublications(
     languagesByPublication.set(row.publication_id, names);
   }
 
-  return rows.map((row) => {
+  return rows.filter(row => agenciesById.has(row.agency_id)).map((row) => {
     const agency = agenciesById.get(row.agency_id);
     if (
       !row.title
@@ -110,6 +105,7 @@ export async function listTravelerPublications(
     }
 
     return {
+      departures: departures.filter(d => d.publicationId === row.id).map(({ id, startAt, available }) => ({ id, startAt, available })),
       id: row.id,
       title: row.title,
       description: row.description,

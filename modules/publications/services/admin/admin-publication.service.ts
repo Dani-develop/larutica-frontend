@@ -1,3 +1,4 @@
+import { apiFetch } from "@/lib/api/browser-fetch";
 export type AdminPublicationStatus =
   | "DRAFT"
   | "PENDING"
@@ -331,7 +332,7 @@ async function parseResponse<T>(
   const body =
     await response
       .json()
-      .catch(() => null);
+      .catch(() => null) as { message?: string; error?: string } | null;
 
   if (!response.ok) {
     const message =
@@ -344,7 +345,7 @@ async function parseResponse<T>(
     );
   }
 
-  return body;
+  return body as unknown as T;
 }
 
 export interface AdminPublicationFilters {
@@ -382,7 +383,7 @@ export async function getAdminPublications(
     params.toString();
 
   const response =
-    await fetch(
+    await apiFetch(
       `/api/admin/publications${query ? `?${query}` : ""}`,
       {
         method: "GET",
@@ -410,7 +411,7 @@ export async function getAdminPublication(
   publicationId: string,
 ): Promise<AdminPublication> {
   const response =
-    await fetch(
+    await apiFetch(
       `/api/admin/publications/${encodeURIComponent(publicationId)}`,
       {
         method: "GET",
@@ -440,7 +441,7 @@ export async function reviewAdminPublication(
     | "REJECTED",
 ): Promise<AdminPublicationStatus> {
   const response =
-    await fetch(
+    await apiFetch(
       `/api/admin/publications/${encodeURIComponent(publicationId)}/status`,
       {
         method: "PATCH",

@@ -30,6 +30,9 @@ export async function GET(request: Request) {
     if (error) throw error;
 
     const publicationIds = (savedRows ?? []).map((row) => row.publication_id);
+    if (new URL(request.url).searchParams.get("ids") === "1") {
+      return Response.json({ data: publicationIds }, { headers: { "cache-control": "no-store" } });
+    }
     const publications = await listTravelerPublications(admin, publicationIds);
     const savedOrder = new Map(publicationIds.map((id, index) => [id, index]));
     publications.sort((left, right) =>

@@ -1,3 +1,4 @@
+import { apiFetch } from "@/lib/api/browser-fetch";
 import type { SystemUser, SystemUserInput } from "../models/User";
 import { profileRowToSystemUser, type ProfileRow } from "@/lib/supabase/profiles";
 
@@ -19,7 +20,7 @@ async function appRequest<T>(
   path: string,
   init: RequestInit,
 ): Promise<T> {
-  const response = await fetch(path, {
+  const response = await apiFetch(path, {
     ...init,
     credentials: "same-origin",
     headers: {

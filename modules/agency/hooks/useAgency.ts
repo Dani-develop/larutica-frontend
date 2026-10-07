@@ -48,7 +48,7 @@ export function useAgency() {
   }, [])
 
   useEffect(() => {
-    void loadAgency()
+    queueMicrotask(() => { void loadAgency() })
   }, [loadAgency])
 
   const create = async (

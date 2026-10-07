@@ -27,6 +27,8 @@ export type TravelerPublication = {
     | "EXCURSION"
     | "TRANSPORT";
 
+  departures?: { id: string; startAt: string; available: number }[];
+
   providerName?: string;
 
   providerSlug?: string;

@@ -1,3 +1,4 @@
+import { apiFetch } from "@/lib/api/browser-fetch";
 export type ReservationStatus = 'PENDING' | 'CONFIRMED' | 'PAST' | 'CANCELLED'
 
 export type Reservation = {
@@ -12,6 +13,7 @@ export type Reservation = {
   updatedAt: string
   departureStartAt: string
   departureStatus?: string
+  rating?: number | null
   publicationId: string
   publicationTitle: string
   destination: string | null
@@ -39,7 +41,7 @@ interface ApiResponse<T> {
 }
 
 async function parseResponse<T>(response: Response): Promise<T> {
-  const body = await response.json().catch(() => null)
+  const body = await response.json().catch(() => null) as { message?: string; error?: string } | null
 
   if (!response.ok) {
     const message =
@@ -50,14 +52,14 @@ async function parseResponse<T>(response: Response): Promise<T> {
     throw new Error(message)
   }
 
-  return body
+  return body as unknown as T
 }
 
 export async function listReservations(options: { mine?: boolean; departureId?: string } = {}): Promise<Reservation[]> {
   const params = new URLSearchParams();
   if (options.mine) params.set('scope', 'mine');
   if (options.departureId) params.set('departureId', options.departureId);
-  const response = await fetch(`/api/reservations${params.size ? `?${params}` : ''}`, {
+  const response = await apiFetch(`/api/reservations${params.size ? `?${params}` : ''}`, {
     method: 'GET',
     credentials: 'include',
   })
@@ -68,7 +70,7 @@ export async function listReservations(options: { mine?: boolean; departureId?: 
 export async function createReservation(
   payload: CreateReservationPayload,
 ): Promise<Reservation> {
-  const response = await fetch('/api/reservations', {
+  const response = await apiFetch('/api/reservations', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
@@ -79,7 +81,7 @@ export async function createReservation(
 }
 
 export async function getReservation(id: string): Promise<Reservation> {
-  const response = await fetch(`/api/reservations/${id}`, {
+  const response = await apiFetch(`/api/reservations/${id}`, {
     method: 'GET',
     credentials: 'include',
   })
@@ -91,7 +93,7 @@ export async function updateReservation(
   id: string,
   payload: UpdateReservationPayload,
 ): Promise<Reservation> {
-  const response = await fetch(`/api/reservations/${id}`, {
+  const response = await apiFetch(`/api/reservations/${id}`, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
@@ -102,7 +104,7 @@ export async function updateReservation(
 }
 
 export async function deleteReservation(id: string): Promise<void> {
-  const response = await fetch(`/api/reservations/${id}`, {
+  const response = await apiFetch(`/api/reservations/${id}`, {
     method: 'DELETE',
     credentials: 'include',
   })

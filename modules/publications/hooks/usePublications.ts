@@ -71,7 +71,7 @@ export function usePublications() {
     );
 
   useEffect(() => {
-    void loadPublications();
+    queueMicrotask(() => { void loadPublications(); });
   }, [loadPublications]);
 
   const getById =

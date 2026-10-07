@@ -29,10 +29,10 @@ export function tripPath(
   extra?: { publicacion?: string; provider?: string },
 ) {
   const params = new URLSearchParams();
-  params.set("viaje", viaje);
+  if (viaje !== "explorar") params.set("viaje", viaje);
   if (extra?.publicacion) params.set("publicacion", extra.publicacion);
   if (extra?.provider) params.set("provider", extra.provider);
-  return `/?${params.toString()}`;
+  return params.size ? `/?${params.toString()}` : "/";
 }
 
 export function travelerDashboardTarget(pathname: string, search: string) {

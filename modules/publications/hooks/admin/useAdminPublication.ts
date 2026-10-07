@@ -81,7 +81,7 @@ export function useAdminPublication(
 
   useEffect(
     () => {
-      void loadPublication();
+      queueMicrotask(() => { void loadPublication(); });
     },
     [
       loadPublication,

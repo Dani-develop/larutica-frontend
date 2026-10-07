@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   BadgeCheck,
   Building2,
@@ -27,7 +27,7 @@ import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { useAdminAgency } from "../../hooks/admin/useAdminAgency";
-import type { Agency, AgencyStatus, BusinessType } from "../../types/agency.types";
+import type { AgencyStatus, BusinessType } from "../../types/agency.types";
 import { VerificationDocumentViewer } from "./verification-document-viewer";
 
 const statusBadgeClass: Record<AgencyStatus, string> = {
@@ -158,6 +158,7 @@ function ImageLightbox({
   alt: string;
   onClose: () => void;
 }) {
+  const backdrop = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
@@ -165,10 +166,13 @@ function ImageLightbox({
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") onClose();
     };
+    const onMouseDown = (event: MouseEvent) => {if (event.target === backdrop.current) onClose();};
+    window.addEventListener("mousedown", onMouseDown);
     window.addEventListener("keydown", onKeyDown);
 
     return () => {
       document.body.style.overflow = previousOverflow;
+      window.removeEventListener("mousedown", onMouseDown);
       window.removeEventListener("keydown", onKeyDown);
     };
   }, [onClose]);
@@ -179,9 +183,7 @@ function ImageLightbox({
       role="dialog"
       aria-modal="true"
       aria-label={alt}
-      onMouseDown={(event) => {
-        if (event.target === event.currentTarget) onClose();
-      }}
+      ref={backdrop}
     >
       <button
         type="button"

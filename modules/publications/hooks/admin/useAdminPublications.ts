@@ -16,6 +16,7 @@ export function useAdminPublications(
   filters:
     AdminPublicationFilters = {},
 ) {
+  const { status, search } = filters;
   const [
     publications,
     setPublications,
@@ -47,7 +48,7 @@ export function useAdminPublications(
 
           const data =
             await getAdminPublications(
-              filters,
+              { status, search },
             );
 
           setPublications(
@@ -65,14 +66,14 @@ export function useAdminPublications(
         }
       },
       [
-        filters.status,
-        filters.search,
+        status,
+        search,
       ],
     );
 
   useEffect(
     () => {
-      void loadPublications();
+      queueMicrotask(() => { void loadPublications(); });
     },
     [
       loadPublications,

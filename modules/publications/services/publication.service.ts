@@ -1,3 +1,4 @@
+import { apiFetch } from "@/lib/api/browser-fetch";
 import type {
   ApiErrorResponse,
   CreateDepartureInput,
@@ -50,7 +51,7 @@ export async function getMyPublications(): Promise<
   Publication[]
 > {
   const response =
-    await fetch(
+    await apiFetch(
       "/api/publications/me",
       {
         method: "GET",
@@ -75,7 +76,7 @@ export async function getPublicationById(
   id: string,
 ): Promise<Publication> {
   const response =
-    await fetch(
+    await apiFetch(
       `/api/publications/${id}`,
       {
         method: "GET",
@@ -100,7 +101,7 @@ export async function createPublication(
   input: CreatePublicationInput,
 ): Promise<Publication> {
   const response =
-    await fetch(
+    await apiFetch(
       "/api/publications",
       {
         method: "POST",
@@ -134,7 +135,7 @@ export async function updatePublication(
   input: UpdatePublicationInput,
 ): Promise<Publication> {
   const response =
-    await fetch(
+    await apiFetch(
       `/api/publications/${id}`,
       {
         method: "PATCH",
@@ -169,7 +170,7 @@ export async function deletePublication(
   DeletePublicationResponse["data"]
 > {
   const response =
-    await fetch(
+    await apiFetch(
       `/api/publications/${id}`,
       {
         method: "DELETE",
@@ -194,7 +195,7 @@ export async function getPublicationDepartures(
   publicationId: string,
 ): Promise<PublicationDeparture[]> {
   const response =
-    await fetch(
+    await apiFetch(
       `/api/publications/${publicationId}/departures`,
       {
         method: "GET",
@@ -222,7 +223,7 @@ export async function createPublicationDeparture(
   input: CreateDepartureInput,
 ): Promise<PublicationDeparture> {
   const response =
-    await fetch(
+    await apiFetch(
       `/api/publications/${publicationId}/departures`,
       {
         method: "POST",
@@ -257,7 +258,7 @@ export async function updatePublicationDeparture(
   input: UpdateDepartureInput,
 ): Promise<PublicationDeparture> {
   const response =
-    await fetch(
+    await apiFetch(
       `/api/publications/${publicationId}/departures/${departureId}`,
       {
         method: "PATCH",
@@ -291,7 +292,7 @@ export async function cancelPublicationDeparture(
   departureId: string,
 ): Promise<PublicationDeparture> {
   const response =
-    await fetch(
+    await apiFetch(
       `/api/publications/${publicationId}/departures/${departureId}`,
       {
         method: "DELETE",

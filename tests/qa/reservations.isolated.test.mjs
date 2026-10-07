@@ -4,8 +4,8 @@ import {readFile} from 'node:fs/promises';
 import {PGlite} from 'file:///C:/Users/josed/Documents/Codex/2026-09-22/pue/tmp/booking-qa/node_modules/@electric-sql/pglite/dist/index.js';
 import * as collection from '../../app/api/reservations/route.ts';
 import * as detail from '../../app/api/reservations/[id]/route.ts';
+import { publicationDepartures } from '../../lib/traveler/availability.ts';
 import * as catalog from '../../app/api/catalog/route.ts';
-import * as policy from '../../lib/reservations/policy.ts';
 const ids={a:'11111111-1111-4111-8111-111111111111',b:'22222222-2222-4222-8222-222222222222',owner:'33333333-3333-4333-8333-333333333333',outside:'44444444-4444-4444-8444-444444444444',admin:'55555555-5555-4555-8555-555555555555',agency:'66666666-6666-4666-8666-666666666666',pub:'77777777-7777-4777-8777-777777777777',dep:'88888888-8888-4888-8888-888888888888'};
 const db=new PGlite();
 globalThis.fetch=()=>{throw Error('Network forbidden in isolated QA');};
@@ -14,7 +14,7 @@ class Query{
  constructor(table){this.table=table;this.filters=[];this.embedded=[];this.orders=[];this.offset=0;this.end=Infinity;this.action='read';}
  select(value){this.selection=value;return this;} eq(k,v){if(this.table==='publications'&&k.startsWith('publication_departures.'))this.embedded.push(d=>path(d,k.slice(23))===v);else this.filters.push(r=>path(r,k)===v);return this;}
  in(k,v){this.filters.push(r=>v.includes(path(r,k)));return this;} neq(k,v){this.filters.push(r=>path(r,k)!==v);return this;}
- gt(k,v){if(this.table==='publications'&&k.startsWith('publication_departures.'))this.embedded.push(d=>path(d,k.slice(23))>v);else this.filters.push(r=>path(r,k)>v);return this;} order(k,{ascending=true}={}){this.orders.push([k,ascending]);return this;}
+ gt(k,v){if(this.table==='publications'&&k.startsWith('publication_departures.'))this.embedded.push(d=>path(d,k.slice(23))>v);else this.filters.push(r=>path(r,k) instanceof Date ? path(r,k).getTime()>Date.parse(v) : path(r,k)>v);return this;} order(k,{ascending=true}={}){this.orders.push([k,ascending]);return this;}
  range(a,b){this.offset=a;this.end=b+1;return this;} limit(n){this.end=n;return this;}
  update(values){this.action='update';this.values=values;return this;} delete(){this.action='delete';return this;}
  maybeSingle(){this.singleRow=true;return this;} single(){this.singleRow=true;return this;}
@@ -83,6 +83,9 @@ test('cantidad se actualiza con cupo y rechaza exceso sin alterar la reserva',as
 
 test('cancelacion de la salida impide confirmar una solicitud existente',async()=>{const r=await reserve();await db.exec("update publication_departures set status='CANCELLED'");assert.equal((await request(`/api/reservations/${r.body.data.id}`,'PATCH',{status:'CONFIRMED'},'owner')).status,400);});
 test('cambio combinado se rechaza sin mutacion parcial',async()=>{const r=await reserve();assert.equal((await request(`/api/reservations/${r.body.data.id}`,'PATCH',{numberOfPeople:2,status:'CANCELLED'})).status,400);assert.equal((await request(`/api/reservations/${r.body.data.id}`)).body.data.numberOfPeople,1);});
-test('catalogo deja salidas pasadas fuera pero conserva el detalle historico',async()=>{await db.exec("update publication_departures set start_at=now()-interval '1 day'");assert.equal((await request('/api/catalog')).body.data.length,0);const p=await request(`/api/catalog?id=${ids.pub}`);assert.equal(p.body.data.length,1);assert.equal(p.body.data[0].departures.length,0);});
+test('catalogo conserva servicios sin fechas y deja salidas pasadas fuera',async()=>{await db.exec("update publication_departures set start_at=now()-interval '1 day'");assert.equal((await request('/api/catalog')).body.data[0].departures.length,0);const p=await request(`/api/catalog?id=${ids.pub}`);assert.equal(p.body.data.length,1);assert.equal(p.body.data[0].departures.length,0);});
 test('consultas personales de Admin no incluyen viajeros ajenos',async()=>{await reserve('a');await reserve('admin');const r=await request('/api/reservations?scope=mine','GET',undefined,'admin');assert.equal(r.body.data.length,1);assert.equal(r.body.data[0].passengerId,ids.admin);});
 test('SQL comprueba agencia aprobada al momento de crear',async()=>{await db.exec("update agencies set status='PENDING'");await assert.rejects(db.query('select * from public.create_reservation($1,$2,1)',[ids.a,ids.dep]));});
+
+test('fechas del listado descuentan solicitudes pendientes y liberan cancelaciones',async()=>{await reserve('a');let dates=await publicationDepartures(globalThis.qaAdmin,[ids.pub]);assert.equal(dates.length,1);assert.equal(dates[0].available,2);const r=await request('/api/reservations?scope=mine');await request(`/api/reservations/${r.body.data[0].id}`,'PATCH',{status:'CANCELLED'});dates=await publicationDepartures(globalThis.qaAdmin,[ids.pub]);assert.equal(dates[0].available,3);});
+test('fechas del listado excluyen salidas vencidas y canceladas',async()=>{await db.exec("update publication_departures set start_at=now()-interval '1 day'");assert.deepEqual(await publicationDepartures(globalThis.qaAdmin,[ids.pub]),[]);});

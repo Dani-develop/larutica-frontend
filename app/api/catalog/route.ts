@@ -1,3 +1,4 @@
+import { usedDepartureSeats } from '@/lib/traveler/availability';
 import { apiErrorResponse, ApiError } from '@/lib/api/errors';
 import { proxyRemoteApiRequest } from '@/lib/api/remote-proxy';
 import { getSupabaseAdminClient } from '@/lib/supabase/admin-client';
@@ -19,22 +20,9 @@ export async function GET(request: Request) {
     const { data, error } = await query;
     if (error) throw error;
     const now = Date.now();
-    const rows = (data ?? []).filter(p => p.price_per_person !== null)
-      .filter(p => id || p.publication_departures.some(d => d.status === 'ACTIVE' && Date.parse(d.start_at) > now));
+    const rows = (data ?? []).filter(p => p.price_per_person !== null);
     const departures = rows.flatMap(p => p.publication_departures).filter(d => d.status === 'ACTIVE' && Date.parse(d.start_at) > now);
-    const used = new Map<string, number>();
-    const departureIds = departures.map(d => d.id);
-    // Page the aggregate input so Supabase's row cap cannot overstate availability.
-    if (departures.length) {
-      for (let from = 0; ; from += 1000) {
-        const { data: reservations, error: reservationError } = await admin.from('reservations')
-          .select('departure_id,number_of_people').in('departure_id', departureIds)
-          .neq('status', 'CANCELLED').order('id').range(from, from + 999);
-        if (reservationError) throw reservationError;
-        for (const r of reservations ?? []) used.set(r.departure_id, (used.get(r.departure_id) ?? 0) + r.number_of_people);
-        if (!reservations || reservations.length < 1000) break;
-      }
-    }
+    const used = await usedDepartureSeats(admin, departures.map(d => d.id));
     return Response.json({ data: rows.map(p => ({
       id: p.id, title: p.title, description: p.description, destination: p.destination,
       serviceType: p.service_type, price: Number(p.price_per_person), duration: p.duration_minutes,

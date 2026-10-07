@@ -18,6 +18,7 @@ import type {
 export function useAdminAgencies(
   filters: AdminAgencyFilters = {},
 ) {
+  const { status, search } = filters;
   const [
     agencies,
     setAgencies,
@@ -54,7 +55,7 @@ export function useAdminAgencies(
 
           const data =
             await getAdminAgencies(
-              filters,
+              { status, search },
             );
 
           setAgencies(
@@ -79,14 +80,14 @@ export function useAdminAgencies(
         }
       },
       [
-        filters.status,
-        filters.search,
+        status,
+        search,
       ],
     );
 
   useEffect(
     () => {
-      void loadAgencies();
+      queueMicrotask(() => { void loadAgencies(); });
     },
     [
       loadAgencies,

@@ -407,3 +407,26 @@ kbd { padding:.2rem .35rem; border:1px solid #9aaba4; border-bottom-width:2px; b
 @media (max-width:620px) { .site-header{min-height:68px;gap:.5rem}.role-select{display:none}.header-actions .button-quiet{display:none}.brand-mark{width:36px;height:36px}.hero{min-height:auto}.search-panel{grid-template-columns:1fr;border-radius:1rem}.search-panel label{min-height:64px}.search-button{width:100%}.hero-visual{min-height:320px}.floating-note{right:.5rem}.section-heading{align-items:start;flex-direction:column}.card-grid,.trust-strip,.metric-grid,.quick-grid{grid-template-columns:1fr}.experience-card:last-child,.quick-grid button:last-child{grid-column:auto}.transport-section{padding-block:3rem}.detail-image{height:280px}.facts{grid-template-columns:1fr 1fr}.facts div:nth-child(2){border-right:0}.dashboard-header{align-items:flex-start;flex-direction:column}.dashboard-header>.button{width:100%}.dashboard-heading{align-items:flex-start;flex-direction:column}.field-grid{grid-template-columns:1fr}.form-actions{flex-direction:column-reverse}.form-actions .button{width:100%}.review-item{align-items:flex-start;flex-direction:column}.review-item>div:last-child{width:100%}.review-item>div:last-child .button{flex:1}.trip-page-shell .reservation-card{align-items:stretch;flex-direction:column;padding:1rem}.trip-page-shell .reservation-card .trip-actions{justify-content:flex-start}.trip-page-shell .reservation-card .trip-actions>*{flex:1;text-align:center}.trip-profile-card{padding:.9rem}.trip-profile .filter-row{gap:.5rem}.trip-profile .chip{padding:.6rem .8rem} .help-fab{font-size:.82rem}footer{align-items:start;flex-direction:column} }
 @media (max-width:620px) { .trip-profile-panel>.space-y-5 { grid-template-columns:1fr; gap:1rem; } .trip-profile-panel>.space-y-5>div:first-child { padding:1rem; } .trip-profile-panel>.space-y-5>.divide-y { grid-template-columns:1fr; column-gap:0; } }
 @media (prefers-reduced-motion:reduce) { *,*::before,*::after{scroll-behavior:auto!important;transition:none!important} }
+
+/* Keep the footer at the bottom of short public pages, after long content. */
+.landing-shell { min-height:100dvh; display:flex; flex-direction:column; }
+.landing-shell > main { flex:1; min-width:0; }
+.landing-shell > header, .landing-shell > footer { flex-shrink:0; }
+.header-actions .account-logout { display:inline-flex; }
+
+.landing-trip > main { background:#fff; }
+.trip-page-shell > .filter-row { padding:0; width:100%; max-width:1320px; margin:0 auto 1.5rem; justify-content:flex-start; }
+.landing-shell > footer { display:grid; grid-template-columns:minmax(160px,.8fr) minmax(220px,1fr) minmax(280px,1.2fr); align-items:center; gap:1.5rem; padding:1.5rem max(24px,4vw); }
+.landing-shell > footer p { margin:0; line-height:1.6; }
+.landing-shell .footer-links { display:flex; flex-wrap:wrap; align-items:center; justify-content:flex-end; gap:.8rem 1.25rem; }
+.footer-help { position:static; min-height:44px; border:1px solid #d9f5a7; border-radius:999px; padding:.65rem 1rem; background:#d9f5a7; color:#17352d; font-weight:700; cursor:pointer; }
+@media (max-width:900px) {
+ .landing-shell > footer { grid-template-columns:1fr; gap:1rem; }
+ .landing-shell .footer-links { justify-content:flex-start; }
+}
+@media (max-width:700px) {
+ .landing-shell .site-header { display:grid; grid-template-columns:1fr; justify-items:center; gap:.75rem; padding:1rem; }
+ .landing-shell .site-header nav { width:100%; min-width:0; justify-content:center; flex-wrap:wrap; gap:.25rem; }
+ .landing-shell .header-actions { width:100%; justify-content:center; flex-wrap:wrap; gap:.5rem; }
+ .landing-shell .header-actions .button { padding:.55rem .8rem; }
+}

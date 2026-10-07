@@ -40,7 +40,9 @@ const publications = [
 export default function Home() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { session, user, loading: authLoading } = useAuth();
+  const { session, user, loading: authLoading, signOut } = useAuth();
+  const [signingOut, setSigningOut] = useState(false);
+  const [logoutError, setLogoutError] = useState("");
   const trip = parseTrip(searchParams.get("viaje"));
   const publicationId = searchParams.get("publicacion") ?? "";
   const showTrip = Boolean(trip && !authLoading && session && user?.role === "Viajero");
@@ -88,6 +90,11 @@ export default function Home() {
   }, [largeText, highContrast]);
 
   useEffect(() => {
+    if (trip === "explorar") {
+      const provider = searchParams.get("provider");
+      router.replace(provider ? `/?provider=${encodeURIComponent(provider)}` : "/");
+      return;
+    }
     if (!trip || authLoading) return;
     if (!session) {
       const next = `/${window.location.search}`;
@@ -95,7 +102,7 @@ export default function Home() {
       return;
     }
     if (user?.role !== "Viajero") router.replace("/");
-  }, [trip, authLoading, session, user?.role, router]);
+  }, [trip, authLoading, session, user?.role, router, searchParams]);
 
   function navigate(next: View, nextStatus?: string) {
     if (searchParams.get("viaje") || searchParams.get("publicacion") || searchParams.get("provider")) {
@@ -166,15 +173,12 @@ export default function Home() {
   }
 
   function openExplore() {
-    if (user?.role === "Viajero") {
-      router.push(tripPath("explorar"));
-      return;
-    }
+    setCategory("all");
     navigate("explore");
   }
 
   return (
-    <>
+    <div className={trip ? "landing-shell landing-trip" : "landing-shell"}>
       <a className="skip-link" href="#main">Ir al contenido principal</a>
       <header className="site-header">
         <button className="brand brand-button" type="button" onClick={() => navigate("explore")} aria-label="LaRutica, volver al inicio">
@@ -182,7 +186,7 @@ export default function Home() {
         </button>
         <nav aria-label="Navegación principal">
           <button className={trip === "explorar" || (!trip && (view === "explore" || view === "detail" || view === "route-detail" || view === "route-confirm")) ? "nav-active" : ""} onClick={openExplore} aria-current={trip === "explorar" || (!trip && view === "explore") ? "page" : undefined}>Explorar</button>
-          <button onClick={() => { navigate("explore"); setStatus("Sección Destinos abierta: 18 destinos disponibles."); window.setTimeout(() => document.getElementById("destinos")?.scrollIntoView(), 100); }}>Destinos</button>
+          <button onClick={() => { navigate("explore"); setStatus("Explora los destinos disponibles."); window.setTimeout(() => document.getElementById("destinos")?.scrollIntoView(), 100); }}>Destinos</button>
           {!authLoading && user?.role === "Viajero" ? (
             <TripMenu
               active={tripMenuActive}
@@ -196,9 +200,15 @@ export default function Home() {
         </nav>
         <div className="header-actions">
           <button className="button button-quiet access-button" type="button" onClick={() => setAccessOpen(true)}>Accesibilidad</button>
-          <Link className="button button-outline" href="/login">Ingresar</Link>
+          {authLoading ? <span role="status">Cargando cuenta…</span> : user ? <><Link className="button button-outline" href={user.role === "Viajero" ? tripPath("perfil") : "/dashboard"}>Mi cuenta</Link><button className="button button-quiet account-logout" type="button" disabled={signingOut} onClick={async () => {
+            setSigningOut(true); setLogoutError("");
+            try { await signOut(); router.replace("/"); }
+            catch { setLogoutError("No pudimos confirmar el cierre de sesión. Intenta de nuevo."); }
+            finally { setSigningOut(false); }
+          }}>{signingOut ? "Cerrando sesión…" : "Cerrar sesión"}</button></> : <Link className="button button-outline" href="/login">Ingresar</Link>}
         </div>
       </header>
+      {logoutError && <p className="notice" role="alert">{logoutError}</p>}
       <p className="global-status sr-only" role="status" aria-live="polite">{status}</p>
 
       <main id="main">
@@ -251,7 +261,6 @@ export default function Home() {
         {!trip && view === "admin" && <AdminView approved={approved} setApproved={setApproved} setStatus={setStatus} headingRef={mainHeading} />}
       </main>
 
-      <button className="help-fab" type="button" onClick={() => setHelpOpen(true)}>¿Necesitas ayuda?</button>
       {helpOpen && <HelpDialog onClose={() => setHelpOpen(false)} />}
       {accessOpen && <AccessDialog largeText={largeText} setLargeText={setLargeText} highContrast={highContrast} setHighContrast={setHighContrast} onClose={() => setAccessOpen(false)} />}
       <footer>
@@ -262,25 +271,18 @@ export default function Home() {
         <div className="footer-links">
           <Link className="footer-link" href="/terminos">Términos y condiciones</Link>
           <button className="footer-link" type="button" onClick={() => setAccessOpen(true)}>Opciones de accesibilidad</button>
+          <button className="footer-help" type="button" onClick={() => setHelpOpen(true)}>¿Necesitas ayuda?</button>
         </div>
       </footer>
-    </>
+    </div>
   );
 }
 
 function ExploreView({
-  onSearch,
   searchInput,
-  status,
-  saved,
-  onSave,
-  onDetail,
   headingRef,
   category,
   onCategoryChange,
-  routes,
-  featuredRoute,
-  onOpenRoute,
   onSearchTransport,
   isTransport,
 }: {
@@ -299,13 +301,7 @@ function ExploreView({
   onSearchTransport: () => void;
   isTransport: boolean;
 }) {
-  const chips: Array<{ id: ExploreCategory; label: string }> = [
-    { id: "all", label: "Todas" },
-    { id: "adventure", label: "Aventura" },
-    { id: "nature", label: "Naturaleza" },
-    { id: "transport", label: "Transporte" },
-    { id: "budget", label: "Menos de $50" },
-  ];
+  const [catalogFilters, setCatalogFilters] = useState({ destination:"", date:"", people:0 });
 
   return (
     <>
@@ -320,7 +316,13 @@ function ExploreView({
           </p>
           <form
             className="search-panel"
-            onSubmit={onSearch}
+            onSubmit={event => {
+              event.preventDefault();
+              const values = new FormData(event.currentTarget);
+              setCatalogFilters({ destination:String(values.get("destination") || ""), date:String(values.get("date") || ""), people:Number(values.get("people") || 1) });
+              document.getElementById("results")?.scrollIntoView({behavior:"smooth"});
+              document.getElementById("results")?.focus({preventScroll:true});
+            }}
             aria-label={isTransport ? "Buscar transporte" : "Buscar experiencias"}
           >
             <label>
@@ -328,7 +330,7 @@ function ExploreView({
               <input
                 ref={searchInput}
                 name="destination"
-                defaultValue={isTransport ? "" : "La Fortuna"}
+                defaultValue=""
                 key={isTransport ? "transport-search" : "tour-search"}
                 autoComplete="address-level2"
                 placeholder={isTransport ? "Nosara, Liberia, San José..." : undefined}
@@ -337,7 +339,7 @@ function ExploreView({
             </label>
             <label>
               <span>Fecha</span>
-              <input name="date" type="date" defaultValue="2026-08-22" />
+              <input name="date" type="date" />
             </label>
             <label>
               <span>Personas</span>
@@ -353,115 +355,23 @@ function ExploreView({
             </button>
           </form>
           <p className="status-line" role="status" aria-live="polite">
-            {status}
+            Elige un destino, una fecha y el número de personas para consultar disponibilidad.
           </p>
         </div>
         <div className="hero-visual" role="img" aria-label="Bosque tropical de Costa Rica">
           <div className="floating-note">
-            <strong>120+ experiencias</strong>
+            <strong>Descubre Costa Rica</strong>
             <span>de proveedores locales</span>
           </div>
         </div>
       </section>
       <section className="section" aria-labelledby="results" id="destinos">
-        <div className="section-heading">
-          <div>
-            <p className="eyebrow">{isTransport ? "Transporte" : "Recomendado para ti"}</p>
-            <h2 id="results" tabIndex={-1}>
-              {isTransport ? "Rutas para conectar tu viaje" : "Experiencias que valen el viaje"}
-            </h2>
-          </div>
-          <button
-            className="text-link"
-            type="button"
-            onClick={isTransport ? onSearchTransport : undefined}
-          >
-            {isTransport ? `Ver las ${routes.length} rutas` : "Ver las 24 opciones"}
-          </button>
+        <div className="section-heading"><div><p className="eyebrow">Proveedores locales</p><h2 id="results" tabIndex={-1}>Experiencias para tu próximo viaje</h2></div></div>
+        <div className="filter-row" aria-label="Tipo de servicio">
+          {[{id:"all",label:"Todos"},{id:"nature",label:"Excursiones"},{id:"transport",label:"Transporte"},{id:"budget",label:"Menos de USD 50"}].map(chip => <button key={chip.id} className={category === chip.id ? "chip chip-active" : "chip"} aria-pressed={category === chip.id} onClick={() => onCategoryChange(chip.id as ExploreCategory)}>{chip.label}</button>)}
         </div>
-        <div className="filter-row" aria-label="Filtros rápidos">
-          {chips.map((chip) => (
-            <button
-              key={chip.id}
-              className={category === chip.id ? "chip chip-active" : "chip"}
-              type="button"
-              onClick={() => onCategoryChange(chip.id)}
-            >
-              {chip.label}
-            </button>
-          ))}
-        </div>
-        {isTransport ? (
-          <div className="card-grid">
-            {routes.length > 0 ? (
-              routes.map((route) => (
-                <article className="experience-card" key={route.id}>
-                  <div className="card-image-wrap">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={route.coverUrl} alt={routeTitle(route)} />
-                    <span className="badge">{route.vehicleType}</span>
-                  </div>
-                  <div className="card-body">
-                    <p className="card-place">{route.providerName}</p>
-                    <h3>{routeTitle(route)}</h3>
-                    <p>
-                      {route.duration} · {route.seats} asientos
-                    </p>
-                    <div className="card-footer">
-                      <span>
-                        <strong>${route.priceUsd}</strong> por persona
-                      </span>
-                      <button
-                        className="button button-small"
-                        type="button"
-                        onClick={() => onOpenRoute(route.id)}
-                      >
-                        Ver servicio
-                      </button>
-                    </div>
-                  </div>
-                </article>
-              ))
-            ) : (
-              <p>No encontramos rutas publicadas con esa búsqueda.</p>
-            )}
-          </div>
-        ) : (
-          <div className="card-grid">
-            {experiences.map((item) => (
-              <article className="experience-card" key={item.id}>
-                <div className="card-image-wrap">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={item.image} alt={item.alt} />
-                  <span className="badge">{item.badge}</span>
-                  <button
-                    className="save-button"
-                    type="button"
-                    aria-pressed={saved.includes(item.id)}
-                    onClick={() => onSave(item.id, item.title)}
-                  >
-                    {saved.includes(item.id) ? "Guardado" : "Guardar"}
-                  </button>
-                </div>
-                <div className="card-body">
-                  <p className="card-place">{item.place}</p>
-                  <h3>{item.title}</h3>
-                  <p>
-                    {item.meta} · <strong>{item.rating}</strong>/5
-                  </p>
-                  <div className="card-footer">
-                    <span>
-                      <strong>{item.price}</strong> por persona
-                    </span>
-                    <button className="button button-small" type="button" onClick={onDetail}>
-                      Ver detalle
-                    </button>
-                  </div>
-                </div>
-              </article>
-            ))}
-          </div>
-        )}
+        <button type="button" className="text-link" onClick={() => {setCatalogFilters({destination:"",date:"",people:0});onCategoryChange("all");document.querySelector<HTMLFormElement>(".hero form")?.reset();}}>Limpiar búsqueda</button>
+        <TravelerExplorePage embedded filters={{...catalogFilters,type:category === "transport" ? "TRANSPORT" : category === "nature" ? "EXCURSION" : "",budget:category === "budget"}} />
       </section>
       <section className="transport-section" aria-labelledby="transport-title">
         <div>
@@ -472,25 +382,6 @@ function ExploreView({
             Buscar transporte
           </button>
         </div>
-        {featuredRoute ? (
-          <div className="route-card">
-            <p className="card-place">Ruta disponible hoy</p>
-            <strong>{routeTitle(featuredRoute)}</strong>
-            <span>
-              {featuredRoute.vehicleType} · {featuredRoute.duration}
-            </span>
-            <div>
-              <b>${featuredRoute.priceUsd}</b>
-              <button
-                className="button button-small"
-                type="button"
-                onClick={() => onOpenRoute(featuredRoute.id)}
-              >
-                Ver servicio
-              </button>
-            </div>
-          </div>
-        ) : null}
       </section>
       <section className="trust-strip" aria-label="Beneficios de LaRutica">
         <div>
@@ -514,7 +405,7 @@ function DetailView({ onBack, setStatus, headingRef }: { onBack: () => void; set
   const [people, setPeople] = useState("2");
   return <div className="detail-page page-shell"><button className="back-link" onClick={onBack} type="button">← Volver a resultados</button><div className="detail-grid">
     <div><div className="detail-image"><img src={experiences[0].image} alt={experiences[0].alt} /><span className="badge">Proveedor verificado</span></div><p className="eyebrow detail-eyebrow">La Fortuna, Alajuela</p><h1 className="detail-title" ref={headingRef} tabIndex={-1}>Caminata al volcán Arenal</h1><p className="detail-intro">Explora senderos de lava, bosque tropical y miradores del Arenal junto a una guía local certificada.</p><div className="facts" aria-label="Información de la experiencia"><div><strong>4 horas</strong><span>Duración</span></div><div><strong>Fácil–moderada</strong><span>Dificultad</span></div><div><strong>ES / EN</strong><span>Idiomas</span></div><div><strong>12 máx.</strong><span>Grupo</span></div></div><h2 className="subheading">Lo que incluye</h2><ul className="check-list"><li>Guía naturalista y entrada al sendero</li><li>Transporte desde el centro de La Fortuna</li><li>Agua y refrigerio de fruta local</li></ul><h2 className="subheading">Punto de encuentro</h2><p>Parque central de La Fortuna. Recibirás el contacto del proveedor al confirmar.</p></div>
-    <aside className="booking-card" aria-label="Seleccionar disponibilidad"><p><strong>$58</strong> por persona</p><p className="rating-line">4,9/5 · 128 opiniones</p><label><span>Fecha</span><input type="date" defaultValue="2026-08-22" /></label><label><span>Personas</span><select value={people} onChange={(event) => setPeople(event.target.value)}><option value="1">1 persona</option><option value="2">2 personas</option><option value="3">3 personas</option><option value="4">4 personas</option></select></label><div className="total-row"><span>Total estimado</span><strong>${58 * Number(people)}</strong></div><button className="button button-primary button-full" type="button" onClick={() => setStatus("Experiencia agregada a tu plan. Puedes modificarla o eliminarla en cualquier momento.")}>Agregar a mi plan</button><p className="fine-print">No se realiza ningún cobro en este prototipo.</p></aside>
+    <aside className="booking-card" aria-label="Seleccionar disponibilidad"><p><strong>$58</strong> por persona</p><p className="rating-line">4,9/5 · 128 opiniones</p><label><span>Fecha</span><input type="date" /></label><label><span>Personas</span><select value={people} onChange={(event) => setPeople(event.target.value)}><option value="1">1 persona</option><option value="2">2 personas</option><option value="3">3 personas</option><option value="4">4 personas</option></select></label><div className="total-row"><span>Total estimado</span><strong>${58 * Number(people)}</strong></div><button className="button button-primary button-full" type="button" onClick={() => setStatus("Experiencia agregada a tu plan. Puedes modificarla o eliminarla en cualquier momento.")}>Agregar a mi plan</button><p className="fine-print">No se realiza ningún cobro en este prototipo.</p></aside>
   </div></div>;
 }
 
@@ -548,7 +439,7 @@ function PublishView({ onBack, onComplete, headingRef }: { onBack: () => void; o
 }
 
 function PromotionView({ onBack, onComplete, headingRef }: { onBack: () => void; onComplete: () => void; headingRef: React.RefObject<HTMLHeadingElement | null> }) {
-  return <div className="form-page page-shell"><button className="back-link" type="button" onClick={onBack}>← Volver al panel</button><div className="form-header"><p className="eyebrow">Simulación de compra</p><h1 className="form-title" ref={headingRef} tabIndex={-1}>Destaca tu publicación</h1><p>Obtén mayor visibilidad en resultados y destinos durante 7 días.</p></div><div className="promotion-grid"><section className="editor-form" aria-labelledby="promo-options"><h2 id="promo-options" className="dashboard-title">Elige una publicación</h2><label className="select-card"><input type="radio" name="publication" defaultChecked /><span><strong>Caminata al volcán Arenal</strong><small>Publicada · $58 por persona</small></span></label><label className="select-card"><input type="radio" name="publication" /><span><strong>Termales y cena local</strong><small>Disponible cuando sea aprobada</small></span></label><h2 className="dashboard-title">Vista previa</h2><div className="sponsored-preview"><span className="badge static-badge">Patrocinado</span><strong>Caminata al volcán Arenal</strong><span>Aparecerá primero en búsquedas relacionadas con La Fortuna.</span></div></section><aside className="summary-card"><h2>Resumen</h2><div><span>Promoción de 7 días</span><strong>$12,00</strong></div><div><span>Impuestos</span><strong>$1,56</strong></div><div className="total-row"><span>Total simulado</span><strong>$13,56</strong></div><button className="button button-primary button-full" type="button" onClick={onComplete}>Simular compra</button><p className="fine-print">Demostración académica: no se solicitarán datos bancarios ni se realizará un cobro.</p></aside></div></div>;
+  return <div className="form-page page-shell"><button className="back-link" type="button" onClick={onBack}>← Volver al panel</button><div className="form-header"><p className="eyebrow">Simulación de compra</p><h1 className="form-title" ref={headingRef} tabIndex={-1}>Destaca tu publicación</h1><p>Obtén mayor visibilidad en resultados y destinos durante 7 días.</p></div><div className="promotion-grid"><section className="editor-form" aria-labelledby="promo-options"><h2 id="promo-options" className="dashboard-title">Elige una publicación</h2><label className="select-card" aria-label="Seleccionar publicación"><input type="radio" name="publication" defaultChecked /><span><strong>Caminata al volcán Arenal</strong><small>Publicada · $58 por persona</small></span></label><label className="select-card" aria-label="Seleccionar publicación"><input type="radio" name="publication" /><span><strong>Termales y cena local</strong><small>Disponible cuando sea aprobada</small></span></label><h2 className="dashboard-title">Vista previa</h2><div className="sponsored-preview"><span className="badge static-badge">Patrocinado</span><strong>Caminata al volcán Arenal</strong><span>Aparecerá primero en búsquedas relacionadas con La Fortuna.</span></div></section><aside className="summary-card"><h2>Resumen</h2><div><span>Promoción de 7 días</span><strong>$12,00</strong></div><div><span>Impuestos</span><strong>$1,56</strong></div><div className="total-row"><span>Total simulado</span><strong>$13,56</strong></div><button className="button button-primary button-full" type="button" onClick={onComplete}>Simular compra</button><p className="fine-print">Demostración académica: no se solicitarán datos bancarios ni se realizará un cobro.</p></aside></div></div>;
 }
 
 function AdminView({ approved, setApproved, setStatus, headingRef }: { approved: string[]; setApproved: (value: string[]) => void; setStatus: (value: string) => void; headingRef: React.RefObject<HTMLHeadingElement | null> }) {
@@ -560,8 +451,16 @@ function AdminView({ approved, setApproved, setStatus, headingRef }: { approved:
 function DashboardShell({ title, subtitle, headingRef, actions, children }: { title: string; subtitle: string; headingRef: React.RefObject<HTMLHeadingElement | null>; actions: React.ReactNode; children: React.ReactNode }) { return <div className="dashboard"><header className="dashboard-header"><div><p className="eyebrow">LaRutica</p><h1 ref={headingRef} tabIndex={-1}>{title}</h1><p>{subtitle}</p></div>{actions}</header>{children}</div>; }
 function Metric({ value, label, note }: { value: string; label: string; note: string }) { return <article className="metric-card"><span>{label}</span><strong>{value}</strong><small>{note}</small></article>; }
 
-function HelpDialog({ onClose }: { onClose: () => void }) { return <div className="dialog-backdrop" onMouseDown={(event) => { if (event.currentTarget === event.target) onClose(); }}><section className="dialog" role="dialog" aria-modal="true" aria-labelledby="help-title"><button className="dialog-close" aria-label="Cerrar ayuda" onClick={onClose}>Cerrar</button><p className="eyebrow">Ayuda contextual</p><h2 id="help-title">¿Qué quieres hacer?</h2><div className="help-options"><button><strong>Buscar una experiencia</strong><span>Usa destino, fecha y cantidad de personas.</span></button><button><strong>Publicar un servicio</strong><span>Ingresa y regístrate como Agencia o Transporte.</span></button><button><strong>Ingresar a tu cuenta</strong><span>Usa el botón Ingresar o crea una en Registrarse.</span></button></div><p className="help-note">Consejo: presiona <kbd>Esc</kbd> para cerrar cualquier panel.</p></section></div>; }
+function DialogBackdrop({ children, onClose }: { children: React.ReactNode; onClose: () => void }) {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const close = (event: MouseEvent) => { if (event.target === ref.current) onClose(); };
+    window.addEventListener('mousedown', close);
+    return () => window.removeEventListener('mousedown', close);
+  }, [onClose]);
+  return <div ref={ref} className="dialog-backdrop">{children}</div>;
+}
 
-function AccessDialog({ largeText, setLargeText, highContrast, setHighContrast, onClose }: { largeText: boolean; setLargeText: (value: boolean) => void; highContrast: boolean; setHighContrast: (value: boolean) => void; onClose: () => void }) { return <div className="dialog-backdrop" onMouseDown={(event) => { if (event.currentTarget === event.target) onClose(); }}><section className="dialog access-dialog" role="dialog" aria-modal="true" aria-labelledby="access-title"><button className="dialog-close" aria-label="Cerrar opciones de accesibilidad" onClick={onClose}>Cerrar</button><p className="eyebrow">Preferencias</p><h2 id="access-title">Accesibilidad visual</h2><p>Los cambios se aplican inmediatamente a todo el prototipo.</p><label className="toggle-row"><span><strong>Texto más grande</strong><small>Aumenta el tamaño de lectura.</small></span><input type="checkbox" role="switch" checked={largeText} onChange={(event) => setLargeText(event.target.checked)} /></label><label className="toggle-row"><span><strong>Contraste reforzado</strong><small>Oscurece textos y bordes.</small></span><input type="checkbox" role="switch" checked={highContrast} onChange={(event) => setHighContrast(event.target.checked)} /></label><div className="notice"><strong>Navegación por teclado</strong><span>Usa Tab para avanzar, Shift + Tab para volver y Enter para activar.</span></div></section></div>; }
-import { Catalog } from '@/modules/booking/Catalog';
-export default function Home() { return <Catalog/>; }
+function HelpDialog({ onClose }: { onClose: () => void }) { return <DialogBackdrop onClose={onClose}><section className="dialog" role="dialog" aria-modal="true" aria-labelledby="help-title"><button className="dialog-close" aria-label="Cerrar ayuda" onClick={onClose}>Cerrar</button><p className="eyebrow">Ayuda contextual</p><h2 id="help-title">¿Qué quieres hacer?</h2><div className="help-options"><button><strong>Buscar una experiencia</strong><span>Usa destino, fecha y cantidad de personas.</span></button><button><strong>Publicar un servicio</strong><span>Ingresa y regístrate como Agencia o Transporte.</span></button><button><strong>Ingresar a tu cuenta</strong><span>Usa el botón Ingresar o crea una en Registrarse.</span></button></div><p className="help-note">Consejo: presiona <kbd>Esc</kbd> para cerrar cualquier panel.</p></section></DialogBackdrop>; }
+
+function AccessDialog({ largeText, setLargeText, highContrast, setHighContrast, onClose }: { largeText: boolean; setLargeText: (value: boolean) => void; highContrast: boolean; setHighContrast: (value: boolean) => void; onClose: () => void }) { return <DialogBackdrop onClose={onClose}><section className="dialog access-dialog" role="dialog" aria-modal="true" aria-labelledby="access-title"><button className="dialog-close" aria-label="Cerrar opciones de accesibilidad" onClick={onClose}>Cerrar</button><p className="eyebrow">Preferencias</p><h2 id="access-title">Accesibilidad visual</h2><p>Los cambios se aplican inmediatamente a todo el prototipo.</p><label className="toggle-row" aria-label="Texto más grande"><span><strong>Texto más grande</strong><small>Aumenta el tamaño de lectura.</small></span><input type="checkbox" role="switch" checked={largeText} onChange={(event) => setLargeText(event.target.checked)} /></label><label className="toggle-row" aria-label="Contraste reforzado"><span><strong>Contraste reforzado</strong><small>Oscurece textos y bordes.</small></span><input type="checkbox" role="switch" checked={highContrast} onChange={(event) => setHighContrast(event.target.checked)} /></label><div className="notice"><strong>Navegación por teclado</strong><span>Usa Tab para avanzar, Shift + Tab para volver y Enter para activar.</span></div></section></DialogBackdrop>; }

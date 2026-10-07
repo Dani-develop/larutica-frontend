@@ -46,6 +46,7 @@ export type ReservationRecord = {
   updatedAt: string;
   departureStartAt: string;
   departureStatus: string;
+  rating: number | null;
   publicationId: string;
   publicationTitle: string;
   destination: string | null;
@@ -123,6 +124,7 @@ export function toReservationRecord(row: ReservationRow): ReservationRecord {
     unitPrice,
     total: Math.round(unitPrice * numberOfPeople * 100) / 100,
     status: row.status,
+    rating: one(row.reservation_ratings)?.rating ?? null,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     departureStartAt: departure?.start_at ?? "",
@@ -150,6 +152,7 @@ export function toPublicReservation(record: ReservationRecord) {
     unitPrice: record.unitPrice,
     total: record.total,
     status: record.status,
+    rating: record.rating,
     createdAt: record.createdAt,
     updatedAt: record.updatedAt,
     departureStartAt: record.departureStartAt,
@@ -201,7 +204,7 @@ export async function listReservationRecords(
   for (let from = 0; ; from += 1000) {
     const { data, error } = await query.range(from, from + 999);
     if (error) throw error;
-    const page = data as ReservationRow[] | null ?? [];
+    const page = data as unknown as ReservationRow[] | null ?? [];
     rows.push(...page);
     if (page.length < 1000) break;
   }

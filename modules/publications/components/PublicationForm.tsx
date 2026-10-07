@@ -22,7 +22,6 @@ import { Textarea } from "@/components/ui/textarea";
 
 import type {
   CreatePublicationInput,
-  PublicationServiceType,
 } from "../types/publication.types";
 
 type PublicationFormProps = {
@@ -81,7 +80,7 @@ export function PublicationForm({
     );
 
   useEffect(() => {
-    setValue(initialValue);
+    queueMicrotask(() => setValue(initialValue));
   }, [initialValue]);
 
   function patch<

@@ -1,6 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import { useAuth } from "@/modules/auth/context/AuthContext";
+import { ExperienceDetail } from "@/modules/booking/ExperienceDetail";
+import { dateLabel, money } from "@/modules/booking/types";
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import type { SystemUser } from "@/modules/crm/users/models/User";
@@ -8,9 +11,9 @@ import { MyProfilePage } from "@/modules/crm/users/components/MyProfilePage";
 import type { TravelerPublication } from "@/modules/traveler/types/traveler-publication.types";
 import { tripPath } from "@/modules/landing/lib/travelerRoutes";
 import {
-  getTravelerPublication,
   listSavedPublications,
-  listTravelerPublications,
+  listCatalogPublications,
+  listSavedPublicationIds,
   rateReservation,
   setPublicationSaved,
 } from "@/modules/traveler/services/traveler.service";
@@ -30,12 +33,15 @@ function TripHeading({ eyebrow, title, lead }: { eyebrow: string; title: string;
   );
 }
 
-export function TravelerExplorePage() {
+export function TravelerExplorePage({ embedded = false, filters }: { embedded?: boolean; filters?: { destination:string; date:string; people:number; type:string; budget:boolean } } = {}) {
+  const { user } = useAuth();
+  const [retry, setRetry] = useState(0);
+  const [savedError, setSavedError] = useState("");
   const provider = useSearchParams().get("provider");
   const [search, setSearch] = useState("");
   const [publications, setPublications] = useState<TravelerPublication[]>([]);
   const [savedIds, setSavedIds] = useState<string[]>([]);
-  const [loadedProvider, setLoadedProvider] = useState("");
+  const [loadedProvider, setLoadedProvider] = useState<string | null>(null);
   const [loadError, setLoadError] = useState<{ provider: string; message: string } | null>(null);
   const providerKey = provider ?? "";
   const loading = loadedProvider !== providerKey;
@@ -43,11 +49,10 @@ export function TravelerExplorePage() {
 
   useEffect(() => {
     let cancelled = false;
-    Promise.all([listTravelerPublications(providerKey || undefined), listSavedPublications()])
-      .then(([publicationRows, savedRows]) => {
+    listCatalogPublications()
+      .then((publicationRows) => {
         if (!cancelled) {
           setPublications(publicationRows);
-          setSavedIds(savedRows.map((publication) => publication.id));
           setLoadError(null);
         }
       })
@@ -65,16 +70,29 @@ export function TravelerExplorePage() {
     return () => {
       cancelled = true;
     };
-  }, [providerKey]);
+  }, [providerKey, retry]);
 
-  const normalizedSearch = search.trim().toLocaleLowerCase();
+  useEffect(() => {
+    if (user?.role !== "Viajero") return;
+    let cancelled = false;
+    listSavedPublicationIds().then(ids => { if (!cancelled) setSavedIds(ids); })
+      .catch(() => { if (!cancelled) setSavedError("No pudimos consultar Guardados. Puedes seguir explorando y reservar."); });
+    return () => { cancelled = true; };
+  }, [user?.id, user?.role]);
+
+  const normalizedSearch = (filters?.destination ?? search).trim().toLocaleLowerCase();
   const visiblePublications = publications.filter((publication) =>
-    [publication.title, publication.destination, publication.description]
+    (!providerKey || publication.providerSlug === providerKey)
+    && (!filters?.type || publication.serviceType === filters.type)
+    && (!filters?.budget || publication.pricePerPerson < 50)
+    && (!filters?.date && !filters?.people || publication.departures?.some(d =>
+      d.available >= (filters?.people || 1) && (!filters?.date || new Intl.DateTimeFormat('en-CA', {timeZone:'America/Costa_Rica',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(d.startAt)) === filters.date)))
+    && [publication.title, publication.destination, publication.description]
       .join(" ")
       .toLocaleLowerCase()
       .includes(normalizedSearch),
   );
-  const providerName = publications[0]?.providerName;
+  const providerName = providerKey ? visiblePublications[0]?.providerName : undefined;
 
   async function toggleSaved(publication: TravelerPublication) {
     const isSaved = savedIds.includes(publication.id);
@@ -92,12 +110,13 @@ export function TravelerExplorePage() {
   }
 
   return (
-    <section className="page-shell">
-      <TripHeading
+    <section id={embedded ? "experiencias" : undefined} className={embedded ? "catalog-embedded" : "page-shell"}>
+      {!embedded && <TripHeading
         eyebrow="Mi viaje"
         title={providerName ? `Viajes de ${providerName}` : "Explorar"}
         lead="Encuentra experiencias y servicios para armar tu próxima ruta."
-      />
+      />}
+      {!embedded &&
       <label className="search-panel" style={{ margin: "1.5rem 0", maxWidth: 640, gridTemplateColumns: "1fr" }}>
         <span className="sr-only">Buscar experiencias</span>
         <input
@@ -106,8 +125,10 @@ export function TravelerExplorePage() {
           onChange={(event) => setSearch(event.target.value)}
           placeholder="Buscar por experiencia o destino"
         />
-      </label>
-      {error ? <p className="notice" role="alert">{error}</p> : null}
+      </label>}
+      {savedError && <p className="notice" role="status">{savedError}</p>}
+      {!loading && !error && <p role="status">{visiblePublications.length} servicios encontrados.</p>}
+      {error ? <div className="notice" role="alert"><p>{error}</p><button className="button button-outline" onClick={() => setRetry(n => n + 1)}>Volver a intentar</button></div> : null}
       <div className="card-grid">
         {loading ? (
           <p className="empty-state">Cargando publicaciones...</p>
@@ -117,7 +138,7 @@ export function TravelerExplorePage() {
               key={publication.id}
               publication={publication}
               saved={savedIds.includes(publication.id)}
-              onToggleSaved={() => void toggleSaved(publication)}
+              onToggleSaved={user?.role === "Viajero" ? () => void toggleSaved(publication) : undefined}
             />
           ))
         ) : (
@@ -173,7 +194,7 @@ export function TravelerSavedPage() {
       {error ? <p className="notice" role="alert">{error}</p> : null}
       <div className="card-grid">
         {loading ? <p className="empty-state">Cargando publicaciones guardadas...</p>
-          : publications.length > 0
+          : error && publications.length === 0 ? null : publications.length > 0
             ? publications.map((publication) => (
               <TravelerTripCard
                 key={publication.id}
@@ -304,7 +325,7 @@ function TravelerTripCard({
       <div className="card-image-wrap">
         {publication.mainImageUrl ? (
           /* eslint-disable-next-line @next/next/no-img-element */
-          <img src={publication.mainImageUrl} alt={publication.title} />
+          <img src={publication.mainImageUrl} alt={publication.title} loading="lazy" decoding="async" />
         ) : (
           <p className="empty-state">Sin imagen</p>
         )}
@@ -323,12 +344,17 @@ function TravelerTripCard({
       <div className="card-body">
         <p className="card-place">{publication.destination}</p>
         <h3>{publication.title}</h3>
+        <p className="trip-departure-info">
+          {publication.departures?.find(d => d.available > 0)
+            ? <>Próxima salida: {dateLabel(publication.departures.find(d => d.available > 0)!.startAt)} · {publication.departures.find(d => d.available > 0)!.available} cupos disponibles (hora de Costa Rica).</>
+            : publication.departures?.length ? "Las salidas publicadas están completas. Consulta otras fechas."
+            : "Por ahora no hay nuevas fechas disponibles."}
+        </p>
         <p>{publication.description}</p>
         <div className="card-footer">
-          <strong>${publication.pricePerPerson} <span>· {publication.durationMinutes} min</span></strong>
+          <strong>{money(publication.pricePerPerson)} por persona <span>· {publication.durationMinutes} min</span></strong>
           <div className="trip-actions">
-            <Link className="button button-small" href={tripPath("detalle", { publicacion: publication.id })}>Ver</Link>
-            <Link className="button button-primary" href={tripPath("compra", { publicacion: publication.id })}>Reservar</Link>
+            <Link className="button button-primary" href={`/experiencias/${publication.id}`}>{publication.departures?.some(d => d.available > 0) ? "Ver fechas y reservar" : "Ver detalles"}</Link>
           </div>
         </div>
       </div>
@@ -418,7 +444,7 @@ function ReservationRating({
             aria-pressed={reservation.rating === rating}
             onClick={() => void submit(rating)}
           >
-            {reservation.rating !== null && rating <= reservation.rating ? "★" : "☆"}
+            {reservation.rating != null && rating <= reservation.rating ? "★" : "☆"}
           </button>
         ))}
       </div>
@@ -427,161 +453,12 @@ function ReservationRating({
   );
 }
 
-function useTravelerPublication(publicationId: string) {
-  const [publication, setPublication] = useState<TravelerPublication | null>(null);
-  const [loadedPublicationId, setLoadedPublicationId] = useState("");
-  const [loadError, setLoadError] = useState<{ id: string; message: string } | null>(null);
-  const loading = loadedPublicationId !== publicationId;
-  const error = loadError?.id === publicationId ? loadError.message : null;
-
-  useEffect(() => {
-    let cancelled = false;
-    getTravelerPublication(publicationId)
-      .then((data) => {
-        if (!cancelled) {
-          setPublication(data);
-          setLoadError(null);
-        }
-      })
-      .catch((cause: unknown) => {
-        if (!cancelled) {
-          setLoadError({
-            id: publicationId,
-            message: cause instanceof Error ? cause.message : "No se pudo cargar esta publicación.",
-          });
-        }
-      })
-      .finally(() => {
-        if (!cancelled) setLoadedPublicationId(publicationId);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [publicationId]);
-
-  return { publication, loading, error };
-}
-
 export function TravelerDetailsPage({ publicationId }: { publicationId: string }) {
-  const { publication, loading, error } = useTravelerPublication(publicationId);
-
-  if (loading) return <p className="trip-status">Cargando publicación...</p>;
-  if (error || !publication) return <p className="trip-status" role="alert">{error ?? "La publicación no está disponible."}</p>;
-
-  return (
-    <section className="page-shell">
-      <Link className="back-link" href={tripPath("explorar")}>← Explorar</Link>
-      {publication.providerName && publication.providerSlug ? (
-        <Link className="text-link" href={tripPath("explorar", { provider: publication.providerSlug })}>{publication.providerName}</Link>
-      ) : null}
-      <h1 className="detail-title">{publication.title}</h1>
-      <p className="detail-intro">Información completa de esta experiencia.</p>
-      <div className="detail-image">
-        {publication.mainImageUrl ? (
-          /* eslint-disable-next-line @next/next/no-img-element */
-          <img src={publication.mainImageUrl} alt={publication.title} />
-        ) : (
-          <p className="empty-state">Sin imagen</p>
-        )}
-      </div>
-      <p className="card-place">{publication.destination}</p>
-      <h2 className="subheading">Conoce la experiencia</h2>
-      <p>{publication.description}</p>
-      <div className="facts">
-        <div><span>Duración</span><strong>{publication.durationMinutes} min</strong></div>
-        <div><span>Idiomas</span><strong>{publication.languages.join(", ")}</strong></div>
-        <div><span>Precio</span><strong>${publication.pricePerPerson}</strong></div>
-        <div><span>Grupo máx.</span><strong>{publication.defaultCapacity}</strong></div>
-      </div>
-      <div className="detail-grid">
-        <div>
-          <h2 className="subheading">Qué incluye</h2>
-          <p>{publication.included}</p>
-        </div>
-        <div>
-          <h2 className="subheading">Qué no incluye</h2>
-          <p>{publication.notIncluded}</p>
-        </div>
-      </div>
-      <h2 className="subheading">Punto de encuentro</h2>
-      <p>{publication.meetingPoint}</p>
-      <p>Proveedor verificado</p>
-    </section>
-  );
+  return <ExperienceDetail key={publicationId} id={publicationId} embedded />;
 }
 
 export function TravelerPurchasePage({ publicationId }: { publicationId: string }) {
-  const { publication, loading, error } = useTravelerPublication(publicationId);
-  const [people, setPeople] = useState("2");
-  const total = (publication?.pricePerPerson ?? 0) * Number(people);
-
-  if (loading) return <p className="trip-status">Cargando publicación...</p>;
-  if (error || !publication) return <p className="trip-status" role="alert">{error ?? "La publicación no está disponible."}</p>;
-
-  return (
-    <section className="page-shell">
-      <Link className="back-link" href={tripPath("explorar")}>← Explorar</Link>
-      <p className="eyebrow detail-eyebrow">Reservar</p>
-      {publication.providerName && publication.providerSlug ? (
-        <Link className="text-link" href={tripPath("explorar", { provider: publication.providerSlug })}>{publication.providerName}</Link>
-      ) : null}
-      <h1 className="detail-title">{publication.title}</h1>
-      <p className="detail-intro">Revisa todos los detalles antes de confirmar tu viaje.</p>
-      <div className="detail-grid">
-        <article>
-          <div className="detail-image">
-            {publication.mainImageUrl ? (
-              /* eslint-disable-next-line @next/next/no-img-element */
-              <img src={publication.mainImageUrl} alt={publication.title} />
-            ) : (
-              <p className="empty-state">Sin imagen</p>
-            )}
-          </div>
-          <p className="card-place">{publication.destination}</p>
-          <h2 className="subheading">Conoce la experiencia</h2>
-          <p>{publication.description}</p>
-          <div className="facts">
-            <div><span>Duración</span><strong>{publication.durationMinutes} min</strong></div>
-            <div><span>Idiomas</span><strong>{publication.languages.join(", ")}</strong></div>
-            <div><span>Precio</span><strong>${publication.pricePerPerson}</strong></div>
-            <div><span>Grupo máx.</span><strong>{publication.defaultCapacity}</strong></div>
-          </div>
-          <h2 className="subheading">Qué incluye</h2>
-          <p>{publication.included}</p>
-          <h2 className="subheading">Qué no incluye</h2>
-          <p>{publication.notIncluded}</p>
-          <h2 className="subheading">Punto de encuentro</h2>
-          <p>{publication.meetingPoint}</p>
-        </article>
-        <aside className="booking-card">
-          <h2 className="subheading">Resumen de compra</h2>
-          <label>
-            <span>Fecha</span>
-            <input type="date" defaultValue="2026-08-22" />
-          </label>
-          <label>
-            <span>Personas</span>
-            <select value={people} onChange={(event) => setPeople(event.target.value)}>
-              <option value="1">1 persona</option>
-              <option value="2">2 personas</option>
-              <option value="3">3 personas</option>
-              <option value="4">4 personas</option>
-            </select>
-          </label>
-          <div className="total-row">
-            <span>{people} {Number(people) === 1 ? "persona" : "personas"}</span>
-            <strong>${total}</strong>
-          </div>
-          <div className="total-row">
-            <span>Total estimado</span>
-            <strong>${total}</strong>
-          </div>
-          <button className="button button-primary button-full" type="button">Confirmar reserva</button>
-          <p className="fine-print">Wireframe: no se realiza ningún cobro.</p>
-        </aside>
-      </div>
-    </section>
-  );
+  return <ExperienceDetail key={publicationId} id={publicationId} embedded />;
 }
 
 export function TravelerProfilePage() {

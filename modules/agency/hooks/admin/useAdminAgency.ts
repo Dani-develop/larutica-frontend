@@ -110,7 +110,7 @@ export function useAdminAgency(
 
   useEffect(
     () => {
-      void loadAgency();
+      queueMicrotask(() => { void loadAgency(); });
     },
     [
       loadAgency,

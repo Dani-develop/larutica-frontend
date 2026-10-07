@@ -1,4 +1,5 @@
 "use client";
+import { apiFetch, clearApiCache } from "@/lib/api/browser-fetch";
 
 import {
   createContext,
@@ -62,7 +63,7 @@ class HttpError extends Error {
 }
 
 async function apiRequest<T>(path: string, init: RequestInit = {}): Promise<T> {
-  const response = await fetch(path, {
+  const response = await apiFetch(path, {
     ...init,
     credentials: "same-origin",
     headers: {
@@ -83,6 +84,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const authChannel = useRef<BroadcastChannel | null>(null);
 
   const applySession = useCallback((payload: SessionPayload | null) => {
+    clearApiCache(true);
     setSession(payload?.session ?? null);
     setUser(payload?.user ?? null);
     setError(null);
@@ -165,12 +167,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [applySession, broadcast]);
 
   const signOut = useCallback(async () => {
-    try {
-      await apiRequest<null>("/api/auth/logout", { method: "POST" });
-    } finally {
-      applySession(null);
-      broadcast();
-    }
+    await apiRequest<null>("/api/auth/logout", { method: "POST" });
+    applySession(null);
+    broadcast();
   }, [applySession, broadcast]);
 
   const refreshSession = useCallback(async () => {

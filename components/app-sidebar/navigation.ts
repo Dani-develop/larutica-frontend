@@ -1,5 +1,7 @@
 import {
   BarChart3,
+  Bookmark,
+  CalendarDays,
   Building2,
   Bus,
   ClipboardCheck,

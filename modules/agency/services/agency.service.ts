@@ -1,3 +1,4 @@
+import { apiFetch } from "@/lib/api/browser-fetch";
 import type {
   Agency,
   AgencyStatus,
@@ -125,7 +126,7 @@ async function parseResponse<T>(
 ): Promise<T> {
   const body = await response
     .json()
-    .catch(() => null);
+    .catch(() => null) as { message?: string; error?: string } | null;
 
   if (!response.ok) {
     const message =
@@ -136,7 +137,7 @@ async function parseResponse<T>(
     throw new Error(message);
   }
 
-  return body as T;
+  return body as unknown as T;
 }
 
 function firstValue<T>(
@@ -523,7 +524,7 @@ export async function getMyAgency(): Promise<
   Agency | null
 > {
   const response =
-    await fetch(
+    await apiFetch(
       "/api/agencies/me",
       {
         method: "GET",
@@ -555,7 +556,7 @@ export async function createAgency(
   payload: SaveAgencyPayload,
 ): Promise<Agency> {
   const response =
-    await fetch(
+    await apiFetch(
       "/api/agencies",
       {
         method: "POST",
@@ -602,7 +603,7 @@ export async function updateMyAgency(
   payload: SaveAgencyPayload,
 ): Promise<Agency> {
   const response =
-    await fetch(
+    await apiFetch(
       "/api/agencies/me",
       {
         method: "PATCH",
@@ -647,7 +648,7 @@ export async function updateMyAgency(
 
 export async function deleteMyAgency(): Promise<void> {
   const response =
-    await fetch(
+    await apiFetch(
       "/api/agencies/me",
       {
         method:

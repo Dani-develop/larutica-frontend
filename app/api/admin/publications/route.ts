@@ -1,5 +1,4 @@
 import {
-  AdminApiError,
   adminErrorResponse,
   requireAdmin,
 } from "@/lib/supabase/admin";

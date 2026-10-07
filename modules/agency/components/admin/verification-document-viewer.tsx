@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import {
   Download,
   ExternalLink,
@@ -43,6 +43,7 @@ function DocumentPreviewModal({
   kind: DocumentKind;
   onClose: () => void;
 }) {
+  const backdrop = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
@@ -51,10 +52,13 @@ function DocumentPreviewModal({
       if (event.key === "Escape") onClose();
     };
     window.addEventListener("keydown", onKeyDown);
+    const close = (event: MouseEvent) => { if (event.target === backdrop.current) onClose(); };
+    window.addEventListener("mousedown", close);
 
     return () => {
       document.body.style.overflow = previousOverflow;
       window.removeEventListener("keydown", onKeyDown);
+      window.removeEventListener("mousedown", close);
     };
   }, [onClose]);
 
@@ -107,9 +111,7 @@ function DocumentPreviewModal({
 
       <div
         className="flex min-h-0 flex-1 items-center justify-center p-3 sm:p-6"
-        onMouseDown={(event) => {
-          if (event.target === event.currentTarget) onClose();
-        }}
+        ref={backdrop}
       >
         {kind === "image" ? (
           // eslint-disable-next-line @next/next/no-img-element

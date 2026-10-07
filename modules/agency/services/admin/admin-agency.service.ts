@@ -1,3 +1,4 @@
+import { apiFetch } from "@/lib/api/browser-fetch";
 import type {
   Agency,
   AgencyStatus,
@@ -342,7 +343,7 @@ async function parseResponse<T>(
       .catch(
         () =>
           null,
-      );
+      ) as { message?: string; error?: string } | null;
 
   if (
     !response.ok
@@ -357,7 +358,7 @@ async function parseResponse<T>(
     );
   }
 
-  return body;
+  return body as unknown as T;
 }
 
 export interface AdminAgencyFilters {
@@ -398,7 +399,7 @@ export async function getAdminAgencies(
     params.toString();
 
   const response =
-    await fetch(
+    await apiFetch(
       `/api/admin/agencies${query ? `?${query}` : ""}`,
       {
         method:
@@ -435,7 +436,7 @@ export async function getAdminAgency(
   agencyId: string,
 ): Promise<Agency> {
   const response =
-    await fetch(
+    await apiFetch(
       `/api/admin/agencies/${encodeURIComponent(agencyId)}`,
       {
         method:
@@ -472,7 +473,7 @@ export async function reviewAgency(
     | "REJECTED",
 ): Promise<AgencyStatus> {
   const response =
-    await fetch(
+    await apiFetch(
       `/api/admin/agencies/${encodeURIComponent(agencyId)}/status`,
       {
         method:
@@ -509,7 +510,7 @@ export async function getAgencyVerificationDocument(
   agencyId: string,
 ): Promise<VerificationDocumentResponse> {
   const response =
-    await fetch(
+    await apiFetch(
       `/api/admin/agencies/${encodeURIComponent(agencyId)}/verification-document`,
       {
         method:
