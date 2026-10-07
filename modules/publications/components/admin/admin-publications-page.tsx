@@ -1,4 +1,5 @@
 "use client";
+import { DashboardBreadcrumb } from "@/components/dashboard/DashboardBreadcrumb";
 import { usePreferences } from "@/lib/preferences/Preferences";
 
 import {
@@ -96,7 +97,7 @@ export default function AdminPublicationsPage() {
   return (
     <div className="mx-auto w-full max-w-[1180px]">
       <div className="mb-5">
-        <p className="mb-1 text-[10px] font-medium text-[#075E36]">{t("Dashboard / Publicaciones ")}</p>
+        <DashboardBreadcrumb className="mb-2" items={[{ label: "Publicaciones" }]} />
 
         <h1 className="!m-0 !text-[30px] !font-bold !leading-9 !tracking-[-0.025em] text-[#123A30]">{t("Publicaciones ")}</h1>
 

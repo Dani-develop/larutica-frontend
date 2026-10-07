@@ -1,4 +1,5 @@
 "use client";
+import { DashboardBreadcrumb } from "@/components/dashboard/DashboardBreadcrumb";
 import { usePreferences } from "@/lib/preferences/Preferences";
 
 import {
@@ -272,7 +273,7 @@ export function EditPublicationPage({
 
       {/* Encabezado */}
       <div className="mb-6">
-        <p className="mb-1 text-xs font-medium text-[#0d684e]">{t("Dashboard / Publicaciones / Editar ")}</p>
+        <DashboardBreadcrumb className="mb-2" items={[{ label: "Publicaciones", href: "/dashboard/publications" }, { label: publication.title || "Detalle", href: `/dashboard/publications/${publication.id}` }, { label: "Editar" }]} />
 
         <h1 className="!m-0 !text-[26px] !font-semibold !leading-tight !tracking-tight text-[#123a30]">{t("Editar publicación ")}</h1>
 

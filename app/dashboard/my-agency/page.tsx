@@ -1,4 +1,5 @@
 "use client";
+import { DashboardBreadcrumb } from "@/components/dashboard/DashboardBreadcrumb";
 import { usePreferences } from "@/lib/preferences/Preferences";
 
 import {
@@ -537,7 +538,7 @@ function PageHeader({
   return (
     <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
       <div>
-        <p className="mb-1 text-[10px] font-medium text-[#075E36]">{t("Dashboard / Mi agencia ")}</p>
+        <DashboardBreadcrumb className="mb-2" items={[{ label: "Mi agencia" }]} />
 
         <h1 className="!m-0 !max-w-none !text-[30px] !font-bold !leading-9 !tracking-[-0.025em] text-[#123A30]">
           {t(title)}
