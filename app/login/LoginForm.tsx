@@ -67,7 +67,10 @@ export default function LoginForm() {
         <FieldGroup><Field><FieldLabel htmlFor="email">Correo electrónico</FieldLabel><Input id="email" name="email" type="email" placeholder="correo@ejemplo.com" autoComplete="email" required /></Field></FieldGroup>
         <FieldGroup><Field><FieldLabel htmlFor="password">Contraseña</FieldLabel><div className="relative"><Input id="password" name="password" type={showPassword ? 'text' : 'password'} className="h-11 pr-12" placeholder="••••••••" autoComplete="current-password" required /><button type="button" className="absolute inset-y-0 right-0 flex min-w-11 items-center justify-center rounded-md focus-visible:outline-2 focus-visible:outline-offset-2" aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'} aria-pressed={showPassword} onClick={() => setShowPassword(value => !value)}>{showPassword ? <EyeOff size={18} aria-hidden="true"/> : <Eye size={18} aria-hidden="true"/>}</button></div></Field></FieldGroup>
         {error ? <p className="text-sm text-destructive" role="alert">{error}</p> : null}
-        <p className="-mt-2 text-right text-sm"><Link href="/forgot-password" className="font-medium text-primary underline-offset-4 hover:underline">¿Olvidaste tu contraseña?</Link></p>
+        <div className="-mt-2 flex flex-wrap items-center justify-between gap-3 text-sm">
+          <Link href={`/register?next=${encodeURIComponent(returnTo)}`} className="font-semibold text-primary underline-offset-4 hover:underline">Registrarse</Link>
+          <Link href="/forgot-password" className="ml-auto font-medium text-primary underline-offset-4 hover:underline">¿Olvidaste tu contraseña?</Link>
+        </div>
         <Button type="submit" className="mt-1 w-full" disabled={submitting || authLoading}>{submitting ? "Validando..." : "Iniciar sesión"}</Button>
       </form>
 
@@ -95,12 +98,11 @@ export default function LoginForm() {
             }}
           >
             <KeyRound aria-hidden="true" />
-            Usar llave de acceso (passkey)
+            Usar llave de acceso
           </Button>
         </>
       ) : null}
 
-      <p className="mt-6 text-center text-sm text-muted-foreground">¿No tienes cuenta?{" "}<Link href={`/register?next=${encodeURIComponent(returnTo)}`} className="font-medium text-primary underline-offset-4 hover:underline">Registrarse</Link></p>
     </AuthShell>
   );
 }
