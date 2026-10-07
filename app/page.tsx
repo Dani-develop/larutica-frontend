@@ -1,4 +1,6 @@
 "use client";
+import { usePreferences } from "@/lib/preferences/Preferences";
+import { PreferenceControls } from "@/components/preferences/PreferenceControls";
 
 import Link from "next/link";
 import { FormEvent, useEffect, useRef, useState } from "react";
@@ -38,6 +40,7 @@ const publications = [
 ];
 
 export default function Home() {
+  const { t } = usePreferences();
   const router = useRouter();
   const searchParams = useSearchParams();
   const { session, user, loading: authLoading, signOut } = useAuth();
@@ -46,7 +49,7 @@ export default function Home() {
   const trip = parseTrip(searchParams.get("viaje"));
   const publicationId = searchParams.get("publicacion") ?? "";
   const showTrip = Boolean(trip && !authLoading && session && user?.role === "Viajero");
-  const tripMenuActive = trip === "guardados" || trip === "reservas" || trip === "perfil" ? trip : null;
+  const tripMenuActive = trip === "guardados" || trip === "reservas" ? trip : null;
   const [view, setView] = useState<View>("explore");
   const [status, setStatus] = useState("Explora opciones seleccionadas para ti.");
   const [saved, setSaved] = useState<number[]>([]);
@@ -179,14 +182,14 @@ export default function Home() {
 
   return (
     <div className={trip ? "landing-shell landing-trip" : "landing-shell"}>
-      <a className="skip-link" href="#main">Ir al contenido principal</a>
+      <a className="skip-link" href="#main">{t("Ir al contenido principal")}</a>
       <header className="site-header">
-        <button className="brand brand-button" type="button" onClick={() => navigate("explore")} aria-label="LaRutica, volver al inicio">
-          <span className="brand-mark" aria-hidden="true" /><span>LaRutica</span>
+        <button className="brand brand-button" type="button" onClick={() => navigate("explore")} aria-label={t("LaRutica, volver al inicio")}>
+          <span className="brand-mark" aria-hidden="true" /><span>{t("LaRutica")}</span>
         </button>
-        <nav aria-label="Navegación principal">
-          <button className={trip === "explorar" || (!trip && (view === "explore" || view === "detail" || view === "route-detail" || view === "route-confirm")) ? "nav-active" : ""} onClick={openExplore} aria-current={trip === "explorar" || (!trip && view === "explore") ? "page" : undefined}>Explorar</button>
-          <button onClick={() => { navigate("explore"); setStatus("Explora los destinos disponibles."); window.setTimeout(() => document.getElementById("destinos")?.scrollIntoView(), 100); }}>Destinos</button>
+        <nav aria-label={t("Navegación principal")}>
+          <button className={trip === "explorar" || (!trip && (view === "explore" || view === "detail" || view === "route-detail" || view === "route-confirm")) ? "nav-active" : ""} onClick={openExplore} aria-current={trip === "explorar" || (!trip && view === "explore") ? "page" : undefined}>{t("Explorar")}</button>
+          <button onClick={() => { navigate("explore"); setStatus("Explora los destinos disponibles."); window.setTimeout(() => document.getElementById("destinos")?.scrollIntoView(), 100); }}>{t("Destinos")}</button>
           {!authLoading && user?.role === "Viajero" ? (
             <TripMenu
               active={tripMenuActive}
@@ -196,24 +199,25 @@ export default function Home() {
               }}
             />
           ) : null}
-          <button onClick={() => setHelpOpen(true)}>Ayuda</button>
+          <button onClick={() => setHelpOpen(true)}>{t("Ayuda")}</button>
         </nav>
         <div className="header-actions">
-          <button className="button button-quiet access-button" type="button" onClick={() => setAccessOpen(true)}>Accesibilidad</button>
-          {authLoading ? <span role="status">Cargando cuenta…</span> : user ? <><Link className="button button-outline" href={user.role === "Viajero" ? tripPath("perfil") : "/dashboard"}>Mi cuenta</Link><button className="button button-quiet account-logout" type="button" disabled={signingOut} onClick={async () => {
+          <PreferenceControls />
+          <button className="button button-quiet access-button" type="button" onClick={() => setAccessOpen(true)}>{t("Accesibilidad")}</button>
+          {authLoading ? <span role="status">{t("Cargando cuenta…")}</span> : user ? <><Link className="button button-outline" href={user.role === "Viajero" ? tripPath("perfil") : "/dashboard"}>{t("Mi cuenta")}</Link><button className="button button-quiet account-logout" type="button" disabled={signingOut} onClick={async () => {
             setSigningOut(true); setLogoutError("");
             try { await signOut(); router.replace("/"); }
             catch { setLogoutError("No pudimos confirmar el cierre de sesión. Intenta de nuevo."); }
             finally { setSigningOut(false); }
-          }}>{signingOut ? "Cerrando sesión…" : "Cerrar sesión"}</button></> : <Link className="button button-outline" href="/login">Ingresar</Link>}
+          }}>{signingOut ? t("Cerrando sesión…") : t("Cerrar sesión")}</button></> : <Link className="button button-outline" href="/login">{t("Ingresar")}</Link>}
         </div>
       </header>
       {logoutError && <p className="notice" role="alert">{logoutError}</p>}
       <p className="global-status sr-only" role="status" aria-live="polite">{status}</p>
 
       <main id="main">
-        {trip && authLoading ? <p className="trip-status">Validando sesión...</p> : null}
-        {trip && !authLoading && !showTrip ? <p className="trip-status">Redirigiendo...</p> : null}
+        {trip && authLoading ? <p className="trip-status">{t("Validando sesión...")}</p> : null}
+        {trip && !authLoading && !showTrip ? <p className="trip-status">{t("Redirigiendo...")}</p> : null}
         {showTrip && trip === "explorar" ? <TravelerExplorePage /> : null}
         {showTrip && trip === "guardados" ? <TravelerSavedPage /> : null}
         {showTrip && trip === "reservas" ? <TravelerReservationsPage /> : null}
@@ -264,14 +268,13 @@ export default function Home() {
       {helpOpen && <HelpDialog onClose={() => setHelpOpen(false)} />}
       {accessOpen && <AccessDialog largeText={largeText} setLargeText={setLargeText} highContrast={highContrast} setHighContrast={setHighContrast} onClose={() => setAccessOpen(false)} />}
       <footer>
-        <Link className="brand footer-brand" href="/" aria-label="LaRutica, volver al inicio">
-          <span className="brand-mark" aria-hidden="true" />LaRutica
-        </Link>
-        <p>Prototipo académico · Costa Rica · 2026</p>
+        <Link className="brand footer-brand" href="/" aria-label={t("LaRutica, volver al inicio")}>
+          <span className="brand-mark" aria-hidden="true" />{t("LaRutica ")}</Link>
+        <p>{t("Prototipo académico · Costa Rica · 2026")}</p>
         <div className="footer-links">
-          <Link className="footer-link" href="/terminos">Términos y condiciones</Link>
-          <button className="footer-link" type="button" onClick={() => setAccessOpen(true)}>Opciones de accesibilidad</button>
-          <button className="footer-help" type="button" onClick={() => setHelpOpen(true)}>¿Necesitas ayuda?</button>
+          <Link className="footer-link" href="/terminos">{t("Términos y condiciones")}</Link>
+          <button className="footer-link" type="button" onClick={() => setAccessOpen(true)}>{t("Opciones de accesibilidad")}</button>
+          <button className="footer-help" type="button" onClick={() => setHelpOpen(true)}>{t("¿Necesitas ayuda?")}</button>
         </div>
       </footer>
     </div>
@@ -301,19 +304,16 @@ function ExploreView({
   onSearchTransport: () => void;
   isTransport: boolean;
 }) {
+  const { t } = usePreferences();
   const [catalogFilters, setCatalogFilters] = useState({ destination:"", date:"", people:0 });
 
   return (
     <>
       <section className="hero" aria-labelledby="hero-title">
         <div className="hero-copy">
-          <p className="eyebrow">Viaja a tu ritmo</p>
-          <h1 id="hero-title" ref={headingRef} tabIndex={-1}>
-            Costa Rica, más cerca de lo que imaginas.
-          </h1>
-          <p className="hero-lead">
-            Encuentra tours, transporte y experiencias verificadas en un solo lugar.
-          </p>
+          <p className="eyebrow">{t("Viaja a tu ritmo")}</p>
+          <h1 id="hero-title" ref={headingRef} tabIndex={-1}>{t("Costa Rica, más cerca de lo que imaginas. ")}</h1>
+          <p className="hero-lead">{t("Encuentra tours, transporte y experiencias verificadas en un solo lugar. ")}</p>
           <form
             className="search-panel"
             onSubmit={event => {
@@ -323,78 +323,72 @@ function ExploreView({
               document.getElementById("results")?.scrollIntoView({behavior:"smooth"});
               document.getElementById("results")?.focus({preventScroll:true});
             }}
-            aria-label={isTransport ? "Buscar transporte" : "Buscar experiencias"}
+            aria-label={isTransport ? t("Buscar transporte") : t("Buscar experiencias")}
           >
             <label>
-              <span>{isTransport ? "¿De dónde a dónde?" : "¿A dónde quieres ir?"}</span>
+              <span>{isTransport ? t("¿De dónde a dónde?") : t("¿A dónde quieres ir?")}</span>
               <input
                 ref={searchInput}
                 name="destination"
                 defaultValue=""
                 key={isTransport ? "transport-search" : "tour-search"}
                 autoComplete="address-level2"
-                placeholder={isTransport ? "Nosara, Liberia, San José..." : undefined}
+                placeholder={isTransport ? t("Nosara, Liberia, San José...") : undefined}
               />
-              <small>Atajo: presiona /</small>
+              <small>{t("Atajo: presiona /")}</small>
             </label>
             <label>
-              <span>Fecha</span>
+              <span>{t("Fecha")}</span>
               <input name="date" type="date" />
             </label>
             <label>
-              <span>Personas</span>
+              <span>{t("Personas")}</span>
               <select name="people" defaultValue="2">
-                <option value="1">1 persona</option>
-                <option value="2">2 personas</option>
-                <option value="3">3 personas</option>
-                <option value="4">4 o más</option>
+                <option value="1">{t("1 persona")}</option>
+                <option value="2">{t("2 personas")}</option>
+                <option value="3">{t("3 personas")}</option>
+                <option value="4">{t("4 o más")}</option>
               </select>
             </label>
-            <button className="button button-primary search-button" type="submit">
-              Buscar
-            </button>
+            <button className="button button-primary search-button" type="submit">{t("Buscar ")}</button>
           </form>
-          <p className="status-line" role="status" aria-live="polite">
-            Elige un destino, una fecha y el número de personas para consultar disponibilidad.
-          </p>
+          <p className="status-line" role="status" aria-live="polite">{t("Elige un destino, una fecha y el número de personas para consultar disponibilidad. ")}</p>
         </div>
-        <div className="hero-visual" role="img" aria-label="Bosque tropical de Costa Rica">
+        <div className="hero-visual" role="img" aria-label={t("Bosque tropical de Costa Rica")}>
           <div className="floating-note">
-            <strong>Descubre Costa Rica</strong>
-            <span>de proveedores locales</span>
+            <strong>{t("Descubre Costa Rica")}</strong>
+            <span>{t("de proveedores locales")}</span>
           </div>
         </div>
       </section>
       <section className="section" aria-labelledby="results" id="destinos">
-        <div className="section-heading"><div><p className="eyebrow">Proveedores locales</p><h2 id="results" tabIndex={-1}>Experiencias para tu próximo viaje</h2></div></div>
-        <div className="filter-row" aria-label="Tipo de servicio">
-          {[{id:"all",label:"Todos"},{id:"nature",label:"Excursiones"},{id:"transport",label:"Transporte"},{id:"budget",label:"Menos de USD 50"}].map(chip => <button key={chip.id} className={category === chip.id ? "chip chip-active" : "chip"} aria-pressed={category === chip.id} onClick={() => onCategoryChange(chip.id as ExploreCategory)}>{chip.label}</button>)}
+        <div className="section-heading"><div><p className="eyebrow">{t("Proveedores locales")}</p><h2 id="results" tabIndex={-1}>{t("Experiencias para tu próximo viaje")}</h2></div></div>
+        <div className="filter-row" aria-label={t("Tipo de servicio")}>
+          {[{id:"all",label:t("Todos")},{id:"nature",label:"Excursiones"},{id:"transport",label:t("Transporte")},{id:"budget",label:t("Menos de USD 50")}].map(chip => <button key={chip.id} className={category === chip.id ? "chip chip-active" : "chip"} aria-pressed={category === chip.id} onClick={() => onCategoryChange(chip.id as ExploreCategory)}>{t(chip.label)}</button>)}
         </div>
-        <button type="button" className="text-link" onClick={() => {setCatalogFilters({destination:"",date:"",people:0});onCategoryChange("all");document.querySelector<HTMLFormElement>(".hero form")?.reset();}}>Limpiar búsqueda</button>
+        <button type="button" className="text-link" onClick={() => {setCatalogFilters({destination:"",date:"",people:0});onCategoryChange("all");document.querySelector<HTMLFormElement>(".hero form")?.reset();}}>{t("Limpiar búsqueda")}</button>
         <TravelerExplorePage embedded filters={{...catalogFilters,type:category === "transport" ? "TRANSPORT" : category === "nature" ? "EXCURSION" : "",budget:category === "budget"}} />
       </section>
       <section className="transport-section" aria-labelledby="transport-title">
         <div>
-          <p className="eyebrow eyebrow-light">Muévete con confianza</p>
-          <h2 id="transport-title">Transporte para conectar tu ruta.</h2>
-          <p>Compara recorridos, vehículos, precios y contactos antes de salir.</p>
-          <button className="button button-light" type="button" onClick={onSearchTransport}>
-            Buscar transporte
-          </button>
+          <p className="eyebrow eyebrow-light">{t("Muévete con confianza")}</p>
+          <h2 id="transport-title">{t("Transporte para conectar tu ruta.")}</h2>
+          <p>{t("Compara recorridos, vehículos, precios y contactos antes de salir.")}</p>
+          <button className="button button-light" type="button" onClick={onSearchTransport}>{t("Buscar transporte ")}</button>
         </div>
       </section>
-      <section className="trust-strip" aria-label="Beneficios de LaRutica">
+      <section className="trust-strip" aria-label={t("Beneficios de LaRutica")}>
         <div>
-          <strong>Información clara</strong>
-          <span>Precio, duración y cupos visibles.</span>
+          <strong>{t("Información clara")}</strong>
+          <span>{t("Precio, duración y cupos visibles.")}</span>
         </div>
         <div>
-          <strong>Proveedores verificados</strong>
-          <span>Perfiles y servicios revisados.</span>
+          <strong>{t("Proveedores verificados")}</strong>
+          <span>{t("Perfiles y servicios revisados.")}</span>
         </div>
         <div>
-          <strong>Ayuda cuando la necesites</strong>
-          <span>Soporte contextual y pasos sencillos.</span>
+          <strong>{t("Ayuda cuando la necesites")}</strong>
+          <span>{t("Soporte contextual y pasos sencillos.")}</span>
         </div>
       </section>
     </>
@@ -402,54 +396,62 @@ function ExploreView({
 }
 
 function DetailView({ onBack, setStatus, headingRef }: { onBack: () => void; setStatus: (value: string) => void; headingRef: React.RefObject<HTMLHeadingElement | null> }) {
+  const { t } = usePreferences();
   const [people, setPeople] = useState("2");
-  return <div className="detail-page page-shell"><button className="back-link" onClick={onBack} type="button">← Volver a resultados</button><div className="detail-grid">
-    <div><div className="detail-image"><img src={experiences[0].image} alt={experiences[0].alt} /><span className="badge">Proveedor verificado</span></div><p className="eyebrow detail-eyebrow">La Fortuna, Alajuela</p><h1 className="detail-title" ref={headingRef} tabIndex={-1}>Caminata al volcán Arenal</h1><p className="detail-intro">Explora senderos de lava, bosque tropical y miradores del Arenal junto a una guía local certificada.</p><div className="facts" aria-label="Información de la experiencia"><div><strong>4 horas</strong><span>Duración</span></div><div><strong>Fácil–moderada</strong><span>Dificultad</span></div><div><strong>ES / EN</strong><span>Idiomas</span></div><div><strong>12 máx.</strong><span>Grupo</span></div></div><h2 className="subheading">Lo que incluye</h2><ul className="check-list"><li>Guía naturalista y entrada al sendero</li><li>Transporte desde el centro de La Fortuna</li><li>Agua y refrigerio de fruta local</li></ul><h2 className="subheading">Punto de encuentro</h2><p>Parque central de La Fortuna. Recibirás el contacto del proveedor al confirmar.</p></div>
-    <aside className="booking-card" aria-label="Seleccionar disponibilidad"><p><strong>$58</strong> por persona</p><p className="rating-line">4,9/5 · 128 opiniones</p><label><span>Fecha</span><input type="date" /></label><label><span>Personas</span><select value={people} onChange={(event) => setPeople(event.target.value)}><option value="1">1 persona</option><option value="2">2 personas</option><option value="3">3 personas</option><option value="4">4 personas</option></select></label><div className="total-row"><span>Total estimado</span><strong>${58 * Number(people)}</strong></div><button className="button button-primary button-full" type="button" onClick={() => setStatus("Experiencia agregada a tu plan. Puedes modificarla o eliminarla en cualquier momento.")}>Agregar a mi plan</button><p className="fine-print">No se realiza ningún cobro en este prototipo.</p></aside>
+  return <div className="detail-page page-shell"><button className="back-link" onClick={onBack} type="button">{t("← Volver a resultados")}</button><div className="detail-grid">
+    <div><div className="detail-image"><img src={experiences[0].image} alt={experiences[0].alt} /><span className="badge">{t("Proveedor verificado")}</span></div><p className="eyebrow detail-eyebrow">{t("La Fortuna, Alajuela")}</p><h1 className="detail-title" ref={headingRef} tabIndex={-1}>{t("Caminata al volcán Arenal")}</h1><p className="detail-intro">{t("Explora senderos de lava, bosque tropical y miradores del Arenal junto a una guía local certificada.")}</p><div className="facts" aria-label={t("Información de la experiencia")}><div><strong>{t("4 horas")}</strong><span>{t("Duración")}</span></div><div><strong>{t("Fácil–moderada")}</strong><span>{t("Dificultad")}</span></div><div><strong>{t("ES / EN")}</strong><span>{t("Idiomas")}</span></div><div><strong>{t("12 máx.")}</strong><span>{t("Grupo")}</span></div></div><h2 className="subheading">{t("Lo que incluye")}</h2><ul className="check-list"><li>{t("Guía naturalista y entrada al sendero")}</li><li>{t("Transporte desde el centro de La Fortuna")}</li><li>{t("Agua y refrigerio de fruta local")}</li></ul><h2 className="subheading">{t("Punto de encuentro")}</h2><p>{t("Parque central de La Fortuna. Recibirás el contacto del proveedor al confirmar.")}</p></div>
+    <aside className="booking-card" aria-label={t("Seleccionar disponibilidad")}><p><strong>$58</strong>{t(" por persona")}</p><p className="rating-line">{t("4,9/5 · 128 opiniones")}</p><label><span>{t("Fecha")}</span><input type="date" /></label><label><span>{t("Personas")}</span><select value={people} onChange={(event) => setPeople(event.target.value)}><option value="1">{t("1 persona")}</option><option value="2">{t("2 personas")}</option><option value="3">{t("3 personas")}</option><option value="4">{t("4 personas")}</option></select></label><div className="total-row"><span>{t("Total estimado")}</span><strong>${58 * Number(people)}</strong></div><button className="button button-primary button-full" type="button" onClick={() => setStatus("Experiencia agregada a tu plan. Puedes modificarla o eliminarla en cualquier momento.")}>{t("Agregar a mi plan")}</button><p className="fine-print">{t("No se realiza ningún cobro en este prototipo.")}</p></aside>
   </div></div>;
 }
 
 function AgencyView({ onPublish, onPromote, setStatus, headingRef }: { onPublish: () => void; onPromote: () => void; setStatus: (value: string) => void; headingRef: React.RefObject<HTMLHeadingElement | null> }) {
-  return <DashboardShell title="Panel de agencia" subtitle="Arenal Viajes · Perfil verificado" headingRef={headingRef} actions={<button className="button button-primary" onClick={onPublish}>Nueva publicación</button>}>
-    <div className="notice notice-success"><strong>Tu perfil está completo.</strong><span>Las personas pueden ver tus datos de contacto y servicios activos.</span></div>
+  const { t } = usePreferences();
+  return <DashboardShell title={t("Panel de agencia")} subtitle="Arenal Viajes · Perfil verificado" headingRef={headingRef} actions={<button className="button button-primary" onClick={onPublish}>Nueva publicación</button>}>
+    <div className="notice notice-success"><strong>{t("Tu perfil está completo.")}</strong><span>{t("Las personas pueden ver tus datos de contacto y servicios activos.")}</span></div>
     <div className="metric-grid"><Metric value="3" label="Publicaciones" note="1 en revisión" /><Metric value="1 284" label="Vistas este mes" note="+18% frente a julio" /><Metric value="36" label="Consultas" note="8 esta semana" /><Metric value="4,8" label="Valoración" note="52 opiniones" /></div>
-    <section className="dashboard-section" aria-labelledby="pub-title"><div className="dashboard-heading"><div><h2 id="pub-title" className="dashboard-title">Mis publicaciones</h2><p>Administra excursiones y servicios de transporte.</p></div><button className="button button-outline" onClick={onPromote}>Promocionar</button></div><div className="table-scroll"><table><caption className="sr-only">Publicaciones de la agencia</caption><thead><tr><th>Servicio</th><th>Estado</th><th>Precio</th><th>Vistas</th><th>Consultas</th><th>Acciones</th></tr></thead><tbody>{publications.map((item) => <tr key={item.title}><td><strong>{item.title}</strong></td><td><span className={`status-pill status-${item.status.toLowerCase().replace(" ", "-")}`}>{item.status}</span></td><td>{item.price}</td><td>{item.views}</td><td>{item.bookings}</td><td><button className="text-link" type="button" onClick={() => setStatus(`${item.title} abierto para edición.`)}>Editar</button></td></tr>)}</tbody></table></div></section>
-    <section className="quick-grid" aria-labelledby="quick-title"><h2 id="quick-title" className="sr-only">Accesos rápidos</h2><button onClick={onPublish}><strong>Crear excursión</strong><span>Agrega precio, duración, ruta e imagen.</span></button><button onClick={onPublish}><strong>Publicar transporte</strong><span>Define recorrido, vehículo y contacto.</span></button><button onClick={onPromote}><strong>Destacar un servicio</strong><span>Simula una promoción de 7 días.</span></button></section>
+    <section className="dashboard-section" aria-labelledby="pub-title"><div className="dashboard-heading"><div><h2 id="pub-title" className="dashboard-title">{t("Mis publicaciones")}</h2><p>{t("Administra excursiones y servicios de transporte.")}</p></div><button className="button button-outline" onClick={onPromote}>{t("Promocionar")}</button></div><div className="table-scroll"><table><caption className="sr-only">{t("Publicaciones de la agencia")}</caption><thead><tr><th>{t("Servicio")}</th><th>{t("Estado")}</th><th>{t("Precio")}</th><th>{t("Vistas")}</th><th>{t("Consultas")}</th><th>{t("Acciones")}</th></tr></thead><tbody>{publications.map((item) => <tr key={item.title}><td><strong>{item.title}</strong></td><td><span className={`status-pill status-${item.status.toLowerCase().replace(" ", "-")}`}>{item.status}</span></td><td>{item.price}</td><td>{item.views}</td><td>{item.bookings}</td><td><button className="text-link" type="button" onClick={() => setStatus(`${item.title} abierto para edición.`)}>{t("Editar")}</button></td></tr>)}</tbody></table></div></section>
+    <section className="quick-grid" aria-labelledby="quick-title"><h2 id="quick-title" className="sr-only">{t("Accesos rápidos")}</h2><button onClick={onPublish}><strong>{t("Crear excursión")}</strong><span>{t("Agrega precio, duración, ruta e imagen.")}</span></button><button onClick={onPublish}><strong>{t("Publicar transporte")}</strong><span>{t("Define recorrido, vehículo y contacto.")}</span></button><button onClick={onPromote}><strong>{t("Destacar un servicio")}</strong><span>{t("Simula una promoción de 7 días.")}</span></button></section>
   </DashboardShell>;
 }
 
 function TransportView({ onPublish, onPromote, setStatus, headingRef }: { onPublish: () => void; onPromote: () => void; setStatus: (value: string) => void; headingRef: React.RefObject<HTMLHeadingElement | null> }) {
+  const { t } = usePreferences();
   const routes = [
     { title: "San José → La Fortuna", status: "Publicada", views: "842", bookings: "21", price: "$42" },
     { title: "Liberia → Tamarindo", status: "En revisión", views: "—", bookings: "—", price: "$35" },
     { title: "SJO → Playas del Coco", status: "Borrador", views: "—", bookings: "—", price: "$48" },
   ];
-  return <DashboardShell title="Panel de transporte" subtitle="Transportes Sol · Perfil verificado" headingRef={headingRef} actions={<button className="button button-primary" onClick={onPublish}>Nueva ruta</button>}>
-    <div className="notice notice-success"><strong>Tu perfil está completo.</strong><span>Los viajeros pueden ver tus rutas, vehículos y contactos.</span></div>
+  return <DashboardShell title={t("Panel de transporte")} subtitle="Transportes Sol · Perfil verificado" headingRef={headingRef} actions={<button className="button button-primary" onClick={onPublish}>Nueva ruta</button>}>
+    <div className="notice notice-success"><strong>{t("Tu perfil está completo.")}</strong><span>{t("Los viajeros pueden ver tus rutas, vehículos y contactos.")}</span></div>
     <div className="metric-grid"><Metric value="3" label="Rutas" note="1 en revisión" /><Metric value="842" label="Vistas este mes" note="+12% frente a julio" /><Metric value="21" label="Consultas" note="5 esta semana" /><Metric value="4,7" label="Valoración" note="38 opiniones" /></div>
-    <section className="dashboard-section" aria-labelledby="routes-title"><div className="dashboard-heading"><div><h2 id="routes-title" className="dashboard-title">Mis rutas</h2><p>Administra traslados y servicios de transporte.</p></div><button className="button button-outline" onClick={onPromote}>Promocionar</button></div><div className="table-scroll"><table><caption className="sr-only">Rutas del proveedor de transporte</caption><thead><tr><th>Servicio</th><th>Estado</th><th>Precio</th><th>Vistas</th><th>Consultas</th><th>Acciones</th></tr></thead><tbody>{routes.map((item) => <tr key={item.title}><td><strong>{item.title}</strong></td><td><span className={`status-pill status-${item.status.toLowerCase().replace(" ", "-")}`}>{item.status}</span></td><td>{item.price}</td><td>{item.views}</td><td>{item.bookings}</td><td><button className="text-link" type="button" onClick={() => setStatus(`${item.title} abierto para edición.`)}>Editar</button></td></tr>)}</tbody></table></div></section>
-    <section className="quick-grid" aria-labelledby="transport-quick"><h2 id="transport-quick" className="sr-only">Accesos rápidos</h2><button onClick={onPublish}><strong>Publicar traslado</strong><span>Define recorrido, vehículo y contacto.</span></button><button onClick={onPublish}><strong>Agregar vehículo</strong><span>Capacidad, tipo y disponibilidad.</span></button><button onClick={onPromote}><strong>Destacar una ruta</strong><span>Simula una promoción de 7 días.</span></button></section>
+    <section className="dashboard-section" aria-labelledby="routes-title"><div className="dashboard-heading"><div><h2 id="routes-title" className="dashboard-title">{t("Mis rutas")}</h2><p>{t("Administra traslados y servicios de transporte.")}</p></div><button className="button button-outline" onClick={onPromote}>{t("Promocionar")}</button></div><div className="table-scroll"><table><caption className="sr-only">{t("Rutas del proveedor de transporte")}</caption><thead><tr><th>{t("Servicio")}</th><th>{t("Estado")}</th><th>{t("Precio")}</th><th>{t("Vistas")}</th><th>{t("Consultas")}</th><th>{t("Acciones")}</th></tr></thead><tbody>{routes.map((item) => <tr key={item.title}><td><strong>{item.title}</strong></td><td><span className={`status-pill status-${item.status.toLowerCase().replace(" ", "-")}`}>{item.status}</span></td><td>{item.price}</td><td>{item.views}</td><td>{item.bookings}</td><td><button className="text-link" type="button" onClick={() => setStatus(`${item.title} abierto para edición.`)}>{t("Editar")}</button></td></tr>)}</tbody></table></div></section>
+    <section className="quick-grid" aria-labelledby="transport-quick"><h2 id="transport-quick" className="sr-only">{t("Accesos rápidos")}</h2><button onClick={onPublish}><strong>{t("Publicar traslado")}</strong><span>{t("Define recorrido, vehículo y contacto.")}</span></button><button onClick={onPublish}><strong>{t("Agregar vehículo")}</strong><span>{t("Capacidad, tipo y disponibilidad.")}</span></button><button onClick={onPromote}><strong>{t("Destacar una ruta")}</strong><span>{t("Simula una promoción de 7 días.")}</span></button></section>
   </DashboardShell>;
 }
 
 function PublishView({ onBack, onComplete, headingRef }: { onBack: () => void; onComplete: () => void; headingRef: React.RefObject<HTMLHeadingElement | null> }) {
+  const { t } = usePreferences();
   const [type, setType] = useState("Excursión"); const [error, setError] = useState("");
   function submit(event: FormEvent<HTMLFormElement>) { event.preventDefault(); const data = new FormData(event.currentTarget); if (!String(data.get("title")).trim()) { setError("Escribe un nombre descriptivo para continuar."); document.getElementById("publication-title")?.focus(); } else onComplete(); }
-  return <div className="form-page page-shell"><button className="back-link" type="button" onClick={onBack}>← Volver a publicaciones</button><div className="form-header"><p className="eyebrow">Paso 1 de 3 · Información básica</p><h1 className="form-title" ref={headingRef} tabIndex={-1}>Nueva publicación</h1><p>Completa los datos que verá el viajero. Podrás revisar todo antes de enviar.</p><div className="progress-track" aria-label="Progreso: paso 1 de 3"><span style={{ width: "33%" }} /></div></div><form className="editor-form" onSubmit={submit} noValidate><fieldset><legend>Tipo de servicio</legend><div className="segmented"><label><input type="radio" name="type" value="Excursión" checked={type === "Excursión"} onChange={() => setType("Excursión")} /><span>Excursión</span></label><label><input type="radio" name="type" value="Transporte" checked={type === "Transporte"} onChange={() => setType("Transporte")} /><span>Transporte</span></label></div></fieldset><label><span>Nombre de la publicación</span><input id="publication-title" name="title" aria-invalid={Boolean(error)} aria-describedby={error ? "title-error" : "title-help"} /><small id="title-help">Ejemplo: Caminata al volcán Arenal al amanecer.</small></label>{error && <p className="error-message" id="title-error" role="alert">{error}</p>}<label><span>Descripción</span><textarea name="description" rows={5} maxLength={500} defaultValue="Recorrido guiado por senderos de bosque tropical con vistas al volcán." /><small>Describe qué hará la persona, qué incluye y qué debe llevar. Máximo 500 caracteres.</small></label><div className="field-grid"><label><span>Destino</span><select name="destination" defaultValue="La Fortuna"><option>La Fortuna</option><option>Monteverde</option><option>Guanacaste</option></select></label><label><span>Precio por persona (USD)</span><input name="price" inputMode="decimal" defaultValue="58" /></label></div><div className="field-grid"><label><span>Duración</span><input name="duration" defaultValue="4 horas" /></label><label><span>Idiomas</span><input name="languages" defaultValue="Español, inglés" /></label></div><div className="notice"><strong>Antes de publicar</strong><span>La administración revisará que la información sea clara y segura.</span></div><div className="form-actions"><button className="button button-quiet" type="button" onClick={onBack}>Cancelar</button><button className="button button-outline" type="button">Guardar borrador</button><button className="button button-primary" type="submit">Continuar</button></div></form></div>;
+  return <div className="form-page page-shell"><button className="back-link" type="button" onClick={onBack}>{t("← Volver a publicaciones")}</button><div className="form-header"><p className="eyebrow">{t("Paso 1 de 3 · Información básica")}</p><h1 className="form-title" ref={headingRef} tabIndex={-1}>{t("Nueva publicación")}</h1><p>{t("Completa los datos que verá el viajero. Podrás revisar todo antes de enviar.")}</p><div className="progress-track" aria-label={t("Progreso: paso 1 de 3")}><span style={{ width: "33%" }} /></div></div><form className="editor-form" onSubmit={submit} noValidate><fieldset><legend>{t("Tipo de servicio")}</legend><div className="segmented"><label><input type="radio" name="type" value="Excursión" checked={type === "Excursión"} onChange={() => setType("Excursión")} /><span>{t("Excursión")}</span></label><label><input type="radio" name="type" value="Transporte" checked={type === "Transporte"} onChange={() => setType("Transporte")} /><span>{t("Transporte")}</span></label></div></fieldset><label><span>{t("Nombre de la publicación")}</span><input id="publication-title" name="title" aria-invalid={Boolean(error)} aria-describedby={error ? "title-error" : "title-help"} /><small id="title-help">{t("Ejemplo: Caminata al volcán Arenal al amanecer.")}</small></label>{error && <p className="error-message" id="title-error" role="alert">{t(error)}</p>}<label><span>{t("Descripción")}</span><textarea name="description" rows={5} maxLength={500} defaultValue="Recorrido guiado por senderos de bosque tropical con vistas al volcán." /><small>{t("Describe qué hará la persona, qué incluye y qué debe llevar. Máximo 500 caracteres.")}</small></label><div className="field-grid"><label><span>{t("Destino")}</span><select name="destination" defaultValue="La Fortuna"><option>{t("La Fortuna")}</option><option>{t("Monteverde")}</option><option>{t("Guanacaste")}</option></select></label><label><span>{t("Precio por persona (USD)")}</span><input name="price" inputMode="decimal" defaultValue="58" /></label></div><div className="field-grid"><label><span>{t("Duración")}</span><input name="duration" defaultValue="4 horas" /></label><label><span>{t("Idiomas")}</span><input name="languages" defaultValue="Español, inglés" /></label></div><div className="notice"><strong>{t("Antes de publicar")}</strong><span>{t("La administración revisará que la información sea clara y segura.")}</span></div><div className="form-actions"><button className="button button-quiet" type="button" onClick={onBack}>{t("Cancelar")}</button><button className="button button-outline" type="button">{t("Guardar borrador")}</button><button className="button button-primary" type="submit">{t("Continuar")}</button></div></form></div>;
 }
 
 function PromotionView({ onBack, onComplete, headingRef }: { onBack: () => void; onComplete: () => void; headingRef: React.RefObject<HTMLHeadingElement | null> }) {
-  return <div className="form-page page-shell"><button className="back-link" type="button" onClick={onBack}>← Volver al panel</button><div className="form-header"><p className="eyebrow">Simulación de compra</p><h1 className="form-title" ref={headingRef} tabIndex={-1}>Destaca tu publicación</h1><p>Obtén mayor visibilidad en resultados y destinos durante 7 días.</p></div><div className="promotion-grid"><section className="editor-form" aria-labelledby="promo-options"><h2 id="promo-options" className="dashboard-title">Elige una publicación</h2><label className="select-card" aria-label="Seleccionar publicación"><input type="radio" name="publication" defaultChecked /><span><strong>Caminata al volcán Arenal</strong><small>Publicada · $58 por persona</small></span></label><label className="select-card" aria-label="Seleccionar publicación"><input type="radio" name="publication" /><span><strong>Termales y cena local</strong><small>Disponible cuando sea aprobada</small></span></label><h2 className="dashboard-title">Vista previa</h2><div className="sponsored-preview"><span className="badge static-badge">Patrocinado</span><strong>Caminata al volcán Arenal</strong><span>Aparecerá primero en búsquedas relacionadas con La Fortuna.</span></div></section><aside className="summary-card"><h2>Resumen</h2><div><span>Promoción de 7 días</span><strong>$12,00</strong></div><div><span>Impuestos</span><strong>$1,56</strong></div><div className="total-row"><span>Total simulado</span><strong>$13,56</strong></div><button className="button button-primary button-full" type="button" onClick={onComplete}>Simular compra</button><p className="fine-print">Demostración académica: no se solicitarán datos bancarios ni se realizará un cobro.</p></aside></div></div>;
+  const { t } = usePreferences();
+  return <div className="form-page page-shell"><button className="back-link" type="button" onClick={onBack}>{t("← Volver al panel")}</button><div className="form-header"><p className="eyebrow">{t("Simulación de compra")}</p><h1 className="form-title" ref={headingRef} tabIndex={-1}>{t("Destaca tu publicación")}</h1><p>{t("Obtén mayor visibilidad en resultados y destinos durante 7 días.")}</p></div><div className="promotion-grid"><section className="editor-form" aria-labelledby="promo-options"><h2 id="promo-options" className="dashboard-title">{t("Elige una publicación")}</h2><label className="select-card" aria-label={t("Seleccionar publicación")}><input type="radio" name="publication" defaultChecked /><span><strong>{t("Caminata al volcán Arenal")}</strong><small>{t("Publicada · $58 por persona")}</small></span></label><label className="select-card" aria-label={t("Seleccionar publicación")}><input type="radio" name="publication" /><span><strong>{t("Termales y cena local")}</strong><small>{t("Disponible cuando sea aprobada")}</small></span></label><h2 className="dashboard-title">{t("Vista previa")}</h2><div className="sponsored-preview"><span className="badge static-badge">{t("Patrocinado")}</span><strong>{t("Caminata al volcán Arenal")}</strong><span>{t("Aparecerá primero en búsquedas relacionadas con La Fortuna.")}</span></div></section><aside className="summary-card"><h2>{t("Resumen")}</h2><div><span>{t("Promoción de 7 días")}</span><strong>$12,00</strong></div><div><span>{t("Impuestos")}</span><strong>$1,56</strong></div><div className="total-row"><span>{t("Total simulado")}</span><strong>$13,56</strong></div><button className="button button-primary button-full" type="button" onClick={onComplete}>{t("Simular compra")}</button><p className="fine-print">{t("Demostración académica: no se solicitarán datos bancarios ni se realizará un cobro.")}</p></aside></div></div>;
 }
 
 function AdminView({ approved, setApproved, setStatus, headingRef }: { approved: string[]; setApproved: (value: string[]) => void; setStatus: (value: string) => void; headingRef: React.RefObject<HTMLHeadingElement | null> }) {
+  const { t } = usePreferences();
   const pending = ["Termales y cena local", "Traslado Liberia → Tamarindo"];
   function approve(title: string) { setApproved([...approved, title]); setStatus(`${title} fue aprobado. La agencia recibirá una notificación.`); }
-  return <DashboardShell title="Administración" subtitle="Resumen general de LaRutica" headingRef={headingRef} actions={<button className="button button-outline">Exportar resumen</button>}><div className="metric-grid"><Metric value="286" label="Usuarios" note="+24 este mes" /><Metric value="38" label="Agencias" note="32 verificadas" /><Metric value="124" label="Publicaciones" note="2 por revisar" /><Metric value="18" label="Destinos" note="3 provincias nuevas" /></div><div className="admin-grid"><section className="dashboard-section" aria-labelledby="review-title"><div className="dashboard-heading"><div><p className="eyebrow">Requiere atención</p><h2 id="review-title" className="dashboard-title">Publicaciones pendientes</h2></div><span className="count-badge">{pending.filter((item) => !approved.includes(item)).length}</span></div>{pending.map((title, index) => !approved.includes(title) && <article className="review-item" key={title}><div><strong>{title}</strong><span>{index === 0 ? "Arenal Viajes · Excursión" : "Transportes Sol · Transporte"}</span></div><div><button className="button button-quiet" type="button">Revisar</button><button className="button button-primary" type="button" onClick={() => approve(title)}>Aprobar</button></div></article>)}{pending.every((item) => approved.includes(item)) && <div className="empty-state"><strong>Todo al día</strong><span>No quedan publicaciones pendientes.</span></div>}</section><aside className="dashboard-section activity-panel"><h2 className="dashboard-title">Actividad reciente</h2><ol className="activity-list"><li><strong>Nueva agencia registrada</strong><span>Pacific Blue Tours · hace 12 min</span></li><li><strong>Destino actualizado</strong><span>Monteverde · hace 45 min</span></li><li><strong>Promoción activada</strong><span>Arenal Viajes · hace 2 h</span></li></ol></aside></div><section className="quick-grid admin-quick" aria-label="Gestión administrativa"><button><strong>Gestionar usuarios</strong><span>Revisa perfiles, roles y estado.</span></button><button><strong>Administrar destinos</strong><span>Crea y actualiza lugares.</span></button><button><strong>Ver promociones</strong><span>Consulta servicios destacados.</span></button></section></DashboardShell>;
+  return <DashboardShell title={t("Administración")} subtitle="Resumen general de LaRutica" headingRef={headingRef} actions={<button className="button button-outline">Exportar resumen</button>}><div className="metric-grid"><Metric value="286" label="Usuarios" note="+24 este mes" /><Metric value="38" label="Agencias" note="32 verificadas" /><Metric value="124" label="Publicaciones" note="2 por revisar" /><Metric value="18" label="Destinos" note="3 provincias nuevas" /></div><div className="admin-grid"><section className="dashboard-section" aria-labelledby="review-title"><div className="dashboard-heading"><div><p className="eyebrow">{t("Requiere atención")}</p><h2 id="review-title" className="dashboard-title">{t("Publicaciones pendientes")}</h2></div><span className="count-badge">{pending.filter((item) => !approved.includes(item)).length}</span></div>{pending.map((title, index) => !approved.includes(title) && <article className="review-item" key={title}><div><strong>{t(title)}</strong><span>{index === 0 ? t("Arenal Viajes · Excursión") : t("Transportes Sol · Transporte")}</span></div><div><button className="button button-quiet" type="button">{t("Revisar")}</button><button className="button button-primary" type="button" onClick={() => approve(title)}>{t("Aprobar")}</button></div></article>)}{pending.every((item) => approved.includes(item)) && <div className="empty-state"><strong>{t("Todo al día")}</strong><span>{t("No quedan publicaciones pendientes.")}</span></div>}</section><aside className="dashboard-section activity-panel"><h2 className="dashboard-title">{t("Actividad reciente")}</h2><ol className="activity-list"><li><strong>{t("Nueva agencia registrada")}</strong><span>{t("Pacific Blue Tours · hace 12 min")}</span></li><li><strong>{t("Destino actualizado")}</strong><span>{t("Monteverde · hace 45 min")}</span></li><li><strong>{t("Promoción activada")}</strong><span>{t("Arenal Viajes · hace 2 h")}</span></li></ol></aside></div><section className="quick-grid admin-quick" aria-label={t("Gestión administrativa")}><button><strong>{t("Gestionar usuarios")}</strong><span>{t("Revisa perfiles, roles y estado.")}</span></button><button><strong>{t("Administrar destinos")}</strong><span>{t("Crea y actualiza lugares.")}</span></button><button><strong>{t("Ver promociones")}</strong><span>{t("Consulta servicios destacados.")}</span></button></section></DashboardShell>;
 }
 
-function DashboardShell({ title, subtitle, headingRef, actions, children }: { title: string; subtitle: string; headingRef: React.RefObject<HTMLHeadingElement | null>; actions: React.ReactNode; children: React.ReactNode }) { return <div className="dashboard"><header className="dashboard-header"><div><p className="eyebrow">LaRutica</p><h1 ref={headingRef} tabIndex={-1}>{title}</h1><p>{subtitle}</p></div>{actions}</header>{children}</div>; }
-function Metric({ value, label, note }: { value: string; label: string; note: string }) { return <article className="metric-card"><span>{label}</span><strong>{value}</strong><small>{note}</small></article>; }
+function DashboardShell({ title, subtitle, headingRef, actions, children }: { title: string; subtitle: string; headingRef: React.RefObject<HTMLHeadingElement | null>; actions: React.ReactNode; children: React.ReactNode }) {
+  const { t } = usePreferences(); return <div className="dashboard"><header className="dashboard-header"><div><p className="eyebrow">{t("LaRutica")}</p><h1 ref={headingRef} tabIndex={-1}>{t(title)}</h1><p>{subtitle}</p></div>{actions}</header>{children}</div>; }
+function Metric({ value, label, note }: { value: string; label: string; note: string }) {
+  const { t } = usePreferences(); return <article className="metric-card"><span>{t(label)}</span><strong>{value}</strong><small>{note}</small></article>; }
 
 function DialogBackdrop({ children, onClose }: { children: React.ReactNode; onClose: () => void }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -461,6 +463,8 @@ function DialogBackdrop({ children, onClose }: { children: React.ReactNode; onCl
   return <div ref={ref} className="dialog-backdrop">{children}</div>;
 }
 
-function HelpDialog({ onClose }: { onClose: () => void }) { return <DialogBackdrop onClose={onClose}><section className="dialog" role="dialog" aria-modal="true" aria-labelledby="help-title"><button className="dialog-close" aria-label="Cerrar ayuda" onClick={onClose}>Cerrar</button><p className="eyebrow">Ayuda contextual</p><h2 id="help-title">¿Qué quieres hacer?</h2><div className="help-options"><button><strong>Buscar una experiencia</strong><span>Usa destino, fecha y cantidad de personas.</span></button><button><strong>Publicar un servicio</strong><span>Ingresa y regístrate como Agencia o Transporte.</span></button><button><strong>Ingresar a tu cuenta</strong><span>Usa el botón Ingresar o crea una en Registrarse.</span></button></div><p className="help-note">Consejo: presiona <kbd>Esc</kbd> para cerrar cualquier panel.</p></section></DialogBackdrop>; }
+function HelpDialog({ onClose }: { onClose: () => void }) {
+  const { t } = usePreferences(); return <DialogBackdrop onClose={onClose}><section className="dialog" role="dialog" aria-modal="true" aria-labelledby="help-title"><button className="dialog-close" aria-label={t("Cerrar ayuda")} onClick={onClose}>{t("Cerrar")}</button><p className="eyebrow">{t("Ayuda contextual")}</p><h2 id="help-title">{t("¿Qué quieres hacer?")}</h2><div className="help-options"><button><strong>{t("Buscar una experiencia")}</strong><span>{t("Usa destino, fecha y cantidad de personas.")}</span></button><button><strong>{t("Publicar un servicio")}</strong><span>{t("Ingresa y regístrate como Agencia o Transporte.")}</span></button><button><strong>{t("Ingresar a tu cuenta")}</strong><span>{t("Usa el botón Ingresar o crea una en Registrarse.")}</span></button></div><p className="help-note">{t("Consejo: presiona ")}<kbd>{t("Esc")}</kbd>{t(" para cerrar cualquier panel.")}</p></section></DialogBackdrop>; }
 
-function AccessDialog({ largeText, setLargeText, highContrast, setHighContrast, onClose }: { largeText: boolean; setLargeText: (value: boolean) => void; highContrast: boolean; setHighContrast: (value: boolean) => void; onClose: () => void }) { return <DialogBackdrop onClose={onClose}><section className="dialog access-dialog" role="dialog" aria-modal="true" aria-labelledby="access-title"><button className="dialog-close" aria-label="Cerrar opciones de accesibilidad" onClick={onClose}>Cerrar</button><p className="eyebrow">Preferencias</p><h2 id="access-title">Accesibilidad visual</h2><p>Los cambios se aplican inmediatamente a todo el prototipo.</p><label className="toggle-row" aria-label="Texto más grande"><span><strong>Texto más grande</strong><small>Aumenta el tamaño de lectura.</small></span><input type="checkbox" role="switch" checked={largeText} onChange={(event) => setLargeText(event.target.checked)} /></label><label className="toggle-row" aria-label="Contraste reforzado"><span><strong>Contraste reforzado</strong><small>Oscurece textos y bordes.</small></span><input type="checkbox" role="switch" checked={highContrast} onChange={(event) => setHighContrast(event.target.checked)} /></label><div className="notice"><strong>Navegación por teclado</strong><span>Usa Tab para avanzar, Shift + Tab para volver y Enter para activar.</span></div></section></DialogBackdrop>; }
+function AccessDialog({ largeText, setLargeText, highContrast, setHighContrast, onClose }: { largeText: boolean; setLargeText: (value: boolean) => void; highContrast: boolean; setHighContrast: (value: boolean) => void; onClose: () => void }) {
+  const { t } = usePreferences(); return <DialogBackdrop onClose={onClose}><section className="dialog access-dialog" role="dialog" aria-modal="true" aria-labelledby="access-title"><button className="dialog-close" aria-label={t("Cerrar opciones de accesibilidad")} onClick={onClose}>{t("Cerrar")}</button><p className="eyebrow">{t("Preferencias")}</p><h2 id="access-title">{t("Accesibilidad visual")}</h2><p>{t("Los cambios se aplican inmediatamente a todo el prototipo.")}</p><label className="toggle-row" aria-label={t("Texto más grande")}><span><strong>{t("Texto más grande")}</strong><small>{t("Aumenta el tamaño de lectura.")}</small></span><input type="checkbox" role="switch" checked={largeText} onChange={(event) => setLargeText(event.target.checked)} /></label><label className="toggle-row" aria-label={t("Contraste reforzado")}><span><strong>{t("Contraste reforzado")}</strong><small>{t("Oscurece textos y bordes.")}</small></span><input type="checkbox" role="switch" checked={highContrast} onChange={(event) => setHighContrast(event.target.checked)} /></label><div className="notice"><strong>{t("Navegación por teclado")}</strong><span>{t("Usa Tab para avanzar, Shift + Tab para volver y Enter para activar.")}</span></div></section></DialogBackdrop>; }

@@ -1,5 +1,6 @@
 "use client";
 
+import { usePreferences } from "@/lib/preferences/Preferences";
 import { useEffect, useId, useRef, useState } from "react";
 import { TRIP_MENU, type TripMenuId } from "@/modules/landing/lib/travelerRoutes";
 
@@ -9,6 +10,7 @@ type Props = {
 };
 
 export function TripMenu({ active, onSelect }: Props) {
+  const {t} = usePreferences();
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
   const panelId = useId();
@@ -39,10 +41,10 @@ export function TripMenu({ active, onSelect }: Props) {
         aria-controls={panelId}
         onClick={() => setOpen((current) => !current)}
       >
-        Mi viaje
+        {t("Mi viaje")}
       </button>
       {open ? (
-        <div className="trip-menu-panel" id={panelId} role="menu" aria-label="Mi viaje">
+        <div className="trip-menu-panel" id={panelId} role="menu" aria-label={t("Mi viaje")}>
           {TRIP_MENU.map((item) => (
             <button
               key={item.id}
@@ -55,7 +57,7 @@ export function TripMenu({ active, onSelect }: Props) {
                 onSelect(item.id);
               }}
             >
-              {item.label}
+              {t(item.label)}
             </button>
           ))}
         </div>

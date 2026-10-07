@@ -1,4 +1,5 @@
 "use client";
+import { usePreferences } from "@/lib/preferences/Preferences";
 import Link from "next/link";
 
 
@@ -17,6 +18,7 @@ import { passkeyErrorMessage } from "@/modules/auth/utils/passkeyErrors";
 import { signInValidators } from "@/modules/auth/validators/authValidators";
 
 export default function LoginForm() {
+  const { t } = usePreferences();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [returnTo, setReturnTo] = useState('/dashboard');
@@ -33,9 +35,9 @@ export default function LoginForm() {
   }
 
   return (
-    <AuthShell eyebrow="Acceso" title="Iniciar sesión">
+    <AuthShell eyebrow={t("Acceso")} title={t("Iniciar sesión")}>
       <p className="mb-6 -mt-6 text-sm text-muted-foreground">
-        {returnTo === '/dashboard' ? 'Ingresa para acceder a tu cuenta.' : returnTo === '/mis-reservas' ? 'Inicia sesión para consultar tus reservas y la respuesta del proveedor.' : 'Inicia sesión para continuar con tu reserva. Conservaremos la salida y las personas que elegiste.'}
+        {returnTo === '/dashboard' ? t("Ingresa para acceder a tu cuenta.") : returnTo === '/mis-reservas' ? t("Inicia sesión para consultar tus reservas y la respuesta del proveedor.") : t("Inicia sesión para continuar con tu reserva. Conservaremos la salida y las personas que elegiste.")}
       </p>
 
       <form method="post"
@@ -64,20 +66,20 @@ export default function LoginForm() {
           }
         }}
       >
-        <FieldGroup><Field><FieldLabel htmlFor="email">Correo electrónico</FieldLabel><Input id="email" name="email" type="email" placeholder="correo@ejemplo.com" autoComplete="email" required /></Field></FieldGroup>
-        <FieldGroup><Field><FieldLabel htmlFor="password">Contraseña</FieldLabel><div className="relative"><Input id="password" name="password" type={showPassword ? 'text' : 'password'} className="h-11 pr-12" placeholder="••••••••" autoComplete="current-password" required /><button type="button" className="absolute inset-y-0 right-0 flex min-w-11 items-center justify-center rounded-md focus-visible:outline-2 focus-visible:outline-offset-2" aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'} aria-pressed={showPassword} onClick={() => setShowPassword(value => !value)}>{showPassword ? <EyeOff size={18} aria-hidden="true"/> : <Eye size={18} aria-hidden="true"/>}</button></div></Field></FieldGroup>
-        {error ? <p className="text-sm text-destructive" role="alert">{error}</p> : null}
+        <FieldGroup><Field><FieldLabel htmlFor="email">{t("Correo electrónico")}</FieldLabel><Input id="email" name="email" type="email" placeholder={t("correo@ejemplo.com")} autoComplete="email" required /></Field></FieldGroup>
+        <FieldGroup><Field><FieldLabel htmlFor="password">{t("Contraseña")}</FieldLabel><div className="relative"><Input id="password" name="password" type={showPassword ? 'text' : 'password'} className="h-11 pr-12" placeholder={t("••••••••")} autoComplete="current-password" required /><button type="button" className="absolute inset-y-0 right-0 flex min-w-11 items-center justify-center rounded-md focus-visible:outline-2 focus-visible:outline-offset-2" aria-label={showPassword ? t("Ocultar contraseña") : t("Mostrar contraseña")} aria-pressed={showPassword} onClick={() => setShowPassword(value => !value)}>{showPassword ? <EyeOff size={18} aria-hidden="true"/> : <Eye size={18} aria-hidden="true"/>}</button></div></Field></FieldGroup>
+        {error ? <p className="text-sm text-destructive" role="alert">{t(error)}</p> : null}
         <div className="-mt-2 flex flex-wrap items-center justify-between gap-3 text-sm">
-          <Link href={`/register?next=${encodeURIComponent(returnTo)}`} className="font-semibold text-primary underline-offset-4 hover:underline">Registrarse</Link>
-          <Link href="/forgot-password" className="ml-auto font-medium text-primary underline-offset-4 hover:underline">¿Olvidaste tu contraseña?</Link>
+          <Link href={`/register?next=${encodeURIComponent(returnTo)}`} className="font-semibold text-primary underline-offset-4 hover:underline">{t("Registrarse")}</Link>
+          <Link href="/forgot-password" className="ml-auto font-medium text-primary underline-offset-4 hover:underline">{t("¿Olvidaste tu contraseña?")}</Link>
         </div>
-        <Button type="submit" className="mt-1 w-full" disabled={submitting || authLoading}>{submitting ? "Validando..." : "Iniciar sesión"}</Button>
+        <Button type="submit" className="mt-1 w-full" disabled={submitting || authLoading}>{submitting ? t("Validando...") : t("Iniciar sesión")}</Button>
       </form>
 
       {passkeySupported ? (
         <>
           <div className="my-5 flex items-center gap-3 text-xs text-muted-foreground" aria-hidden="true">
-            <span className="h-px flex-1 bg-border" />o<span className="h-px flex-1 bg-border" />
+            <span className="h-px flex-1 bg-border" />{t("o")}<span className="h-px flex-1 bg-border" />
           </div>
           <Button
             type="button"
@@ -97,9 +99,7 @@ export default function LoginForm() {
               }
             }}
           >
-            <KeyRound aria-hidden="true" />
-            Usar llave de acceso
-          </Button>
+            <KeyRound aria-hidden="true" />{t("Usar llave de acceso ")}</Button>
         </>
       ) : null}
 

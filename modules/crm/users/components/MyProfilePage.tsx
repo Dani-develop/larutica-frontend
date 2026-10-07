@@ -1,4 +1,5 @@
 "use client";
+import { usePreferences } from "@/lib/preferences/Preferences";
 
 import { useState } from "react";
 import { Building2, Home, Mail, Phone, Shield, UserRound } from "lucide-react";
@@ -53,6 +54,7 @@ function formatPhone(phone: string): string {
 }
 
 function RoleBadge({ role }: { role: DashboardRole }) {
+  const {t}=usePreferences();
   return (
     <span
       className={cn(
@@ -66,6 +68,7 @@ function RoleBadge({ role }: { role: DashboardRole }) {
 }
 
 function StatusBadge({ status }: { status: UserStatus }) {
+  const {t}=usePreferences();
   return (
     <span
       className={cn(
@@ -87,6 +90,7 @@ function InfoRow({
   label: string;
   value: string;
 }) {
+  const { t } = usePreferences();
   return (
     <div className="flex items-start gap-3 py-3">
       <span className="bg-muted text-muted-foreground mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full">
@@ -94,7 +98,7 @@ function InfoRow({
       </span>
       <div className="min-w-0">
         <p className="text-muted-foreground !text-xs !font-medium uppercase tracking-wide">
-          {label}
+          {t(label)}
         </p>
         <p className="mt-0.5 break-words !text-sm !font-medium">{value}</p>
       </div>
@@ -103,6 +107,7 @@ function InfoRow({
 }
 
 function ProfileInfoPanel({ profile }: { profile: SystemUser }) {
+  const { t } = usePreferences();
   return (
     <div className="space-y-5">
       <div className="flex items-start gap-4">
@@ -129,8 +134,8 @@ function ProfileInfoPanel({ profile }: { profile: SystemUser }) {
           label="Teléfono"
           value={profile.phone ? formatPhone(profile.phone) : "—"}
         />
-        <InfoRow icon={Shield} label="Rol" value={profile.role} />
-        <InfoRow icon={UserRound} label="Estado" value={profile.status} />
+        <InfoRow icon={Shield} label="Rol" value={t(profile.role)} />
+        <InfoRow icon={UserRound} label="Estado" value={t(profile.status)} />
         {(profile.role === "Agencia" || profile.role === "Transporte") && (
           <InfoRow
             icon={Building2}
@@ -154,6 +159,7 @@ function ChangePasswordForm({
   onSuccess: (message: string) => void;
   onError: (message: string) => void;
 }) {
+  const { t } = usePreferences();
   const [currentPassword, setCurrentPassword] = useState("");
   const [password, setPassword] = useState("");
   const [confirmation, setConfirmation] = useState("");
@@ -211,47 +217,41 @@ function ChangePasswordForm({
     >
       <FieldGroup className="gap-4">
         <Field>
-          <FieldLabel htmlFor="current-password" className="!text-sm">
-            Contraseña actual
-          </FieldLabel>
+          <FieldLabel htmlFor="current-password" className="!text-sm">{t("Contraseña actual ")}</FieldLabel>
           <Input
             id="current-password"
             className="!h-9 !text-sm"
             type="password"
             value={currentPassword}
             onChange={(event) => setCurrentPassword(event.target.value)}
-            placeholder="Tu contraseña actual"
+            placeholder={t("Tu contraseña actual")}
             autoComplete="current-password"
             required
           />
         </Field>
         <Field>
-          <FieldLabel htmlFor="new-password" className="!text-sm">
-            Nueva contraseña
-          </FieldLabel>
+          <FieldLabel htmlFor="new-password" className="!text-sm">{t("Nueva contraseña ")}</FieldLabel>
           <Input
             id="new-password"
             className="!h-9 !text-sm"
             type="password"
             value={password}
             onChange={(event) => setPassword(event.target.value)}
-            placeholder="Mínimo 8 caracteres"
+            placeholder={t("Mínimo 8 caracteres")}
             minLength={8}
             autoComplete="new-password"
             required
           />
         </Field>
         <Field>
-          <FieldLabel htmlFor="confirm-password" className="!text-sm">
-            Confirmar contraseña
-          </FieldLabel>
+          <FieldLabel htmlFor="confirm-password" className="!text-sm">{t("Confirmar contraseña ")}</FieldLabel>
           <Input
             id="confirm-password"
             className="!h-9 !text-sm"
             type="password"
             value={confirmation}
             onChange={(event) => setConfirmation(event.target.value)}
-            placeholder="Repite la nueva contraseña"
+            placeholder={t("Repite la nueva contraseña")}
             minLength={8}
             autoComplete="new-password"
             required
@@ -266,11 +266,9 @@ function ChangePasswordForm({
           className="!text-sm"
           disabled={submitting}
           onClick={clearFields}
-        >
-          Limpiar
-        </Button>
+        >{t("Limpiar ")}</Button>
         <Button type="submit" className="!text-sm" disabled={submitting}>
-          {submitting ? "Guardando…" : "Cambiar contraseña"}
+          {submitting ? "Guardando…" : t("Cambiar contraseña")}
         </Button>
       </div>
     </form>
@@ -278,6 +276,7 @@ function ChangePasswordForm({
 }
 
 export function MyProfilePage({ appearance = "dashboard" }: { appearance?: "dashboard" | "landing" }) {
+  const { t } = usePreferences();
   const landing = appearance === "landing";
   const { user: profile, saveProfile } = useAuth();
   const [tab, setTab] = useState<ProfileTab>("info");
@@ -322,26 +321,20 @@ export function MyProfilePage({ appearance = "dashboard" }: { appearance?: "dash
                 href="/dashboard"
                 className="flex items-center gap-1.5 !text-sm"
               >
-                <Home className="size-3.5" />
-                Inicio
-              </BreadcrumbLink>
+                <Home className="size-3.5" />{t("Inicio ")}</BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
-              <BreadcrumbPage className="!text-sm">Mi perfil</BreadcrumbPage>
+              <BreadcrumbPage className="!text-sm">{t("Mi perfil")}</BreadcrumbPage>
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
       )}
 
       <div className={landing ? "trip-profile-heading" : undefined}>
-        {landing ? <p className="eyebrow">Mi viaje</p> : null}
-        <h1 className={landing ? "detail-title" : "!m-0 !max-w-none !text-2xl !leading-8 !font-semibold !tracking-tight"}>
-          Mi perfil
-        </h1>
-        <p className={landing ? "detail-intro" : "text-muted-foreground mt-0.5 !text-sm !leading-5"}>
-          Consulta tu cuenta, edita tus datos, cambia tu contraseña o administra tus passkeys.
-        </p>
+        {landing ? <p className="eyebrow">{t("Mi viaje")}</p> : null}
+        <h1 className={landing ? "detail-title" : "!m-0 !max-w-none !text-2xl !leading-8 !font-semibold !tracking-tight"}>{t("Mi perfil ")}</h1>
+        <p className={landing ? "detail-intro" : "text-muted-foreground mt-0.5 !text-sm !leading-5"}>{t("Consulta tu cuenta, edita tus datos, cambia tu contraseña o administra tus passkeys. ")}</p>
       </div>
 
       {message ? (
@@ -361,7 +354,7 @@ export function MyProfilePage({ appearance = "dashboard" }: { appearance?: "dash
       <div className={landing ? "trip-profile-card" : "bg-card overflow-hidden rounded-xl"}>
         <div
           role="tablist"
-          aria-label="Opciones de perfil"
+          aria-label={t("Opciones de perfil")}
           className={landing ? "filter-row" : "flex gap-1 overflow-x-auto border-b px-2 pt-2"}
         >
           {TABS.map((item) => (
@@ -383,7 +376,7 @@ export function MyProfilePage({ appearance = "dashboard" }: { appearance?: "dash
                 clearMessage();
               }}
             >
-              {item.label}
+              {t(item.label)}
             </button>
           ))}
         </div>

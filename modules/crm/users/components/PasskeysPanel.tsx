@@ -1,4 +1,5 @@
 "use client";
+import { usePreferences } from "@/lib/preferences/Preferences";
 
 import { useEffect, useRef, useState } from "react";
 import {
@@ -38,8 +39,8 @@ async function passkeyRequest<T>(path: string, init: RequestInit = {}): Promise<
   return payload.data as T;
 }
 
-function formatDate(value: string) {
-  return new Date(value).toLocaleDateString("es-CR", {
+function formatDate(value: string, language: string) {
+  return new Date(value).toLocaleDateString(language === "en" ? "en-US" : "es-CR", {
     day: "numeric",
     month: "short",
     year: "numeric",
@@ -53,6 +54,7 @@ export function PasskeysPanel({
   onSuccess: (message: string) => void;
   onError: (message: string) => void;
 }) {
+  const { t, language } = usePreferences();
   const [passkeys, setPasskeys] = useState<Passkey[] | null>(null);
   const [busy, setBusy] = useState(false);
   const supported = useWebAuthnSupport();
@@ -75,18 +77,14 @@ export function PasskeysPanel({
   return (
     <div className="space-y-6">
       <div>
-        <p className="!m-0 !text-sm !font-medium">Passkeys</p>
-        <p className="text-muted-foreground mt-0.5 !text-sm">
-          Inicia sesión con la huella, el rostro o el PIN de tu dispositivo, sin escribir la contraseña.
-        </p>
+        <p className="!m-0 !text-sm !font-medium">{t("Passkeys")}</p>
+        <p className="text-muted-foreground mt-0.5 !text-sm">{t("Inicia sesión con la huella, el rostro o el PIN de tu dispositivo, sin escribir la contraseña. ")}</p>
       </div>
 
       {passkeys === null ? (
         <Skeleton className="h-16 rounded-lg" />
       ) : passkeys.length === 0 ? (
-        <p className="text-muted-foreground rounded-lg border border-dashed px-3 py-4 text-center !text-sm">
-          Aún no tienes passkeys registradas.
-        </p>
+        <p className="text-muted-foreground rounded-lg border border-dashed px-3 py-4 text-center !text-sm">{t("Aún no tienes passkeys registradas. ")}</p>
       ) : (
         <ul className="divide-y rounded-lg border">
           {passkeys.map((passkey) => (
@@ -98,12 +96,11 @@ export function PasskeysPanel({
                 <p className="!m-0 flex items-center gap-1.5 truncate !text-sm !font-medium">
                   {passkey.name}
                   {passkey.backedUp ? (
-                    <Cloud className="text-muted-foreground size-3.5" aria-label="Sincronizada en la nube" />
+                    <Cloud className="text-muted-foreground size-3.5" aria-label={t("Sincronizada en la nube")} />
                   ) : null}
                 </p>
-                <p className="text-muted-foreground !m-0 !text-xs">
-                  Creada {formatDate(passkey.createdAt)}
-                  {passkey.lastUsedAt ? ` · Último uso ${formatDate(passkey.lastUsedAt)}` : " · Sin usar"}
+                <p className="text-muted-foreground !m-0 !text-xs">{t("Creada ")}{formatDate(passkey.createdAt,language)}
+                  {passkey.lastUsedAt ? ` · ${t("Último uso")} ${formatDate(passkey.lastUsedAt,language)}` : t(" · Sin usar")}
                 </p>
               </div>
               <Button
@@ -111,7 +108,7 @@ export function PasskeysPanel({
                 variant="ghost"
                 size="icon"
                 disabled={busy}
-                aria-label={`Eliminar passkey ${passkey.name}`}
+                aria-label={`${t("Eliminar passkey")} ${passkey.name}`}
                 onClick={async () => {
                   setBusy(true);
                   try {
@@ -157,18 +154,16 @@ export function PasskeysPanel({
             }
           }}
         >
-          <p className="text-muted-foreground !m-0 !text-xs">
-            Se guardará con el nombre de este dispositivo.
-          </p>
+          <p className="text-muted-foreground !m-0 !text-xs">{t("Se guardará con el nombre de este dispositivo. ")}</p>
           <div className="flex justify-end">
             <Button type="submit" className="!text-sm" disabled={busy}>
               <KeyRound aria-hidden="true" />
-              {busy ? "Esperando al dispositivo…" : "Agregar passkey"}
+              {busy ? t("Esperando al dispositivo…") : t("Agregar passkey")}
             </Button>
           </div>
         </form>
       ) : (
-        <p className="text-muted-foreground !text-sm">Este navegador no admite passkeys.</p>
+        <p className="text-muted-foreground !text-sm">{t("Este navegador no admite passkeys.")}</p>
       )}
     </div>
   );

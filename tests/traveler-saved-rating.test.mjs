@@ -37,7 +37,7 @@ test("Explorar y Guardados usan publicaciones persistidas y califican solo viaje
   const views = await read("components/dashboard/TravelerViews.tsx");
   assert.match(service, /\/api\/traveler\/saved/);
   assert.match(service, /\/api\/reservations\/\$\{encodeURIComponent\(reservationId\)\}\/rating/);
-  assert.match(views, /listTravelerPublications/);
+  assert.match(views, /listCatalogPublications/);
   assert.match(views, /listSavedPublications/);
   assert.match(views, /reservation\.status === "PAST" \? \(/);
   assert.match(views, /setPublicationSaved\(publication\.id/);

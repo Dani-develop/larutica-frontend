@@ -31,8 +31,7 @@ for (const logged of [false,true]) {
     await page.getByRole('heading',{name:item.title,exact:true}).waitFor();
     assert.equal(catalogRequests,1,'Ambas secciones reutilizan el mismo catálogo');
     assert.equal(await page.getByRole('heading',{name:'Costa Rica, más cerca de lo que imaginas.',exact:true}).count(),1);
-    await page.getByRole('button',{name:'Mi viaje',exact:true}).click();
-    await page.getByRole('menuitem',{name:'Mi perfil',exact:true}).click();
+    await page.getByRole('link',{name:'Mi cuenta',exact:true}).click();
     await page.waitForURL('**/?viaje=perfil');
     await page.getByRole('button',{name:'Explorar',exact:true}).click();
     await page.waitForURL(url => url.pathname === '/' && !url.search);

@@ -1,11 +1,13 @@
 "use client";
+import { usePreferences } from "@/lib/preferences/Preferences";
 
 import Link from "next/link";
+import { CurrencyNotice } from "@/components/preferences/PreferenceControls";
 import Swal from "sweetalert2";
 import "sweetalert2/dist/sweetalert2.min.css";
 import { useAuth } from "@/modules/auth/context/AuthContext";
 import { ExperienceDetail } from "@/modules/booking/ExperienceDetail";
-import { dateLabel, money } from "@/modules/booking/types";
+
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import type { SystemUser } from "@/modules/crm/users/models/User";
@@ -35,16 +37,18 @@ const reservationAlertClasses = {
 };
 
 function TripHeading({ eyebrow, title, lead }: { eyebrow: string; title: string; lead: string }) {
+  const { t } = usePreferences();
   return (
     <div className="trip-page-heading">
-      <p className="eyebrow">{eyebrow}</p>
-      <h1 className="detail-title">{title}</h1>
-      <p className="detail-intro">{lead}</p>
+      <p className="eyebrow">{t(eyebrow)}</p>
+      <h1 className="detail-title">{t(title)}</h1>
+      <p className="detail-intro">{t(lead)}</p>
     </div>
   );
 }
 
 export function TravelerExplorePage({ embedded = false, filters }: { embedded?: boolean; filters?: { destination:string; date:string; people:number; type:string; budget:boolean } } = {}) {
+  const { t } = usePreferences();
   const { user } = useAuth();
   const [retry, setRetry] = useState(0);
   const [savedError, setSavedError] = useState("");
@@ -123,26 +127,26 @@ export function TravelerExplorePage({ embedded = false, filters }: { embedded?: 
   return (
     <section id={embedded ? "experiencias" : undefined} className={embedded ? "catalog-embedded" : "page-shell"}>
       {!embedded && <TripHeading
-        eyebrow="Mi viaje"
-        title={providerName ? `Viajes de ${providerName}` : "Explorar"}
-        lead="Encuentra experiencias y servicios para armar tu próxima ruta."
+        eyebrow={t("Mi viaje")}
+        title={providerName ? `${t("Viajes de")} ${providerName}` : t("Explorar")}
+        lead={t("Encuentra experiencias y servicios para armar tu próxima ruta.")}
       />}
       {!embedded &&
       <label className="search-panel" style={{ margin: "1.5rem 0", maxWidth: 640, gridTemplateColumns: "1fr" }}>
-        <span className="sr-only">Buscar experiencias</span>
+        <span className="sr-only">{t("Buscar experiencias")}</span>
         <input
           type="search"
           value={search}
           onChange={(event) => setSearch(event.target.value)}
-          placeholder="Buscar por experiencia o destino"
+          placeholder={t("Buscar por experiencia o destino")}
         />
       </label>}
-      {savedError && <p className="notice" role="status">{savedError}</p>}
-      {!loading && !error && <p role="status">{visiblePublications.length} servicios encontrados.</p>}
-      {error ? <div className="notice" role="alert"><p>{error}</p><button className="button button-outline" onClick={() => setRetry(n => n + 1)}>Volver a intentar</button></div> : null}
-      <div className="card-grid">
+      {savedError && <p className="notice" role="status">{t(savedError)}</p>}
+      {!loading && !error && <p role="status">{visiblePublications.length}{t(" servicios encontrados.")}</p>}
+      {error ? <div className="notice" role="alert"><p>{t(error)}</p><button className="button button-outline" onClick={() => setRetry(n => n + 1)}>{t("Volver a intentar")}</button></div> : null}
+      <CurrencyNotice /><div className="card-grid">
         {loading ? (
-          <p className="empty-state">Cargando publicaciones...</p>
+          <p className="empty-state">{t("Cargando publicaciones...")}</p>
         ) : visiblePublications.length > 0 ? (
           visiblePublications.map((publication) => (
             <TravelerTripCard
@@ -154,7 +158,7 @@ export function TravelerExplorePage({ embedded = false, filters }: { embedded?: 
           ))
         ) : (
           <p className="empty-state">
-            {error ? "No se pudieron cargar las publicaciones." : "No encontramos viajes con esa búsqueda."}
+            {error ? t("No se pudieron cargar las publicaciones.") : t("No encontramos viajes con esa búsqueda.")}
           </p>
         )}
       </div>
@@ -163,6 +167,7 @@ export function TravelerExplorePage({ embedded = false, filters }: { embedded?: 
 }
 
 export function TravelerSavedPage() {
+  const { t } = usePreferences();
   const [publications, setPublications] = useState<TravelerPublication[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -198,13 +203,13 @@ export function TravelerSavedPage() {
   return (
     <section className="page-shell trip-page-shell">
       <TripHeading
-        eyebrow="Mi viaje"
-        title="Guardados"
-        lead="Ideas de viaje que quieres revisar antes de reservar."
+        eyebrow={t("Mi viaje")}
+        title={t("Guardados")}
+        lead={t("Ideas de viaje que quieres revisar antes de reservar.")}
       />
-      {error ? <p className="notice" role="alert">{error}</p> : null}
-      <div className="card-grid">
-        {loading ? <p className="empty-state">Cargando publicaciones guardadas...</p>
+      {error ? <p className="notice" role="alert">{t(error)}</p> : null}
+      <CurrencyNotice /><div className="card-grid">
+        {loading ? <p className="empty-state">{t("Cargando publicaciones guardadas...")}</p>
           : error && publications.length === 0 ? null : publications.length > 0
             ? publications.map((publication) => (
               <TravelerTripCard
@@ -214,7 +219,7 @@ export function TravelerSavedPage() {
                 onToggleSaved={() => void removeSaved(publication)}
               />
             ))
-            : <p className="empty-state">Aún no tienes publicaciones guardadas.</p>}
+            : <p className="empty-state">{t("Aún no tienes publicaciones guardadas.")}</p>}
       </div>
     </section>
   );
@@ -227,16 +232,8 @@ const STATUS_LABEL: Record<ReservationStatus, string> = {
   CANCELLED: "Cancelada",
 };
 
-function formatDeparture(value: string) {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "Fecha por confirmar";
-  return new Intl.DateTimeFormat("es-CR", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  }).format(date);
-}
-
 export function TravelerReservationsPage() {
+  const { t } = usePreferences();
   const [reservationView, setReservationView] = useState<"upcoming" | "past">("upcoming");
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [loading, setLoading] = useState(true);
@@ -277,12 +274,12 @@ export function TravelerReservationsPage() {
 
   async function cancelReservation(reservation: Reservation) {
     const confirmation = await Swal.fire({
-      title: "¿Cancelar viaje?",
-      text: `¿Quieres cancelar tu reserva para ${reservation.publicationTitle}?`,
+      title: t("¿Cancelar viaje?"),
+      text: `${t("¿Cancelar esta reserva?")} ${reservation.publicationTitle}`,
       icon: "warning",
       showCancelButton: true,
-      confirmButtonText: "Sí, cancelar viaje",
-      cancelButtonText: "Mantener reserva",
+      confirmButtonText: t("Sí, cancelar viaje"),
+      cancelButtonText: t("Mantener reserva"),
       reverseButtons: true,
       buttonsStyling: false,
       customClass: reservationAlertClasses,
@@ -295,10 +292,10 @@ export function TravelerReservationsPage() {
       updated = await updateReservation(reservation.id, { status: "CANCELLED" });
     } catch (cause) {
       await Swal.fire({
-        title: "No se pudo cancelar el viaje",
+        title: t("No se pudo cancelar el viaje"),
         text: cause instanceof Error ? cause.message : "Intenta de nuevo en unos momentos.",
         icon: "error",
-        confirmButtonText: "Cerrar",
+        confirmButtonText: t("Cerrar"),
         buttonsStyling: false,
         customClass: reservationAlertClasses,
       });
@@ -310,10 +307,10 @@ export function TravelerReservationsPage() {
       item.id === updated.id ? updated : item,
     ));
     await Swal.fire({
-      title: "Viaje cancelado",
-      text: "Tu reserva se canceló correctamente.",
+      title: t("Viaje cancelado"),
+      text: t("Tu reserva se canceló correctamente."),
       icon: "success",
-      confirmButtonText: "Aceptar",
+      confirmButtonText: t("Aceptar"),
       buttonsStyling: false,
       customClass: reservationAlertClasses,
     });
@@ -322,43 +319,39 @@ export function TravelerReservationsPage() {
   return (
     <section className="page-shell trip-page-shell">
       <TripHeading
-        eyebrow="Mi viaje"
-        title="Mis reservas"
-        lead="Revisa tus viajes reservados y la información de cada experiencia."
+        eyebrow={t("Mi viaje")}
+        title={t("Mis reservas")}
+        lead={t("Revisa tus viajes reservados y la información de cada experiencia.")}
       />
       {error ? (
-        <p className="notice" role="alert">{error}</p>
+        <p className="notice" role="alert">{t(error)}</p>
       ) : null}
-      <div className="filter-row" role="tablist" aria-label="Filtrar reservas">
+      <div className="filter-row" role="tablist" aria-label={t("Filtrar reservas")}>
         <button
           type="button"
           role="tab"
           className={reservationView === "upcoming" ? "chip chip-active" : "chip"}
           aria-selected={reservationView === "upcoming"}
           onClick={() => setReservationView("upcoming")}
-        >
-          Por venir
-        </button>
+        >{t("Por venir ")}</button>
         <button
           type="button"
           role="tab"
           className={reservationView === "past" ? "chip chip-active" : "chip"}
           aria-selected={reservationView === "past"}
           onClick={() => setReservationView("past")}
-        >
-          Historial
-        </button>
+        >{t("Historial ")}</button>
       </div>
       <ReservationGroup
-        title={reservationView === "upcoming" ? "Reservas por venir" : "Historial de reservas"}
+        title={reservationView === "upcoming" ? t("Reservas por venir") : t("Historial de reservas")}
         emptyLabel={
           loading
-            ? "Cargando reservas..."
+            ? t("Cargando reservas...")
             : error
-              ? "El listado no está disponible."
+              ? t("El listado no está disponible.")
               : reservationView === "upcoming"
-                ? "No tienes reservas por venir."
-                : "No tienes reservas en el historial."
+                ? t("No tienes reservas por venir.")
+                : t("No tienes reservas en el historial.")
         }
         reservations={visibleReservations}
         onRate={saveRating}
@@ -378,6 +371,7 @@ function TravelerTripCard({
   saved?: boolean;
   onToggleSaved?: () => void;
 }) {
+  const { t, money, dateLabel } = usePreferences();
   return (
     <article className="experience-card">
       <div className="card-image-wrap">
@@ -385,7 +379,7 @@ function TravelerTripCard({
           /* eslint-disable-next-line @next/next/no-img-element */
           <img src={publication.mainImageUrl} alt={publication.title} loading="lazy" decoding="async" />
         ) : (
-          <p className="empty-state">Sin imagen</p>
+          <p className="empty-state">{t("Sin imagen")}</p>
         )}
         {onToggleSaved ? (
           <button
@@ -395,7 +389,7 @@ function TravelerTripCard({
             aria-label={saved ? `Quitar ${publication.title} de Guardados` : `Guardar ${publication.title}`}
             onClick={onToggleSaved}
           >
-            {saved ? "Guardado ♥" : "Guardar ♡"}
+            {saved ? t("Guardado ♥") : t("Guardar ♡")}
           </button>
         ) : null}
       </div>
@@ -404,15 +398,15 @@ function TravelerTripCard({
         <h3>{publication.title}</h3>
         <p className="trip-departure-info">
           {publication.departures?.find(d => d.available > 0)
-            ? <>Próxima salida: {dateLabel(publication.departures.find(d => d.available > 0)!.startAt)} · {publication.departures.find(d => d.available > 0)!.available} cupos disponibles (hora de Costa Rica).</>
-            : publication.departures?.length ? "Las salidas publicadas están completas. Consulta otras fechas."
-            : "Por ahora no hay nuevas fechas disponibles."}
+            ? <>{t("Próxima salida: ")}{dateLabel(publication.departures.find(d => d.available > 0)!.startAt)} · {publication.departures.find(d => d.available > 0)!.available}{t(" cupos disponibles (hora de Costa Rica).")}</>
+            : publication.departures?.length ? t("Las salidas publicadas están completas. Consulta otras fechas.")
+            : t("Por ahora no hay nuevas fechas disponibles.")}
         </p>
         <p>{publication.description}</p>
         <div className="card-footer">
-          <strong>{money(publication.pricePerPerson)} por persona <span>· {publication.durationMinutes} min</span></strong>
+          <strong>{money(publication.pricePerPerson)}{t(" por persona ")}<span>· {publication.durationMinutes}{t(" min")}</span></strong>
           <div className="trip-actions">
-            <Link className="button button-primary" href={`/experiencias/${publication.id}`}>{publication.departures?.some(d => d.available > 0) ? "Ver fechas y reservar" : "Ver detalles"}</Link>
+            <Link className="button button-primary" href={`/experiencias/${publication.id}`}>{publication.departures?.some(d => d.available > 0) ? t("Ver fechas y reservar") : t("Ver detalles")}</Link>
           </div>
         </div>
       </div>
@@ -435,30 +429,29 @@ function ReservationGroup({
   onCancel: (reservation: Reservation) => Promise<void>;
   cancellingReservationId: string | null;
 }) {
+  const { t, dateLabel } = usePreferences();
   const headingId = title.replaceAll(" ", "-").toLowerCase();
   return (
     <section aria-labelledby={headingId}>
-      <h2 id={headingId} className="subheading">{title}</h2>
+      <h2 id={headingId} className="subheading">{t(title)}</h2>
       {reservations.length === 0 ? (
-        <p className="empty-state">{emptyLabel}</p>
+        <p className="empty-state">{t(emptyLabel)}</p>
       ) : reservations.map((reservation) => {
         const people = reservation.numberOfPeople === 1
-          ? "1 persona"
-          : `${reservation.numberOfPeople} personas`;
-        const place = reservation.destination ?? "Sin destino";
+          ? t("1 persona")
+          : `${reservation.numberOfPeople} ${t("personas")}`;
+        const place = reservation.destination ?? t("Sin destino");
         return (
           <article className="reservation-card" key={reservation.id}>
             <div>
-              <p>{formatDeparture(reservation.departureStartAt)}</p>
+              <p>{dateLabel(reservation.departureStartAt)}</p>
               <h3>{reservation.publicationTitle}</h3>
               <p>{people} · {place}</p>
             </div>
             <div className="trip-actions">
-              <span className="badge" style={{ position: "static" }}>{STATUS_LABEL[reservation.status]}</span>
+              <span className="badge" style={{ position: "static" }}>{t(STATUS_LABEL[reservation.status])}</span>
               {reservation.publicationId ? (
-                <Link className="button button-outline" href={tripPath("detalle", { publicacion: reservation.publicationId })}>
-                  Ver detalles
-                </Link>
+                <Link className="button button-outline" href={tripPath("detalle", { publicacion: reservation.publicationId })}>{t("Ver detalles ")}</Link>
               ) : null}
               {reservation.status === "PENDING" || reservation.status === "CONFIRMED" ? (
                 <button
@@ -468,7 +461,7 @@ function ReservationGroup({
                   aria-busy={cancellingReservationId === reservation.id}
                   onClick={() => void onCancel(reservation)}
                 >
-                  {cancellingReservationId === reservation.id ? "Cancelando..." : "Cancelar viaje"}
+                  {cancellingReservationId === reservation.id ? t("Cancelando...") : t("Cancelar viaje")}
                 </button>
               ) : null}
               {reservation.status === "PAST" ? (
@@ -489,6 +482,7 @@ function ReservationRating({
   reservation: Reservation;
   onRate: (reservationId: string, rating: number) => Promise<void>;
 }) {
+  const { t } = usePreferences();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -506,7 +500,7 @@ function ReservationRating({
 
   return (
     <div className="reservation-rating">
-      <span>{reservation.rating ? "Tu calificación" : "Califica este viaje"}</span>
+      <span>{reservation.rating ? t("Tu calificación") : t("Califica este viaje")}</span>
       <div className="rating-stars" role="group" aria-label={`Calificación de ${reservation.publicationTitle}`}>
         {[1, 2, 3, 4, 5].map((rating) => (
           <button
@@ -521,7 +515,7 @@ function ReservationRating({
           </button>
         ))}
       </div>
-      {error ? <p role="alert">{error}</p> : null}
+      {error ? <p role="alert">{t(error)}</p> : null}
     </div>
   );
 }
@@ -549,6 +543,7 @@ export function TravelerProfileForm({
   onDelete: () => void;
   saved: boolean;
 }) {
+  const { t } = usePreferences();
   const [name, setName] = useState(profile.name);
   const [email, setEmail] = useState(profile.email);
   const [phone, setPhone] = useState(profile.phone);
@@ -557,9 +552,9 @@ export function TravelerProfileForm({
   return (
     <section className="page-shell">
       <TripHeading
-        eyebrow="Mi viaje"
-        title="Mi usuario"
-        lead="Aquí puedes revisar y actualizar tus datos personales."
+        eyebrow={t("Mi viaje")}
+        title={t("Mi usuario")}
+        lead={t("Aquí puedes revisar y actualizar tus datos personales.")}
       />
       <form
         className="editor-form"
@@ -572,36 +567,36 @@ export function TravelerProfileForm({
           });
         }}
       >
-        <h2 className="subheading">Mis datos</h2>
-        <p>Esta información se usará para tus reservas y comunicaciones.</p>
+        <h2 className="subheading">{t("Mis datos")}</h2>
+        <p>{t("Esta información se usará para tus reservas y comunicaciones.")}</p>
         <label>
-          <span>Nombre completo</span>
+          <span>{t("Nombre completo")}</span>
           <input value={name} onChange={(event) => setName(event.target.value)} />
         </label>
         <label>
-          <span>Correo electrónico</span>
+          <span>{t("Correo electrónico")}</span>
           <input type="email" value={email} onChange={(event) => setEmail(event.target.value)} />
         </label>
         <label>
-          <span>Teléfono</span>
-          <input value={phone} onChange={(event) => setPhone(event.target.value)} placeholder="+506 0000-0000" />
+          <span>{t("Teléfono")}</span>
+          <input value={phone} onChange={(event) => setPhone(event.target.value)} placeholder={t("+506 0000-0000")} />
         </label>
         <div className="form-actions">
-          {saved ? <p role="status">Tus datos fueron actualizados.</p> : null}
-          <Link className="button button-outline" href="/forgot-password">Cambiar contraseña</Link>
-          <button className="button button-primary" type="submit">Guardar cambios</button>
-          <button className="button button-outline" type="button" onClick={() => setDeleteOpen(true)}>Eliminar cuenta</button>
+          {saved ? <p role="status">{t("Tus datos fueron actualizados.")}</p> : null}
+          <Link className="button button-outline" href="/forgot-password">{t("Cambiar contraseña")}</Link>
+          <button className="button button-primary" type="submit">{t("Guardar cambios")}</button>
+          <button className="button button-outline" type="button" onClick={() => setDeleteOpen(true)}>{t("Eliminar cuenta")}</button>
         </div>
       </form>
-      <p className="notice">Tus datos están protegidos y solo se comparten cuando los necesitas para una reserva.</p>
+      <p className="notice">{t("Tus datos están protegidos y solo se comparten cuando los necesitas para una reserva.")}</p>
       {deleteOpen ? (
         <div className="dialog-backdrop" role="presentation">
           <section className="dialog" role="alertdialog" aria-modal="true" aria-labelledby="delete-account-title">
-            <h2 id="delete-account-title">¿Seguro que quieres eliminar tu cuenta?</h2>
-            <p>Esta acción eliminará tu perfil y no podrás usarlo para tus reservas.</p>
+            <h2 id="delete-account-title">{t("¿Seguro que quieres eliminar tu cuenta?")}</h2>
+            <p>{t("Esta acción eliminará tu perfil y no podrás usarlo para tus reservas.")}</p>
             <div className="form-actions">
-              <button className="button button-outline" type="button" onClick={() => setDeleteOpen(false)}>Cancelar</button>
-              <button className="button button-primary" type="button" onClick={onDelete}>Sí, eliminar cuenta</button>
+              <button className="button button-outline" type="button" onClick={() => setDeleteOpen(false)}>{t("Cancelar")}</button>
+              <button className="button button-primary" type="button" onClick={onDelete}>{t("Sí, eliminar cuenta")}</button>
             </div>
           </section>
         </div>

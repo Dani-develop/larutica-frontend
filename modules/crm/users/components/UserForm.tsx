@@ -1,4 +1,5 @@
 "use client";
+import { usePreferences } from "@/lib/preferences/Preferences";
 
 import { useState } from "react";
 import {
@@ -37,6 +38,7 @@ export function UserForm({
   onSubmit,
   onCancel,
 }: UserFormProps) {
+  const { t } = usePreferences();
   const [value, setValue] = useState<SystemUserInput>(initialValue);
   const [phoneError, setPhoneError] = useState<string | null>(null);
   const needsBusiness =
@@ -72,24 +74,20 @@ export function UserForm({
       <section className="space-y-4">
         <FieldGroup className="gap-4">
           <Field>
-            <FieldLabel htmlFor="name" className="!text-sm">
-              Nombre completo
-            </FieldLabel>
+            <FieldLabel htmlFor="name" className="!text-sm">{t("Nombre completo ")}</FieldLabel>
             <Input
               id="name"
               className="!h-9 !text-sm"
               value={value.name}
               onChange={(event) => patch("name", event.target.value)}
-              placeholder="Nombre y apellidos"
+              placeholder={t("Nombre y apellidos")}
               minLength={2}
               required
             />
           </Field>
 
           <Field>
-            <FieldLabel htmlFor="email" className="!text-sm">
-              Correo electrónico
-            </FieldLabel>
+            <FieldLabel htmlFor="email" className="!text-sm">{t("Correo electrónico ")}</FieldLabel>
             {lockEmail ? (
               <p className="bg-muted/40 text-muted-foreground rounded-md px-3 py-2 !text-sm">
                 {value.email || "—"}
@@ -101,7 +99,7 @@ export function UserForm({
                 type="email"
                 value={value.email}
                 onChange={(event) => patch("email", event.target.value)}
-                placeholder="correo@ejemplo.com"
+                placeholder={t("correo@ejemplo.com")}
                 required
               />
             )}
@@ -109,7 +107,7 @@ export function UserForm({
 
           <div className="grid gap-4 sm:grid-cols-2">
             <Field>
-              <FieldLabel className="!text-sm">Rol</FieldLabel>
+              <FieldLabel className="!text-sm">{t("Rol")}</FieldLabel>
               {lockRole ? (
                 <p className="bg-muted/40 text-foreground rounded-md px-3 py-2 !text-sm !font-medium">
                   {value.role}
@@ -133,7 +131,7 @@ export function UserForm({
             </Field>
 
             <Field>
-              <FieldLabel className="!text-sm">Estado</FieldLabel>
+              <FieldLabel className="!text-sm">{t("Estado")}</FieldLabel>
               {lockStatus ? (
                 <p className="bg-muted/40 text-foreground rounded-md px-3 py-2 !text-sm !font-medium">
                   {value.status}
@@ -147,17 +145,15 @@ export function UserForm({
                   }
                   className={selectClassName}
                 >
-                  <option value="Activo">Activo</option>
-                  <option value="Inactivo">Inactivo</option>
+                  <option value="Activo">{t("Activo")}</option>
+                  <option value="Inactivo">{t("Inactivo")}</option>
                 </select>
               )}
             </Field>
           </div>
 
           <Field data-invalid={phoneError ? true : undefined}>
-            <FieldLabel htmlFor="phone" className="!text-sm">
-              Teléfono
-            </FieldLabel>
+            <FieldLabel htmlFor="phone" className="!text-sm">{t("Teléfono ")}</FieldLabel>
             <PhoneNumberInput
               id="phone"
               value={value.phone}
@@ -172,9 +168,7 @@ export function UserForm({
                 {phoneError}
               </p>
             ) : (
-              <p className="text-muted-foreground !text-xs">
-                Formato internacional (Costa Rica por defecto).
-              </p>
+              <p className="text-muted-foreground !text-xs">{t("Formato internacional (Costa Rica por defecto). ")}</p>
             )}
           </Field>
 
@@ -182,8 +176,8 @@ export function UserForm({
             <Field>
               <FieldLabel htmlFor="businessName" className="!text-sm">
                 {value.role === "Agencia"
-                  ? "Nombre de la agencia"
-                  : "Nombre del servicio"}
+                  ? t("Nombre de la agencia")
+                  : t("Nombre del servicio")}
               </FieldLabel>
               <Input
                 id="businessName"
@@ -192,8 +186,8 @@ export function UserForm({
                 onChange={(event) => patch("businessName", event.target.value)}
                 placeholder={
                   value.role === "Agencia"
-                    ? "Ej. Arenal Viajes"
-                    : "Ej. Transportes Sol"
+                    ? t("Ej. Arenal Viajes")
+                    : t("Ej. Transportes Sol")
                 }
               />
             </Field>
@@ -201,16 +195,14 @@ export function UserForm({
 
           {requirePassword && (
             <Field>
-              <FieldLabel htmlFor="password" className="!text-sm">
-                Contraseña temporal
-              </FieldLabel>
+              <FieldLabel htmlFor="password" className="!text-sm">{t("Contraseña temporal ")}</FieldLabel>
               <Input
                 id="password"
                 className="!h-9 !text-sm"
                 type="password"
                 value={value.password ?? ""}
                 onChange={(event) => patch("password", event.target.value)}
-                placeholder="Mínimo 8 caracteres"
+                placeholder={t("Mínimo 8 caracteres")}
                 minLength={8}
                 autoComplete="new-password"
                 required
@@ -221,9 +213,7 @@ export function UserForm({
       </section>
 
       <div className="flex flex-wrap justify-end gap-2">
-        <Button type="button" variant="outline" className="!text-sm" onClick={onCancel}>
-          Cancelar
-        </Button>
+        <Button type="button" variant="outline" className="!text-sm" onClick={onCancel}>{t("Cancelar ")}</Button>
         <Button type="submit" className="!text-sm">
           {submitLabel}
         </Button>

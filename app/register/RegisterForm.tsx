@@ -1,4 +1,5 @@
 "use client";
+import { usePreferences } from "@/lib/preferences/Preferences";
 import Link from "next/link";
 
 import { useState, useEffect } from "react";
@@ -17,6 +18,7 @@ import { ROLE_OPTIONS, type AuthRole } from "@/modules/auth/models/auth";
 const roleIcons = { Viajero: Compass, Agencia: Building2, Transporte: Bus };
 
 export default function RegisterForm() {
+  const { t } = usePreferences();
   const [returnTo, setReturnTo] = useState('/dashboard');
   useEffect(() => {queueMicrotask(() => setReturnTo(safeBookingReturn(new URLSearchParams(window.location.search).get('next'))));}, []);
   const { signUp, loading: authLoading } = useAuth();
@@ -29,18 +31,18 @@ export default function RegisterForm() {
 
   if (confirmationSent) {
     return (
-      <AuthShell eyebrow="Cuenta creada" title="Confirma tu correo">
-        <p className="rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900" role="status">Tu perfil ya quedó registrado. Revisa tu correo para activar la cuenta y luego inicia sesión.</p>
-        <Button asChild className="mt-6 w-full"><Link href={`/login?next=${encodeURIComponent(returnTo)}`}>Ir a iniciar sesión</Link></Button>
+      <AuthShell eyebrow={t("Cuenta creada")} title={t("Confirma tu correo")}>
+        <p className="rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900" role="status">{t("Tu perfil ya quedó registrado. Revisa tu correo para activar la cuenta y luego inicia sesión.")}</p>
+        <Button asChild className="mt-6 w-full"><Link href={`/login?next=${encodeURIComponent(returnTo)}`}>{t("Ir a iniciar sesión")}</Link></Button>
       </AuthShell>
     );
   }
 
   if (!role) {
     return (
-      <AuthShell eyebrow="Crear cuenta" title="Crear cuenta">
-        <p className="mb-6 -mt-6 text-sm text-muted-foreground">Elige tu tipo de cuenta para comenzar el registro.</p>
-        <div className="grid gap-3" aria-label="Tipo de cuenta">
+      <AuthShell eyebrow={t("Crear cuenta")} title={t("Crear cuenta")}>
+        <p className="mb-6 -mt-6 text-sm text-muted-foreground">{t("Elige tu tipo de cuenta para comenzar el registro.")}</p>
+        <div className="grid gap-3" aria-label={t("Tipo de cuenta")}>
           {ROLE_OPTIONS.map((option) => {
             const Icon = roleIcons[option.value];
             return (
@@ -57,16 +59,16 @@ export default function RegisterForm() {
             );
           })}
         </div>
-        <p className="mt-6 text-center text-sm text-muted-foreground">¿Ya tienes cuenta?{" "}<Link href={`/login?next=${encodeURIComponent(returnTo)}`} className="font-medium text-primary underline-offset-4 hover:underline">Iniciar sesión</Link></p>
+        <p className="mt-6 text-center text-sm text-muted-foreground">{t("¿Ya tienes cuenta?")}{" "}<Link href={`/login?next=${encodeURIComponent(returnTo)}`} className="font-medium text-primary underline-offset-4 hover:underline">{t("Iniciar sesión")}</Link></p>
       </AuthShell>
     );
   }
 
   return (
-    <AuthShell eyebrow="Crear cuenta" title={`Regístrate como ${role.toLowerCase()}`}>
+    <AuthShell eyebrow={t("Crear cuenta")} title={`${t("Regístrate como")} ${t(role).toLowerCase()}`}>
       <div className="mb-6 -mt-6 flex flex-wrap items-center justify-between gap-2 text-sm">
-        <p className="text-muted-foreground">Completa tus datos para crear tu cuenta.</p>
-        <button type="button" disabled={submitting} onClick={() => { setRole(null); setError(null); }} className="cursor-pointer font-medium text-primary underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-4 disabled:cursor-not-allowed disabled:opacity-50">Cambiar tipo de cuenta</button>
+        <p className="text-muted-foreground">{t("Completa tus datos para crear tu cuenta.")}</p>
+        <button type="button" disabled={submitting} onClick={() => { setRole(null); setError(null); }} className="cursor-pointer font-medium text-primary underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-4 disabled:cursor-not-allowed disabled:opacity-50">{t("Cambiar tipo de cuenta")}</button>
       </div>
       <form method="post"
         className="flex flex-col gap-5"
@@ -104,16 +106,16 @@ export default function RegisterForm() {
         }}
       >
         <input type="hidden" name="role" value={role} />
-        <FieldGroup><Field><FieldLabel htmlFor="fullName" required>Nombre completo</FieldLabel><Input id="fullName" name="fullName" placeholder="Tu nombre" autoComplete="name" required /></Field></FieldGroup>
-        {needsBusinessName ? <FieldGroup><Field><FieldLabel htmlFor="companyName" required>{role === "Agencia" ? "Nombre de la agencia" : "Nombre del servicio"}</FieldLabel><Input id="companyName" name="companyName" placeholder={role === "Agencia" ? "Ej. Arenal Viajes" : "Ej. Transportes Sol"} required /></Field></FieldGroup> : <input type="hidden" name="companyName" value="" />}
-        <FieldGroup><Field><FieldLabel htmlFor="phone" required={needsBusinessName}>Teléfono</FieldLabel><PhoneNumberInput id="phone" name="phone" value={phone} onChange={setPhone} required={needsBusinessName} /></Field></FieldGroup>
-        <FieldGroup><Field><FieldLabel htmlFor="email" required>Correo electrónico</FieldLabel><Input id="email" name="email" type="email" placeholder="correo@ejemplo.com" autoComplete="email" required /></Field></FieldGroup>
-        <FieldGroup><Field><FieldLabel htmlFor="password" required>Contraseña</FieldLabel><Input id="password" name="password" type="password" placeholder="Mínimo 8 caracteres" autoComplete="new-password" minLength={8} required /></Field></FieldGroup>
-        <FieldGroup><Field><FieldLabel htmlFor="confirmPassword" required>Confirmar contraseña</FieldLabel><Input id="confirmPassword" name="confirmPassword" type="password" placeholder="Repite la contraseña" autoComplete="new-password" minLength={8} required /></Field></FieldGroup>
-        {error ? <p className="text-sm text-destructive" role="alert">{error}</p> : null}
-        <Button type="submit" className="mt-1 w-full" disabled={submitting || authLoading}>{submitting ? "Creando cuenta..." : "Crear cuenta"}</Button>
+        <FieldGroup><Field><FieldLabel htmlFor="fullName" required>{t("Nombre completo")}</FieldLabel><Input id="fullName" name="fullName" placeholder={t("Tu nombre")} autoComplete="name" required /></Field></FieldGroup>
+        {needsBusinessName ? <FieldGroup><Field><FieldLabel htmlFor="companyName" required>{role === "Agencia" ? t("Nombre de la agencia") : t("Nombre del servicio")}</FieldLabel><Input id="companyName" name="companyName" placeholder={role === "Agencia" ? t("Ej. Arenal Viajes") : t("Ej. Transportes Sol")} required /></Field></FieldGroup> : <input type="hidden" name="companyName" value="" />}
+        <FieldGroup><Field><FieldLabel htmlFor="phone" required={needsBusinessName}>{t("Teléfono")}</FieldLabel><PhoneNumberInput id="phone" name="phone" value={phone} onChange={setPhone} required={needsBusinessName} /></Field></FieldGroup>
+        <FieldGroup><Field><FieldLabel htmlFor="email" required>{t("Correo electrónico")}</FieldLabel><Input id="email" name="email" type="email" placeholder={t("correo@ejemplo.com")} autoComplete="email" required /></Field></FieldGroup>
+        <FieldGroup><Field><FieldLabel htmlFor="password" required>{t("Contraseña")}</FieldLabel><Input id="password" name="password" type="password" placeholder={t("Mínimo 8 caracteres")} autoComplete="new-password" minLength={8} required /></Field></FieldGroup>
+        <FieldGroup><Field><FieldLabel htmlFor="confirmPassword" required>{t("Confirmar contraseña")}</FieldLabel><Input id="confirmPassword" name="confirmPassword" type="password" placeholder={t("Repite la contraseña")} autoComplete="new-password" minLength={8} required /></Field></FieldGroup>
+        {error ? <p className="text-sm text-destructive" role="alert">{t(error)}</p> : null}
+        <Button type="submit" className="mt-1 w-full" disabled={submitting || authLoading}>{submitting ? t("Creando cuenta...") : t("Crear cuenta")}</Button>
       </form>
-      <p className="mt-6 text-center text-sm text-muted-foreground">¿Ya tienes cuenta?{" "}<Link href={`/login?next=${encodeURIComponent(returnTo)}`} className="font-medium text-primary underline-offset-4 hover:underline">Iniciar sesión</Link></p>
+      <p className="mt-6 text-center text-sm text-muted-foreground">{t("¿Ya tienes cuenta?")}{" "}<Link href={`/login?next=${encodeURIComponent(returnTo)}`} className="font-medium text-primary underline-offset-4 hover:underline">{t("Iniciar sesión")}</Link></p>
     </AuthShell>
   );
 }

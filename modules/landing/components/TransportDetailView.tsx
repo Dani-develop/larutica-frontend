@@ -1,4 +1,6 @@
 "use client";
+import { CurrencyNotice } from "@/components/preferences/PreferenceControls";
+import { usePreferences } from "@/lib/preferences/Preferences";
 
 import { useState } from "react";
 import type { TransportRoute } from "@/modules/transport/routes/models/Route";
@@ -21,6 +23,7 @@ export function TransportDetailView({
   onBack,
   onConfirm,
 }: TransportDetailViewProps) {
+  const { t, money } = usePreferences();
   const maxPeople = Math.min(route.seats, 8);
   const initialPeople = Math.min(Number(defaultPeople) || 1, maxPeople);
   const [people, setPeople] = useState(String(initialPeople));
@@ -29,60 +32,54 @@ export function TransportDetailView({
 
   return (
     <div className="detail-page page-shell">
-      <button className="back-link" onClick={onBack} type="button">
-        ← Volver a resultados
-      </button>
+      <button className="back-link" onClick={onBack} type="button">{t("← Volver a resultados ")}</button>
       <div className="detail-grid">
         <div>
           <div className="detail-image">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={route.coverUrl} alt={routeTitle(route)} />
-            <span className="badge">Proveedor verificado</span>
+            <span className="badge">{t("Proveedor verificado")}</span>
           </div>
           <p className="eyebrow detail-eyebrow">{route.providerName}</p>
           <h1 className="detail-title" ref={headingRef} tabIndex={-1}>
             {routeTitle(route)}
           </h1>
           <p className="detail-intro">{route.excerpt}</p>
-          <div className="facts" aria-label="Información del traslado">
+          <div className="facts" aria-label={t("Información del traslado")}>
             <div>
               <strong>{route.duration}</strong>
-              <span>Duración</span>
+              <span>{t("Duración")}</span>
             </div>
             <div>
               <strong>{route.vehicleType}</strong>
-              <span>Vehículo</span>
+              <span>{t("Vehículo")}</span>
             </div>
             <div>
               <strong>{route.seats}</strong>
-              <span>Asientos</span>
+              <span>{t("Asientos")}</span>
             </div>
             <div>
-              <strong>${route.priceUsd}</strong>
-              <span>Por persona</span>
+              <strong>{money(route.priceUsd)}</strong>
+              <span>{t("Por persona")}</span>
             </div>
           </div>
-          <h2 className="subheading">Lo que incluye</h2>
+          <h2 className="subheading">{t("Lo que incluye")}</h2>
           <ul className="check-list">
             {route.includes.map((item) => (
               <li key={item}>{item}</li>
             ))}
           </ul>
-          <h2 className="subheading">Punto de encuentro</h2>
-          <p>
-            Recogida en {route.origin}. Recibirás el contacto del proveedor al
-            confirmar.
-          </p>
+          <h2 className="subheading">{t("Punto de encuentro")}</h2>
+          <p>{t("Recogida en ")}{route.origin}{t(". Recibirás el contacto del proveedor al confirmar. ")}</p>
         </div>
-        <aside className="booking-card" aria-label="Reservar traslado">
+        <aside className="booking-card" aria-label={t("Reservar traslado")}>
           <p>
-            <strong>${route.priceUsd}</strong> por persona
-          </p>
+            <strong>{money(route.priceUsd)}</strong>{t(" por persona ")}</p>
           <p className="rating-line">
             {route.vehicleType} · {route.duration}
           </p>
           <label>
-            <span>Fecha</span>
+            <span>{t("Fecha")}</span>
             <input
               type="date"
               value={date}
@@ -90,7 +87,7 @@ export function TransportDetailView({
             />
           </label>
           <label>
-            <span>Personas</span>
+            <span>{t("Personas")}</span>
             <select
               value={people}
               onChange={(event) => setPeople(event.target.value)}
@@ -104,9 +101,9 @@ export function TransportDetailView({
               )}
             </select>
           </label>
-          <div className="total-row">
-            <span>Total estimado</span>
-            <strong>${total}</strong>
+          <CurrencyNotice usd={total}/><div className="total-row">
+            <span>{t("Total estimado")}</span>
+            <strong>{money(total)}</strong>
           </div>
           <button
             className="button button-primary button-full"
@@ -118,12 +115,8 @@ export function TransportDetailView({
                 totalUsd: total,
               })
             }
-          >
-            Confirmar reserva
-          </button>
-          <p className="fine-print">
-            No se realiza ningún cobro en este prototipo.
-          </p>
+          >{t("Confirmar reserva ")}</button>
+          <p className="fine-print">{t("No se realiza ningún cobro en este prototipo. ")}</p>
         </aside>
       </div>
     </div>
