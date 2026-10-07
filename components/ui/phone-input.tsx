@@ -25,6 +25,8 @@ PhoneInputField.displayName = "PhoneInputField";
 
 type PhoneNumberInputProps = {
   id?: string;
+  name?: string;
+  required?: boolean;
   value?: string;
   onChange: (value: string) => void;
   onBlur?: () => void;
@@ -37,6 +39,8 @@ type PhoneNumberInputProps = {
 
 export function PhoneNumberInput({
   id,
+  name,
+  required,
   value,
   onChange,
   onBlur,
@@ -68,6 +72,9 @@ export function PhoneNumberInput({
         className,
       )}
       numberInputProps={{
+        name,
+        required,
+        autoComplete: "tel",
         "aria-invalid": ariaInvalid,
       }}
     />
