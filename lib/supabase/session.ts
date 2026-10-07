@@ -3,6 +3,7 @@ import { ApiError } from "@/lib/api/errors";
 import { getSupabaseAdminClient } from "./admin-client";
 import { profileRowToSystemUser, type ProfileRow } from "./profiles";
 
+const PROFILE_COLUMNS = "id,full_name,email,role,phone,business_name,status,created_at,updated_at";
 const SESSION_BYTES = 32;
 const ABSOLUTE_SESSION_SECONDS = 8 * 60 * 60;
 const IDLE_SESSION_SECONDS = 30 * 60;
@@ -80,7 +81,7 @@ export async function createAppSession(
   const admin = getSupabaseAdminClient();
   const { data: profile, error: profileError } = await admin
     .from("profiles")
-    .select("*")
+    .select(PROFILE_COLUMNS)
     .eq("id", userId)
     .single();
   if (profileError || !profile) {
@@ -130,7 +131,7 @@ export async function requireAppSession(request: Request): Promise<AppSession> {
   const admin = getSupabaseAdminClient();
   const { data, error } = await admin
     .from("app_sessions")
-    .select("*")
+    .select("user_id,expires_at,idle_expires_at,password_reset_until")
     .eq("session_hash", sessionHash)
     .maybeSingle();
   if (error) throw error;
@@ -145,7 +146,7 @@ export async function requireAppSession(request: Request): Promise<AppSession> {
 
   const { data: profile, error: profileError } = await admin
     .from("profiles")
-    .select("*")
+    .select(PROFILE_COLUMNS)
     .eq("id", row.user_id)
     .single();
   if (profileError || !profile) {

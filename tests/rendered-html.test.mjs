@@ -12,6 +12,9 @@ async function render(pathname) {
   );
 }
 for (const [pathname, expected] of [
+  ["/", "Tu próxima historia"],
+  ["/mis-reservas", "Validando tu sesión"],
+  ["/experiencias/00000000-0000-4000-8000-000000000001", "Consultando disponibilidad"],
   ["/login", "Iniciar sesión"],
   ["/register", "Registrarse"],
   ["/forgot-password", "Recuperar contraseña"],

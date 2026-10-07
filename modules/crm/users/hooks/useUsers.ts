@@ -30,7 +30,9 @@ export function useUsers() {
   useEffect(() => {
     queueMicrotask(() => { void refresh(); });
     if (sessionUser?.role !== "Admin") return;
-    const interval = window.setInterval(() => { void refresh(); }, 15_000);
+    const interval = window.setInterval(() => {
+      if (document.visibilityState === "visible") void refresh();
+    }, 15_000);
     const refreshOnFocus = () => { void refresh(); };
     window.addEventListener("focus", refreshOnFocus);
     return () => {

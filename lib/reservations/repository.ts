@@ -15,14 +15,17 @@ const RESERVATION_SELECT = `
   status,
   created_at,
   updated_at,
+  profiles ( full_name, email, phone ),
   publication_departures (
     start_at,
+    status,
     publications (
       id,
       title,
       destination,
+      meeting_point,
       agencies (
-        owner_user_id
+        owner_user_id, commercial_name, phone, email
       )
     )
   ),
@@ -42,22 +45,31 @@ export type ReservationRecord = {
   createdAt: string;
   updatedAt: string;
   departureStartAt: string;
+  departureStatus: string;
   publicationId: string;
   publicationTitle: string;
   destination: string | null;
   ownerUserId: string | null;
-  rating: number | null;
+  passengerName?: string;
+  passengerEmail?: string;
+  passengerPhone?: string | null;
+  agencyName?: string;
+  agencyPhone?: string | null;
+  agencyEmail?: string | null;
+  meetingPoint?: string | null;
 };
 
-type AgencyEmbed = { owner_user_id: string };
+type AgencyEmbed = { owner_user_id: string; commercial_name?: string; phone?: string; email?: string };
 type PublicationEmbed = {
   id: string;
   title: string | null;
   destination: string | null;
+  meeting_point?: string;
   agencies: AgencyEmbed | AgencyEmbed[] | null;
 };
 type DepartureEmbed = {
   start_at: string;
+  status: string;
   publications: PublicationEmbed | PublicationEmbed[] | null;
 };
 type ReservationRow = {
@@ -69,6 +81,7 @@ type ReservationRow = {
   status: ReservationStatus;
   created_at: string;
   updated_at: string;
+  profiles?: { full_name: string; email: string; phone: string | null } | { full_name: string; email: string; phone: string | null }[] | null;
   publication_departures: DepartureEmbed | DepartureEmbed[] | null;
   reservation_ratings: { rating: number } | { rating: number }[] | null;
 };
@@ -99,6 +112,7 @@ export function toReservationRecord(row: ReservationRow): ReservationRecord {
   const departure = one(row.publication_departures);
   const publication = one(departure?.publications ?? null);
   const agency = one(publication?.agencies ?? null);
+  const passenger = one(row.profiles);
   const unitPrice = Number(row.unit_price);
   const numberOfPeople = row.number_of_people;
   return {
@@ -112,11 +126,18 @@ export function toReservationRecord(row: ReservationRow): ReservationRecord {
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     departureStartAt: departure?.start_at ?? "",
+    departureStatus: departure?.status ?? "",
     publicationId: publication?.id ?? "",
     publicationTitle: publication?.title ?? "Reserva",
     destination: publication?.destination ?? null,
     ownerUserId: agency?.owner_user_id ?? null,
-    rating: one(row.reservation_ratings)?.rating ?? null,
+    passengerName: passenger?.full_name,
+    passengerEmail: passenger?.email,
+    passengerPhone: passenger?.phone,
+    agencyName: agency?.commercial_name,
+    agencyPhone: agency?.phone,
+    agencyEmail: agency?.email,
+    meetingPoint: publication?.meeting_point,
   };
 }
 
@@ -132,10 +153,17 @@ export function toPublicReservation(record: ReservationRecord) {
     createdAt: record.createdAt,
     updatedAt: record.updatedAt,
     departureStartAt: record.departureStartAt,
+    departureStatus: record.departureStatus,
     publicationId: record.publicationId,
     publicationTitle: record.publicationTitle,
     destination: record.destination,
-    rating: record.rating,
+    passengerName: record.passengerName,
+    passengerEmail: record.passengerEmail,
+    passengerPhone: record.passengerPhone,
+    agencyName: record.agencyName,
+    agencyPhone: record.agencyPhone,
+    agencyEmail: record.agencyEmail,
+    meetingPoint: record.meetingPoint,
   };
 }
 
@@ -148,43 +176,36 @@ export async function listReservationRecords(
   admin: SupabaseClient,
   role: string,
   userId: string,
+  departureId?: string,
 ): Promise<ReservationRecord[]> {
   await markElapsed(admin);
   const scope = listScope(role);
-  let query = admin.from("reservations").select(RESERVATION_SELECT).order("created_at", { ascending: false });
+  // Inner joins make ownership filtering apply to reservations themselves.
+  const selection = scope === "owned-agency"
+    ? RESERVATION_SELECT.replace("publication_departures (", "publication_departures!inner (")
+      .replace("publications (", "publications!inner (")
+      .replace("agencies (", "agencies!inner (")
+    : RESERVATION_SELECT;
+  let query = admin.from("reservations").select(selection)
+    .order("created_at", { ascending: scope !== "own" }).order("id", { ascending: true });
+  if (departureId) query = query.eq("departure_id", departureId);
 
   if (scope === "own") {
     query = query.eq("passenger_id", userId);
   } else if (scope === "owned-agency") {
-    const { data: agency, error: agencyError } = await admin
-      .from("agencies")
-      .select("id")
-      .eq("owner_user_id", userId)
-      .maybeSingle();
-    if (agencyError) throw agencyError;
-    if (!agency) return [];
-
-    const { data: publications, error: publicationsError } = await admin
-      .from("publications")
-      .select("id")
-      .eq("agency_id", agency.id);
-    if (publicationsError) throw publicationsError;
-    const publicationIds = (publications ?? []).map((publication) => publication.id);
-    if (publicationIds.length === 0) return [];
-
-    const { data: departures, error: departuresError } = await admin
-      .from("publication_departures")
-      .select("id")
-      .in("publication_id", publicationIds);
-    if (departuresError) throw departuresError;
-    const departureIds = (departures ?? []).map((departure) => departure.id);
-    if (departureIds.length === 0) return [];
-    query = query.in("departure_id", departureIds);
+    query = query.eq("publication_departures.publications.agencies.owner_user_id", userId);
   }
 
-  const { data, error } = await query;
-  if (error) throw error;
-  return (data as ReservationRow[] | null ?? [])
+  const rows: ReservationRow[] = [];
+  // Supabase caps each response; fetch every page so older requests are not lost.
+  for (let from = 0; ; from += 1000) {
+    const { data, error } = await query.range(from, from + 999);
+    if (error) throw error;
+    const page = data as ReservationRow[] | null ?? [];
+    rows.push(...page);
+    if (page.length < 1000) break;
+  }
+  return rows
     .map(toReservationRecord)
     .filter((reservation) => canReadReservation(role, userId, reservation));
 }
@@ -207,6 +228,17 @@ export async function createReservationRecord(
   departureId: string,
   numberOfPeople: number,
 ): Promise<ReservationRecord> {
+  // A retry belongs to this passenger, never to another user's reservation.
+  const { data: existing, error: existingError } = await admin.from("reservations")
+    .select(RESERVATION_SELECT).eq("passenger_id", passengerId).eq("departure_id", departureId)
+    .in("status", ["PENDING", "CONFIRMED"]).order("created_at", { ascending: false }).limit(1).maybeSingle();
+  if (existingError) throw existingError;
+  if (existing) return toReservationRecord(existing as ReservationRow);
+  const { data: departure, error: availabilityError } = await admin.from("publication_departures")
+    .select("publications!inner(agencies!inner(status))").eq("id", departureId)
+    .eq("publications.agencies.status", "APPROVED").maybeSingle();
+  if (availabilityError) throw availabilityError;
+  if (!departure) throw new ApiError("El proveedor ya no está disponible para recibir reservas.", 409);
   const { data, error } = await admin.rpc("create_reservation", {
     p_passenger_id: passengerId,
     p_departure_id: departureId,

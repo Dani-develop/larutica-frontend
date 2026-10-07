@@ -3,6 +3,7 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 import {
   assertCanCancel,
+  assertCanConfirm,
   assertTravelerCanCreate,
   canDeleteReservation,
   filterVisibleReservations,
@@ -41,9 +42,9 @@ test("la migración crea reservas con cupo, precio copiado y sin acceso público
   assert.match(sql, /revoke all on function public\.create_reservation/i);
 });
 
-test("un rol distinto de Viajero no puede crear y el listado respeta el alcance", () => {
+test("los roles actuales pueden reservar y el listado respeta el alcance", () => {
   for (const role of ["Agencia", "Transporte", "Admin"]) {
-    assert.throws(() => assertTravelerCanCreate(role), ReservationPolicyError);
+    assert.doesNotThrow(() => assertTravelerCanCreate(role));
   }
   assert.doesNotThrow(() => assertTravelerCanCreate("Viajero"));
 
@@ -87,7 +88,7 @@ test("cancelar conserva la fila, el viajero no la borra y no se cambia la salida
   assert.match(collection, /assertSameOrigin/);
   assert.match(collection, /getSupabaseAdminClient/);
   assert.match(repository, /\.eq\("passenger_id", userId\)/);
-  assert.match(repository, /\.in\("departure_id", departureIds\)/);
+  assert.match(repository, /publication_departures\.publications\.agencies\.owner_user_id/);
   assert.match(detail, /updateReservationStatus\(admin, id, "CANCELLED", reservation\.status\)/);
   assert.match(detail, /canDeleteReservation/);
   assert.doesNotMatch(
@@ -121,6 +122,15 @@ test("el cliente expone el CRUD y Mis reservas deja los datos fijos", async () =
   assert.match(reservationsPage, /No tienes reservas por venir/);
   assert.match(reservationsPage, /role="alert"/);
   assert.doesNotMatch(reservationsPage, /pub-arenal-01/);
-  assert.match(landing, /createReservation\(\{/);
-  assert.match(landing, /useReservations/);
+  assert.match(landing, /Catalog/);
+});
+
+test('solo el trabajador propietario o Admin pueden confirmar antes de la salida', () => {
+  const pending = {...own, status:'PENDING', departureStartAt:future};
+  assert.throws(() => assertCanConfirm('Viajero','viajero-1',pending), e => e.status === 403);
+  assert.throws(() => assertCanConfirm('Agencia','agencia-2',pending), e => e.status === 403);
+  assert.doesNotThrow(() => assertCanConfirm('Agencia','agencia-1',pending));
+  assert.doesNotThrow(() => assertCanConfirm('Admin','admin-1',pending));
+  assert.throws(() => assertCanConfirm('Agencia','agencia-1',{...pending,status:'CANCELLED'}));
+  assert.throws(() => assertCanConfirm('Agencia','agencia-1',{...pending,departureStartAt:'2020-01-01'}));
 });

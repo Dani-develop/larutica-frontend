@@ -55,6 +55,13 @@ export const navGroups: NavGroup[] = [
     label: "General",
     items: [
       {
+        href: "/dashboard/reservations",
+        label: "Reservas",
+        icon: CalendarDays,
+        roles: ["Agencia", "Transporte", "Admin"],
+        primary: true,
+      },
+      {
         href: "/dashboard",
         label: "Inicio",
         icon: Home,
@@ -67,6 +74,32 @@ export const navGroups: NavGroup[] = [
         label: "Gráficas",
         icon: BarChart3,
         roles: ["Admin"],
+      },
+    ],
+  },
+
+  {
+    label: "Mi viaje",
+    items: [
+      {
+        href: "/dashboard/publications",
+        label: "Explorar",
+        icon: MapPin,
+        roles: ["Viajero"],
+        primary: true,
+      },
+      {
+        href: "/dashboard/promotions",
+        label: "Guardados",
+        icon: Bookmark,
+        roles: ["Viajero"],
+        primary: true,
+      },
+      {
+        href: "/mis-reservas",
+        label: "Mis reservas",
+        icon: CalendarDays,
+        roles: ["Viajero"],
       },
     ],
   },

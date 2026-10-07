@@ -10,7 +10,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
-import { LogOut } from "lucide-react";
+import { ArrowUpRight, LogOut } from "lucide-react";
 import { SITE } from "@/modules/landing/constants/site";
 import {
   DropdownMenu,
@@ -66,6 +66,13 @@ function DashboardHeader({ user }: { user: HeaderUser }) {
       </div>
 
       <div className="flex items-center gap-2">
+        <Link
+          href="/"
+          className="inline-flex min-h-11 items-center gap-2 rounded-md border px-3 text-sm font-medium text-primary hover:bg-accent focus-visible:outline-2 focus-visible:outline-offset-2"
+        >
+          Ver sitio web
+          <ArrowUpRight className="size-4" aria-hidden="true" />
+        </Link>
         {isMobile && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

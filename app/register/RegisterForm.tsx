@@ -1,8 +1,7 @@
 "use client";
 
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { safeBookingReturn } from "@/modules/auth/utils/returnTo";
 import { AuthShell } from "@/components/auth/AuthShell";
 import { Button } from "@/components/ui/button";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
@@ -19,7 +18,8 @@ const roles: { id: AuthRole; label: string }[] = [
 ];
 
 export default function RegisterForm() {
-  const router = useRouter();
+  const [returnTo, setReturnTo] = useState('/dashboard');
+  useEffect(() => {setReturnTo(safeBookingReturn(new URLSearchParams(window.location.search).get('next')));}, []);
   const { signUp } = useAuth();
   const [role, setRole] = useState<AuthRole>("Viajero");
   const [error, setError] = useState<string | null>(null);
@@ -31,7 +31,7 @@ export default function RegisterForm() {
     return (
       <AuthShell eyebrow="Cuenta creada" title="Confirma tu correo">
         <p className="rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900" role="status">Tu perfil ya quedó registrado. Revisa tu correo para activar la cuenta y luego inicia sesión.</p>
-        <Button asChild className="mt-6 w-full"><Link href="/login">Ir a iniciar sesión</Link></Button>
+        <Button asChild className="mt-6 w-full"><a href={`/login?next=${encodeURIComponent(returnTo)}`}>Ir a iniciar sesión</a></Button>
       </AuthShell>
     );
   }
@@ -62,7 +62,7 @@ export default function RegisterForm() {
           try {
             const result = await signUp(parsed.data);
             if (result.requiresEmailConfirmation) setConfirmationSent(true);
-            else router.replace("/dashboard");
+            else window.location.assign(returnTo);
           } catch (nextError) {
             setError(nextError instanceof Error ? nextError.message : "No se pudo crear la cuenta.");
           } finally {
@@ -80,7 +80,7 @@ export default function RegisterForm() {
         {error ? <p className="text-sm text-destructive" role="alert">{error}</p> : null}
         <Button type="submit" className="mt-1 w-full" disabled={submitting}>{submitting ? "Creando cuenta..." : "Crear cuenta"}</Button>
       </form>
-      <p className="mt-6 text-center text-sm text-muted-foreground">¿Ya tienes cuenta?{" "}<Link href="/login" className="font-medium text-primary underline-offset-4 hover:underline">Iniciar sesión</Link></p>
+      <p className="mt-6 text-center text-sm text-muted-foreground">¿Ya tienes cuenta?{" "}<a href={`/login?next=${encodeURIComponent(returnTo)}`} className="font-medium text-primary underline-offset-4 hover:underline">Iniciar sesión</a></p>
     </AuthShell>
   );
 }
