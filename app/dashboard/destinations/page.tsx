@@ -1,10 +1,13 @@
+"use client";
+import { usePreferences } from "@/lib/preferences/Preferences";
 import { DashboardSectionPage } from "@/components/dashboard/DashboardSectionPage";
 
 export default function Page() {
+  const { t } = usePreferences();
   return (
     <DashboardSectionPage
-      title="Destinos"
-      description="Crea y actualiza destinos disponibles en LaRutica."
+      title={t("Destinos")}
+      description={t("Crea y actualiza destinos disponibles en LaRutica.")}
     />
   );
 }

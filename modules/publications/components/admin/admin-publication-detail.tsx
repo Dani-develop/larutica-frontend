@@ -1,4 +1,5 @@
 "use client";
+import { usePreferences } from "@/lib/preferences/Preferences";
 
 import {
   ArrowLeft,
@@ -32,6 +33,7 @@ interface AdminPublicationDetailProps {
 export default function AdminPublicationDetail({
   publicationId,
 }: AdminPublicationDetailProps) {
+  const { t, language } = usePreferences();
   const {
     publication,
     loading,
@@ -64,13 +66,11 @@ export default function AdminPublicationDetail({
             className="mx-auto text-[#87908C]"
           />
 
-          <p className="mt-3 text-[12px] font-semibold text-[#252B28]">
-            No se pudo cargar la publicación
-          </p>
+          <p className="mt-3 text-[12px] font-semibold text-[#252B28]">{t("No se pudo cargar la publicación ")}</p>
 
           {error && (
             <p className="mt-2 text-[10px] text-red-600">
-              {error}
+              {t(error)}
             </p>
           )}
 
@@ -83,10 +83,7 @@ export default function AdminPublicationDetail({
           >
             <RefreshCw
               size={12}
-            />
-
-            Reintentar
-          </button>
+            />{t("Reintentar ")}</button>
         </div>
       </div>
     );
@@ -102,17 +99,11 @@ export default function AdminPublicationDetail({
 
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="mb-1 text-[10px] font-medium text-[#075E36]">
-            Dashboard / Publicaciones / Detalle
-          </p>
+          <p className="mb-1 text-[10px] font-medium text-[#075E36]">{t("Dashboard / Publicaciones / Detalle ")}</p>
 
-          <h1 className="!m-0 !text-[28px] !font-bold !leading-9 !tracking-[-0.025em] text-[#123A30]">
-            Revisión de publicación
-          </h1>
+          <h1 className="!m-0 !text-[28px] !font-bold !leading-9 !tracking-[-0.025em] text-[#123A30]">{t("Revisión de publicación ")}</h1>
 
-          <p className="mt-1 text-[11px] leading-5 text-[#66706B]">
-            Revisa la información enviada por la agencia antes de aprobar o rechazar la publicación.
-          </p>
+          <p className="mt-1 text-[11px] leading-5 text-[#66706B]">{t("Revisa la información enviada por la agencia antes de aprobar o rechazar la publicación. ")}</p>
         </div>
 
         <StatusBadge
@@ -124,7 +115,7 @@ export default function AdminPublicationDetail({
 
       {error && (
         <div className="mb-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-[10px] text-red-700">
-          {error}
+          {t(error)}
         </div>
       )}
 
@@ -182,9 +173,7 @@ export default function AdminPublicationDetail({
             </div>
 
             <div className="rounded-lg bg-[#F5F8F6] px-4 py-3 text-right">
-              <p className="text-[9px] text-[#7A837F]">
-                Precio por persona
-              </p>
+              <p className="text-[9px] text-[#7A837F]">{t("Precio por persona ")}</p>
 
               <p className="mt-0.5 text-[18px] font-bold text-[#123A30]">
                 {publication.pricePerPerson !==
@@ -216,9 +205,7 @@ export default function AdminPublicationDetail({
               )}
 
               <div>
-                <p className="text-[9px] text-[#7A837F]">
-                  Agencia responsable
-                </p>
+                <p className="text-[9px] text-[#7A837F]">{t("Agencia responsable ")}</p>
 
                 <p className="text-[11px] font-semibold text-[#252B28]">
                   {publication.agency?.commercialName ??
@@ -226,8 +213,7 @@ export default function AdminPublicationDetail({
                     "Sin agencia"}
                 </p>
 
-                <p className="mt-0.5 text-[9px] text-[#66706B]">
-                  Estado de agencia:{" "}
+                <p className="mt-0.5 text-[9px] text-[#66706B]">{t("Estado de agencia:")}{t(" ")}
                   {agencyStatusLabel(
                     publication.agency?.status,
                   )}
@@ -287,21 +273,21 @@ export default function AdminPublicationDetail({
               }
               label="Registro"
               value={formatDate(
-                publication.createdAt,
+                publication.createdAt, language,
               )}
             />
           </div>
 
           <div className="mt-5 grid gap-3 md:grid-cols-2">
             <TextSection
-              title="Qué incluye"
+              title={t("Qué incluye")}
               value={
                 publication.included
               }
             />
 
             <TextSection
-              title="Qué no incluye"
+              title={t("Qué no incluye")}
               value={
                 publication.notIncluded
               }
@@ -310,7 +296,7 @@ export default function AdminPublicationDetail({
 
           <div className="mt-3">
             <TextSection
-              title="Punto de encuentro"
+              title={t("Punto de encuentro")}
               value={
                 publication.meetingPoint
               }
@@ -318,9 +304,7 @@ export default function AdminPublicationDetail({
           </div>
 
           <div className="mt-5 rounded-lg border border-[#E3E7E5] bg-[#FBFCFB] p-4">
-            <p className="text-[11px] font-semibold text-[#252B28]">
-              Idiomas
-            </p>
+            <p className="text-[11px] font-semibold text-[#252B28]">{t("Idiomas ")}</p>
 
             <div className="mt-2 flex flex-wrap gap-1.5">
               {publication.languages.length >
@@ -342,17 +326,13 @@ export default function AdminPublicationDetail({
                   ),
                 )
               ) : (
-                <span className="text-[9px] text-[#87908C]">
-                  Sin idiomas registrados
-                </span>
+                <span className="text-[9px] text-[#87908C]">{t("Sin idiomas registrados ")}</span>
               )}
             </div>
           </div>
 
           <div className="mt-5 rounded-lg border border-[#E3E7E5] bg-[#FBFCFB] p-4">
-            <p className="text-[11px] font-semibold text-[#252B28]">
-              Salidas programadas
-            </p>
+            <p className="text-[11px] font-semibold text-[#252B28]">{t("Salidas programadas ")}</p>
 
             {publication.departures.length >
             0 ? (
@@ -370,23 +350,21 @@ export default function AdminPublicationDetail({
                       <div>
                         <p className="text-[10px] font-medium text-[#252B28]">
                           {formatDateTime(
-                            departure.startAt,
+                            departure.startAt, language,
                           )}
                         </p>
 
                         {departure.endAt && (
-                          <p className="mt-0.5 text-[9px] text-[#7A837F]">
-                            Finaliza:{" "}
+                          <p className="mt-0.5 text-[9px] text-[#7A837F]">{t("Finaliza:")}{t(" ")}
                             {formatDateTime(
-                              departure.endAt,
+                              departure.endAt, language,
                             )}
                           </p>
                         )}
                       </div>
 
                       <div className="flex items-center gap-3 text-[9px] text-[#66706B]">
-                        <span>
-                          Capacidad:{" "}
+                        <span>{t("Capacidad:")}{t(" ")}
                           {
                             departure.capacity
                           }
@@ -403,9 +381,7 @@ export default function AdminPublicationDetail({
                 )}
               </div>
             ) : (
-              <p className="mt-2 text-[9px] text-[#87908C]">
-                No hay salidas programadas.
-              </p>
+              <p className="mt-2 text-[9px] text-[#87908C]">{t("No hay salidas programadas. ")}</p>
             )}
           </div>
         </div>
@@ -415,13 +391,9 @@ export default function AdminPublicationDetail({
         <section className="mt-4 rounded-xl border border-[#DDE2DF] bg-white p-4">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div>
-              <p className="text-[12px] font-semibold text-[#252B28]">
-                Decisión de revisión
-              </p>
+              <p className="text-[12px] font-semibold text-[#252B28]">{t("Decisión de revisión ")}</p>
 
-              <p className="mt-1 text-[10px] leading-4 text-[#66706B]">
-                Verifica que la información sea correcta antes de aprobar o rechazar la publicación.
-              </p>
+              <p className="mt-1 text-[10px] leading-4 text-[#66706B]">{t("Verifica que la información sea correcta antes de aprobar o rechazar la publicación. ")}</p>
             </div>
 
             <div className="flex gap-2">
@@ -446,10 +418,7 @@ export default function AdminPublicationDetail({
               >
                 <X
                   size={13}
-                />
-
-                Rechazar
-              </button>
+                />{t("Rechazar ")}</button>
 
               <button
                 type="button"
@@ -474,9 +443,9 @@ export default function AdminPublicationDetail({
                   size={13}
                 />
 
-                {reviewing
+                {t(reviewing
                   ? "Procesando..."
-                  : "Aprobar"}
+                  : "Aprobar")}
               </button>
             </div>
           </div>
@@ -503,6 +472,7 @@ export default function AdminPublicationDetail({
 }
 
 function BackButton() {
+  const { t } = usePreferences();
   const router =
     useRouter();
 
@@ -518,10 +488,7 @@ function BackButton() {
     >
       <ArrowLeft
         size={13}
-      />
-
-      Volver a publicaciones
-    </button>
+      />{t("Volver a publicaciones ")}</button>
   );
 }
 
@@ -536,13 +503,14 @@ function InfoCard({
     | string
     | null;
 }) {
+  const { t } = usePreferences();
   return (
     <div className="rounded-lg border border-[#E3E7E5] bg-[#FBFCFB] p-3.5">
       <div className="flex items-center gap-2 text-[#075E36]">
         {icon}
 
         <p className="text-[9px] font-medium text-[#7A837F]">
-          {label}
+          {t(label)}
         </p>
       </div>
 
@@ -563,10 +531,11 @@ function TextSection({
     | string
     | null;
 }) {
+  const { t } = usePreferences();
   return (
     <div className="rounded-lg border border-[#E3E7E5] bg-[#FBFCFB] p-4">
       <p className="text-[11px] font-semibold text-[#252B28]">
-        {title}
+        {t(title)}
       </p>
 
       <p className="mt-2 whitespace-pre-wrap text-[10px] leading-5 text-[#66706B]">
@@ -583,6 +552,7 @@ function StatusBadge({
   status:
     AdminPublicationStatus;
 }) {
+  const { t } = usePreferences();
   const config: Record<
     AdminPublicationStatus,
     {
@@ -641,7 +611,7 @@ function StatusBadge({
       className={`inline-flex h-7 items-center rounded-full border px-2.5 text-[9px] font-semibold ${current.className}`}
     >
       {
-        current.label
+        t(current.label)
       }
     </span>
   );
@@ -713,7 +683,7 @@ function departureStatusLabel(
 }
 
 function formatDate(
-  value: string,
+  value: string, language: string = "es",
 ) {
   const date =
     new Date(
@@ -729,7 +699,7 @@ function formatDate(
   }
 
   return new Intl.DateTimeFormat(
-    "es-CR",
+    language === "en" ? "en-US" : "es-CR",
     {
       day:
         "2-digit",
@@ -746,7 +716,7 @@ function formatDate(
 }
 
 function formatDateTime(
-  value: string,
+  value: string, language: string = "es",
 ) {
   const date =
     new Date(
@@ -762,7 +732,7 @@ function formatDateTime(
   }
 
   return new Intl.DateTimeFormat(
-    "es-CR",
+    language === "en" ? "en-US" : "es-CR",
     {
       day:
         "2-digit",

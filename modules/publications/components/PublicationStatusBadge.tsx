@@ -1,3 +1,5 @@
+"use client";
+import { usePreferences } from "@/lib/preferences/Preferences";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
@@ -50,6 +52,7 @@ export function PublicationStatusBadge({
   status: PublicationStatus;
   className?: string;
 }) {
+  const { t } = usePreferences();
   const config =
     statusConfig[status];
 
@@ -61,7 +64,7 @@ export function PublicationStatusBadge({
         className,
       )}
     >
-      {config.label}
+      {t(config.label)}
     </Badge>
   );
 }

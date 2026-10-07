@@ -1,4 +1,5 @@
 "use client";
+import { usePreferences } from "@/lib/preferences/Preferences";
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -8,6 +9,7 @@ import type { VehicleInput } from "../models/Vehicle";
 import { VehicleForm } from "./VehicleForm";
 
 export function EditVehiclePage({ id }: { id: string }) {
+  const { t } = usePreferences();
   const router = useRouter();
   const { getById, update } = useVehicles();
   const vehicle = getById(id);
@@ -15,9 +17,9 @@ export function EditVehiclePage({ id }: { id: string }) {
   if (!vehicle) {
     return (
       <div className="mx-auto max-w-3xl space-y-4">
-        <h1 className="text-lg font-semibold">Vehículo no encontrado</h1>
+        <h1 className="text-lg font-semibold">{t("Vehículo no encontrado")}</h1>
         <Button asChild variant="outline">
-          <Link href="/dashboard/agencies">Volver al listado</Link>
+          <Link href="/dashboard/agencies">{t("Volver al listado")}</Link>
         </Button>
       </div>
     );
@@ -37,14 +39,10 @@ export function EditVehiclePage({ id }: { id: string }) {
     <div className="mx-auto max-w-3xl space-y-6">
       <div>
         <p className="text-sm font-medium text-primary">
-          <Link href="/dashboard/agencies" className="hover:underline">
-            Vehículos
-          </Link>
-          <span className="text-muted-foreground"> / Editar</span>
+          <Link href="/dashboard/agencies" className="hover:underline">{t("Vehículos ")}</Link>
+          <span className="text-muted-foreground">{t(" / Editar")}</span>
         </p>
-        <h1 className="mt-1 text-xl font-semibold tracking-tight">
-          Editar vehículo
-        </h1>
+        <h1 className="mt-1 text-xl font-semibold tracking-tight">{t("Editar vehículo ")}</h1>
         <p className="mt-1 text-sm text-muted-foreground">{vehicle.name}</p>
       </div>
 

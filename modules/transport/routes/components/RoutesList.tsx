@@ -1,4 +1,5 @@
 "use client";
+import { usePreferences } from "@/lib/preferences/Preferences";
 
 import Link from "next/link";
 import { Pencil, Plus, Trash2 } from "lucide-react";
@@ -15,32 +16,27 @@ import { routeTitle } from "../models/Route";
 import { RouteStatusBadge } from "./RouteStatusBadge";
 
 export function RoutesList() {
+  const { t } = usePreferences();
   const { routes, remove } = useRoutes();
 
   return (
     <div className="mx-auto max-w-7xl space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight">Mis rutas</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Publica traslados con origen, destino y precio por persona.
-          </p>
+          <h1 className="text-xl font-semibold tracking-tight">{t("Mis rutas")}</h1>
+          <p className="mt-1 text-sm text-muted-foreground">{t("Publica traslados con origen, destino y precio por persona. ")}</p>
         </div>
         <Button asChild className="gap-2 self-start sm:self-auto">
           <Link href="/dashboard/publications/new">
-            <Plus className="size-4" />
-            Nueva ruta
-          </Link>
+            <Plus className="size-4" />{t("Nueva ruta ")}</Link>
         </Button>
       </div>
 
       {routes.length === 0 ? (
         <Card className="shadow-xs">
           <CardHeader>
-            <CardTitle>Sin rutas</CardTitle>
-            <CardDescription>
-              Crea la primera para mostrarla a los viajeros.
-            </CardDescription>
+            <CardTitle>{t("Sin rutas")}</CardTitle>
+            <CardDescription>{t("Crea la primera para mostrarla a los viajeros. ")}</CardDescription>
           </CardHeader>
         </Card>
       ) : (
@@ -60,8 +56,7 @@ export function RoutesList() {
               </div>
               <CardHeader className="space-y-2">
                 <CardDescription className="uppercase tracking-wide">
-                  {route.vehicleType} · {route.seats} asientos
-                </CardDescription>
+                  {route.vehicleType} · {route.seats}{t(" asientos ")}</CardDescription>
                 <CardTitle className="text-base leading-snug">
                   <Link
                     href={`/dashboard/publications/${route.id}`}
@@ -76,13 +71,12 @@ export function RoutesList() {
                 <div className="text-sm">
                   <span className="font-semibold">${route.priceUsd}</span>
                   <span className="text-muted-foreground">
-                    {" "}
-                    por persona · {route.duration}
+                    {t(" ")}{t("por persona · ")}{route.duration}
                   </span>
                 </div>
                 <div className="flex gap-2">
                   <Button variant="outline" size="sm" asChild>
-                    <Link href={`/dashboard/publications/${route.id}`}>Ver</Link>
+                    <Link href={`/dashboard/publications/${route.id}`}>{t("Ver")}</Link>
                   </Button>
                   <Button
                     variant="outline"
@@ -91,9 +85,7 @@ export function RoutesList() {
                     className="gap-1.5"
                   >
                     <Link href={`/dashboard/publications/${route.id}/edit`}>
-                      <Pencil className="size-3.5" />
-                      Editar
-                    </Link>
+                      <Pencil className="size-3.5" />{t("Editar ")}</Link>
                   </Button>
                   <Button
                     variant="outline"
@@ -109,9 +101,7 @@ export function RoutesList() {
                       }
                     }}
                   >
-                    <Trash2 className="size-3.5" />
-                    Eliminar
-                  </Button>
+                    <Trash2 className="size-3.5" />{t("Eliminar ")}</Button>
                 </div>
               </CardContent>
             </Card>

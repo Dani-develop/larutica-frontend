@@ -1,4 +1,5 @@
 "use client";
+import { usePreferences } from "@/lib/preferences/Preferences";
 import Link from "next/link";
 
 import { ChevronRight } from "lucide-react";
@@ -33,6 +34,7 @@ type Props = {
 };
 
 export function NavMain({ role }: Props) {
+  const { t } = usePreferences();
   const pathname = usePathname();
   const { setOpenMobile, isMobile } = useSidebar();
   const visibleGroups = role === "Viajero"
@@ -65,7 +67,7 @@ export function NavMain({ role }: Props) {
                 className="group/label h-6 cursor-pointer hover:text-sidebar-foreground"
               >
                 <CollapsibleTrigger>
-                  {group.label}
+                  {t(group.label)}
                   <ChevronRight className="ml-auto size-3.5 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
                 </CollapsibleTrigger>
               </SidebarGroupLabel>
@@ -80,7 +82,7 @@ export function NavMain({ role }: Props) {
                           <SidebarMenuButton
                             asChild
                             isActive={active}
-                            tooltip={item.label}
+                            tooltip={t(item.label)}
                           >
                             <Link
                               href={item.href}
@@ -91,7 +93,7 @@ export function NavMain({ role }: Props) {
                               }}
                             >
                               <Icon className="size-4" />
-                              <span>{item.label}</span>
+                              <span>{t(item.label)}</span>
                             </Link>
                           </SidebarMenuButton>
                           {item.badge !== undefined && (

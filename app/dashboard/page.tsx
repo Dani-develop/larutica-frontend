@@ -1,4 +1,5 @@
 "use client";
+import { usePreferences } from "@/lib/preferences/Preferences";
 
 import Link from "next/link";
 import {
@@ -66,23 +67,18 @@ const quickLinks = [
 ];
 
 export default function Page() {
+  const { t } = usePreferences();
   return (
     <div className="mx-auto max-w-7xl space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight text-primary">
-            Panel de Control
-          </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Resumen operativo y accesos clave para LaRutica.
-          </p>
+          <h1 className="text-xl font-semibold tracking-tight text-primary">{t("Panel de Control ")}</h1>
+          <p className="mt-1 text-sm text-muted-foreground">{t("Resumen operativo y accesos clave para LaRutica. ")}</p>
         </div>
         <div className="flex flex-wrap gap-2 self-start sm:self-auto">
           <Button variant="outline" size="sm" className="gap-2 shadow-xs" asChild>
             <Link href="/dashboard/graficas">
-              <BarChart3 className="size-4" />
-              Ver gráficas
-            </Link>
+              <BarChart3 className="size-4" />{t("Ver gráficas ")}</Link>
           </Button>
         </div>
       </div>
@@ -99,13 +95,13 @@ export default function Page() {
               <Card className="h-full shadow-xs transition-shadow hover:shadow-md">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium text-muted-foreground">
-                    {metric.label}
+                    {t(metric.label)}
                   </CardTitle>
                   <Icon className="size-5 text-primary" />
                 </CardHeader>
                 <CardContent>
                   <div className="text-lg font-semibold">{metric.value}</div>
-                  <p className="mt-1 text-xs text-muted-foreground">{metric.note}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">{t(metric.note)}</p>
                 </CardContent>
               </Card>
             </Link>
@@ -115,10 +111,8 @@ export default function Page() {
 
       <section className="space-y-3">
         <div>
-          <h2 className="text-lg font-semibold">Accesos rápidos</h2>
-          <p className="text-sm text-muted-foreground">
-            Navega a las secciones principales del panel.
-          </p>
+          <h2 className="text-lg font-semibold">{t("Accesos rápidos")}</h2>
+          <p className="text-sm text-muted-foreground">{t("Navega a las secciones principales del panel. ")}</p>
         </div>
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
           {quickLinks.map((link) => {
@@ -135,8 +129,8 @@ export default function Page() {
                       <Icon className="size-5" />
                     </span>
                     <div className="min-w-0 space-y-1">
-                      <CardTitle className="text-base">{link.title}</CardTitle>
-                      <CardDescription>{link.description}</CardDescription>
+                      <CardTitle className="text-base">{t(link.title)}</CardTitle>
+                      <CardDescription>{t(link.description)}</CardDescription>
                     </div>
                   </CardHeader>
                 </Card>

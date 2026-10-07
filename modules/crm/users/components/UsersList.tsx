@@ -1,4 +1,5 @@
 "use client";
+import { usePreferences } from "@/lib/preferences/Preferences";
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -83,6 +84,7 @@ const statusBadgeClass: Record<UserStatus, string> = {
 };
 
 function RoleBadge({ role }: { role: DashboardRole }) {
+  const { t } = usePreferences();
   return (
     <span
       className={cn(
@@ -90,12 +92,13 @@ function RoleBadge({ role }: { role: DashboardRole }) {
         roleBadgeClass[role],
       )}
     >
-      {role}
+      {t(role)}
     </span>
   );
 }
 
 function StatusBadge({ status }: { status: UserStatus }) {
+  const { t } = usePreferences();
   return (
     <span
       className={cn(
@@ -103,7 +106,7 @@ function StatusBadge({ status }: { status: UserStatus }) {
         statusBadgeClass[status],
       )}
     >
-      {status}
+      {t(status)}
     </span>
   );
 }
@@ -131,6 +134,7 @@ function DeleteUserDialog({
   onCancel: () => void;
   onConfirm: () => void;
 }) {
+  const { t } = usePreferences();
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape" && !deleting) onCancel();
@@ -162,20 +166,15 @@ function DeleteUserDialog({
             <h2
               id="delete-user-title"
               className="!m-0 !max-w-none !text-base !leading-6 !font-semibold !tracking-normal"
-            >
-              Eliminar usuario
-            </h2>
+            >{t("Eliminar usuario ")}</h2>
             <p
               id="delete-user-description"
               className="text-muted-foreground mt-2 !text-sm !leading-5"
-            >
-              Se eliminará la cuenta de{" "}
-              <strong className="text-foreground font-semibold">{user.name}</strong>{" "}
-              y perderá el acceso a LaRutica. Esta acción no se puede deshacer.
-            </p>
+            >{t("Se eliminará la cuenta de")}{t(" ")}
+              <strong className="text-foreground font-semibold">{user.name}</strong>{t(" ")}{t("y perderá el acceso a LaRutica. Esta acción no se puede deshacer. ")}</p>
           </div>
           <Button
-            aria-label="Cerrar confirmación"
+            aria-label={t("Cerrar confirmación")}
             disabled={deleting}
             onClick={onCancel}
             size="icon-sm"
@@ -191,16 +190,14 @@ function DeleteUserDialog({
             className="bg-destructive/10 text-destructive mt-4 rounded-lg px-3 py-2 text-sm"
             role="alert"
           >
-            {error}
+            {t(error)}
           </p>
         ) : null}
 
         <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-          <Button disabled={deleting} onClick={onCancel} type="button" variant="outline">
-            Cancelar
-          </Button>
+          <Button disabled={deleting} onClick={onCancel} type="button" variant="outline">{t("Cancelar ")}</Button>
           <Button disabled={deleting} onClick={onConfirm} type="button" variant="destructive">
-            {deleting ? "Eliminando…" : "Sí, eliminar usuario"}
+            {t(deleting ? "Eliminando…" : "Sí, eliminar usuario")}
           </Button>
         </div>
       </section>
@@ -218,6 +215,7 @@ function paginationBtnClass(enabled: boolean) {
 }
 
 export function UsersList() {
+  const { t } = usePreferences();
   const router = useRouter();
   const { role } = useDashboardRole();
   const { user: sessionUser } = useAuth();
@@ -304,7 +302,7 @@ export function UsersList() {
 
   if (role !== "Admin") {
     return (
-      <p className="text-muted-foreground text-sm">Redirigiendo a tu perfil…</p>
+      <p className="text-muted-foreground text-sm">{t("Redirigiendo a tu perfil…")}</p>
     );
   }
 
@@ -314,22 +312,18 @@ export function UsersList() {
         <BreadcrumbList className="!text-sm">
           <BreadcrumbItem>
             <BreadcrumbLink href="/dashboard" className="flex items-center gap-1.5 !text-sm">
-              <Home className="size-3.5" />
-              Inicio
-            </BreadcrumbLink>
+              <Home className="size-3.5" />{t("Inicio ")}</BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
-            <BreadcrumbPage className="!text-sm">Usuarios</BreadcrumbPage>
+            <BreadcrumbPage className="!text-sm">{t("Usuarios")}</BreadcrumbPage>
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
 
       <div className="flex flex-row items-start justify-between gap-4">
         <div>
-          <h1 className="!m-0 !max-w-none !text-2xl !leading-8 !font-semibold !tracking-tight">
-            Gestión de Usuarios
-          </h1>
+          <h1 className="!m-0 !max-w-none !text-2xl !leading-8 !font-semibold !tracking-tight">{t("Gestión de Usuarios ")}</h1>
           <p className="text-muted-foreground mt-0.5 !text-sm !leading-5">
             {loading
               ? "Administra los usuarios del sistema"
@@ -338,9 +332,7 @@ export function UsersList() {
         </div>
         <Button asChild className="shrink-0 !text-sm">
           <Link href="/dashboard/users/new">
-            <User className="size-4" />
-            Crear Usuario
-          </Link>
+            <User className="size-4" />{t("Crear Usuario ")}</Link>
         </Button>
       </div>
 
@@ -353,7 +345,7 @@ export function UsersList() {
               setQuery(event.target.value);
               setPage(1);
             }}
-            placeholder="Buscar por nombre, email, teléfono..."
+            placeholder={t("Buscar por nombre, email, teléfono...")}
             type="search"
             value={query}
           />
@@ -361,9 +353,7 @@ export function UsersList() {
         <Sheet>
           <SheetTrigger asChild>
             <Button variant="outline" className="shrink-0 gap-2 !text-sm">
-              <SlidersHorizontal className="size-4" />
-              Filtros
-              {hasActiveFilters ? (
+              <SlidersHorizontal className="size-4" />{t("Filtros ")}{hasActiveFilters ? (
                 <span className="bg-primary size-2 rounded-full" />
               ) : null}
             </Button>
@@ -373,13 +363,11 @@ export function UsersList() {
             className="flex w-[320px] flex-col gap-0 p-0 sm:w-[360px] sm:max-w-[360px]"
           >
             <SheetHeader className="border-b px-6 py-5">
-              <SheetTitle className="!m-0 !max-w-none !text-base !leading-6 !font-semibold !tracking-normal">
-                Filtros
-              </SheetTitle>
+              <SheetTitle className="!m-0 !max-w-none !text-base !leading-6 !font-semibold !tracking-normal">{t("Filtros ")}</SheetTitle>
             </SheetHeader>
             <div className="flex flex-1 flex-col gap-6 overflow-y-auto p-6">
               <div className="flex flex-col gap-2">
-                <Label className="!text-sm !font-medium">Rol</Label>
+                <Label className="!text-sm !font-medium">{t("Rol")}</Label>
                 <Select
                   value={roleFilter || "all"}
                   onValueChange={(value) => {
@@ -388,13 +376,13 @@ export function UsersList() {
                   }}
                 >
                   <SelectTrigger className="w-full !text-sm">
-                    <SelectValue placeholder="Todos los roles" />
+                    <SelectValue placeholder={t("Todos los roles")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Todos los roles</SelectItem>
+                    <SelectItem value="all">{t("Todos los roles")}</SelectItem>
                     {DASHBOARD_ROLES.map((dashboardRole) => (
-                      <SelectItem key={dashboardRole} value={dashboardRole}>
-                        {dashboardRole}
+                      <SelectItem key={t(dashboardRole)} value={t(dashboardRole)}>
+                        {t(dashboardRole)}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -402,7 +390,7 @@ export function UsersList() {
               </div>
               <Separator />
               <div className="flex flex-col gap-2">
-                <Label className="!text-sm !font-medium">Estado</Label>
+                <Label className="!text-sm !font-medium">{t("Estado")}</Label>
                 <Select
                   value={statusFilter || "all"}
                   onValueChange={(value) => {
@@ -411,18 +399,18 @@ export function UsersList() {
                   }}
                 >
                   <SelectTrigger className="w-full !text-sm">
-                    <SelectValue placeholder="Todos los estados" />
+                    <SelectValue placeholder={t("Todos los estados")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Todos los estados</SelectItem>
-                    <SelectItem value="Activo">Activo</SelectItem>
-                    <SelectItem value="Inactivo">Inactivo</SelectItem>
+                    <SelectItem value="all">{t("Todos los estados")}</SelectItem>
+                    <SelectItem value="Activo">{t("Activo")}</SelectItem>
+                    <SelectItem value="Inactivo">{t("Inactivo")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <Separator />
               <div className="flex flex-col gap-2">
-                <Label className="!text-sm !font-medium">Ordenar por</Label>
+                <Label className="!text-sm !font-medium">{t("Ordenar por")}</Label>
                 <Select
                   value={sortDir}
                   onValueChange={(value: "ASC" | "DESC") => {
@@ -434,14 +422,14 @@ export function UsersList() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="DESC">Más nuevos primero</SelectItem>
-                    <SelectItem value="ASC">Más antiguos primero</SelectItem>
+                    <SelectItem value="DESC">{t("Más nuevos primero")}</SelectItem>
+                    <SelectItem value="ASC">{t("Más antiguos primero")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <Separator />
               <div className="flex flex-col gap-2">
-                <Label className="!text-sm !font-medium">Resultados por página</Label>
+                <Label className="!text-sm !font-medium">{t("Resultados por página")}</Label>
                 <Select
                   value={String(limit)}
                   onValueChange={(value) => {
@@ -455,8 +443,7 @@ export function UsersList() {
                   <SelectContent>
                     {[6, 10, 15, 20].map((n) => (
                       <SelectItem key={n} value={String(n)}>
-                        {n} resultados
-                      </SelectItem>
+                        {n}{t(" resultados ")}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -467,9 +454,7 @@ export function UsersList() {
                 className="text-muted-foreground w-full !text-sm"
                 onClick={clearFilters}
                 type="button"
-              >
-                Limpiar filtros
-              </Button>
+              >{t("Limpiar filtros ")}</Button>
             </div>
           </SheetContent>
         </Sheet>
@@ -480,10 +465,8 @@ export function UsersList() {
           className="border-destructive/20 bg-destructive/5 flex flex-col gap-3 rounded-lg border p-4 sm:flex-row sm:items-center sm:justify-between"
           role="alert"
         >
-          <p className="text-destructive text-sm">{error}</p>
-          <Button onClick={() => void refresh()} size="sm" type="button" variant="outline">
-            Intentar de nuevo
-          </Button>
+          <p className="text-destructive text-sm">{t(error)}</p>
+          <Button onClick={() => void refresh()} size="sm" type="button" variant="outline">{t("Intentar de nuevo ")}</Button>
         </div>
       ) : null}
 
@@ -504,10 +487,8 @@ export function UsersList() {
             <div className="bg-muted flex size-14 items-center justify-center rounded-full">
               <UserX className="text-muted-foreground/30 size-7" />
             </div>
-            <p className="!text-sm !font-medium">No se encontraron usuarios</p>
-            <p className="text-muted-foreground !text-xs">
-              Prueba ajustando los filtros de búsqueda
-            </p>
+            <p className="!text-sm !font-medium">{t("No se encontraron usuarios")}</p>
+            <p className="text-muted-foreground !text-xs">{t("Prueba ajustando los filtros de búsqueda ")}</p>
             {hasActiveFilters || query ? (
               <Button
                 className="mt-1"
@@ -515,30 +496,18 @@ export function UsersList() {
                 size="sm"
                 type="button"
                 variant="outline"
-              >
-                Limpiar filtros
-              </Button>
+              >{t("Limpiar filtros ")}</Button>
             ) : null}
           </div>
         ) : (
           <Table>
             <TableHeader>
               <TableRow className="bg-muted/30 hover:bg-muted/30">
-                <TableHead className="text-muted-foreground !py-3 !text-[11px] !font-semibold !tracking-wider uppercase">
-                  Usuario
-                </TableHead>
-                <TableHead className="text-muted-foreground !py-3 !text-[11px] !font-semibold !tracking-wider uppercase">
-                  Email
-                </TableHead>
-                <TableHead className="text-muted-foreground hidden !py-3 !text-[11px] !font-semibold !tracking-wider uppercase md:table-cell">
-                  Teléfono
-                </TableHead>
-                <TableHead className="text-muted-foreground !py-3 !text-[11px] !font-semibold !tracking-wider uppercase">
-                  Rol
-                </TableHead>
-                <TableHead className="text-muted-foreground hidden !py-3 !text-[11px] !font-semibold !tracking-wider uppercase sm:table-cell">
-                  Estado
-                </TableHead>
+                <TableHead className="text-muted-foreground !py-3 !text-[11px] !font-semibold !tracking-wider uppercase">{t("Usuario ")}</TableHead>
+                <TableHead className="text-muted-foreground !py-3 !text-[11px] !font-semibold !tracking-wider uppercase">{t("Email ")}</TableHead>
+                <TableHead className="text-muted-foreground hidden !py-3 !text-[11px] !font-semibold !tracking-wider uppercase md:table-cell">{t("Teléfono ")}</TableHead>
+                <TableHead className="text-muted-foreground !py-3 !text-[11px] !font-semibold !tracking-wider uppercase">{t("Rol ")}</TableHead>
+                <TableHead className="text-muted-foreground hidden !py-3 !text-[11px] !font-semibold !tracking-wider uppercase sm:table-cell">{t("Estado ")}</TableHead>
                 <TableHead className="w-12" />
               </TableRow>
             </TableHeader>
@@ -570,31 +539,25 @@ export function UsersList() {
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="icon" className="size-8">
                           <MoreHorizontal className="size-4" />
-                          <span className="sr-only">Acciones para {user.name}</span>
+                          <span className="sr-only">{t("Acciones para ")}{user.name}</span>
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="w-40 !text-sm">
                         <DropdownMenuItem asChild>
                           <Link href={`/dashboard/users/${user.id}`}>
-                            <Eye className="size-4" />
-                            Ver detalle
-                          </Link>
+                            <Eye className="size-4" />{t("Ver detalle ")}</Link>
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem asChild>
                           <Link href={`/dashboard/users/${user.id}/edit`}>
-                            <Pencil className="size-4" />
-                            Editar
-                          </Link>
+                            <Pencil className="size-4" />{t("Editar ")}</Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           disabled={!canDelete(user)}
                           className="text-destructive focus:text-destructive"
                           onSelect={() => setUserToDelete(user)}
                         >
-                          <Trash2 className="size-4" />
-                          Eliminar
-                        </DropdownMenuItem>
+                          <Trash2 className="size-4" />{t("Eliminar ")}</DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>
@@ -609,19 +572,18 @@ export function UsersList() {
         <div className="flex w-full items-center justify-between gap-3">
           <button
             type="button"
-            aria-label="Ir a la página anterior"
+            aria-label={t("Ir a la página anterior")}
             disabled={currentPage <= 1}
             onClick={() => setPage((current) => Math.max(1, current - 1))}
             className={paginationBtnClass(currentPage > 1)}
           >
             <ChevronLeft className="size-4" />
           </button>
-          <span className="bg-muted/50 rounded-full border px-3 py-1 !text-sm !font-medium tabular-nums">
-            Pág. {currentPage} / {totalPages}
+          <span className="bg-muted/50 rounded-full border px-3 py-1 !text-sm !font-medium tabular-nums">{t("Pág. ")}{currentPage} / {totalPages}
           </span>
           <button
             type="button"
-            aria-label="Ir a la página siguiente"
+            aria-label={t("Ir a la página siguiente")}
             disabled={currentPage >= totalPages}
             onClick={() => setPage((current) => Math.min(totalPages, current + 1))}
             className={paginationBtnClass(currentPage < totalPages)}

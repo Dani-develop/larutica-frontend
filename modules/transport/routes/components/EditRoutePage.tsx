@@ -1,4 +1,5 @@
 "use client";
+import { usePreferences } from "@/lib/preferences/Preferences";
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -9,6 +10,7 @@ import { routeTitle } from "../models/Route";
 import { RouteForm } from "./RouteForm";
 
 export function EditRoutePage({ id }: { id: string }) {
+  const { t } = usePreferences();
   const router = useRouter();
   const { getById, update } = useRoutes();
   const route = getById(id);
@@ -16,9 +18,9 @@ export function EditRoutePage({ id }: { id: string }) {
   if (!route) {
     return (
       <div className="mx-auto max-w-3xl space-y-4">
-        <h1 className="text-lg font-semibold">Ruta no encontrada</h1>
+        <h1 className="text-lg font-semibold">{t("Ruta no encontrada")}</h1>
         <Button asChild variant="outline">
-          <Link href="/dashboard/publications">Volver al listado</Link>
+          <Link href="/dashboard/publications">{t("Volver al listado")}</Link>
         </Button>
       </div>
     );
@@ -43,14 +45,10 @@ export function EditRoutePage({ id }: { id: string }) {
     <div className="mx-auto max-w-3xl space-y-6">
       <div>
         <p className="text-sm font-medium text-primary">
-          <Link href="/dashboard/publications" className="hover:underline">
-            Rutas
-          </Link>
-          <span className="text-muted-foreground"> / Editar</span>
+          <Link href="/dashboard/publications" className="hover:underline">{t("Rutas ")}</Link>
+          <span className="text-muted-foreground">{t(" / Editar")}</span>
         </p>
-        <h1 className="mt-1 text-xl font-semibold tracking-tight">
-          Editar ruta
-        </h1>
+        <h1 className="mt-1 text-xl font-semibold tracking-tight">{t("Editar ruta ")}</h1>
         <p className="mt-1 text-sm text-muted-foreground">{routeTitle(route)}</p>
       </div>
 

@@ -1,4 +1,5 @@
 "use client";
+import { usePreferences } from "@/lib/preferences/Preferences";
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -26,6 +27,7 @@ function formatPhone(phone: string): string {
 }
 
 export function UserDetail({ id }: { id: string }) {
+  const { t } = usePreferences();
   const router = useRouter();
   const { role } = useDashboardRole();
   const { getById, remove, loading } = useUsers();
@@ -39,20 +41,18 @@ export function UserDetail({ id }: { id: string }) {
 
   if (role !== "Admin") {
     return (
-      <p className="text-sm text-muted-foreground">
-        Redirigiendo a tu perfil...
-      </p>
+      <p className="text-sm text-muted-foreground">{t("Redirigiendo a tu perfil... ")}</p>
     );
   }
 
-  if (loading) return <p className="text-sm text-muted-foreground">Cargando usuario...</p>;
+  if (loading) return <p className="text-sm text-muted-foreground">{t("Cargando usuario...")}</p>;
 
   if (!user) {
     return (
       <div className="mx-auto max-w-3xl space-y-4">
-        <h1 className="text-lg font-semibold">Usuario no encontrado</h1>
+        <h1 className="text-lg font-semibold">{t("Usuario no encontrado")}</h1>
         <Button asChild variant="outline">
-          <Link href="/dashboard/users">Volver al listado</Link>
+          <Link href="/dashboard/users">{t("Volver al listado")}</Link>
         </Button>
       </div>
     );
@@ -63,25 +63,21 @@ export function UserDetail({ id }: { id: string }) {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <p className="text-sm font-medium text-primary">
-            <Link href="/dashboard/users" className="hover:underline">
-              Usuarios
-            </Link>
-            <span className="text-muted-foreground"> / Detalle</span>
+            <Link href="/dashboard/users" className="hover:underline">{t("Usuarios ")}</Link>
+            <span className="text-muted-foreground">{t(" / Detalle")}</span>
           </p>
           <h1 className="mt-1 text-xl font-semibold tracking-tight">
             {user.name}
           </h1>
           <div className="mt-2 flex flex-wrap items-center gap-2">
             <UserStatusBadge status={user.status} />
-            <span className="text-sm text-muted-foreground">{user.role}</span>
+            <span className="text-sm text-muted-foreground">{t(user.role)}</span>
           </div>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" asChild className="gap-1.5">
             <Link href={`/dashboard/users/${user.id}/edit`}>
-              <Pencil className="size-3.5" />
-              Editar
-            </Link>
+              <Pencil className="size-3.5" />{t("Editar ")}</Link>
           </Button>
           <Button
             variant="outline"
@@ -94,34 +90,32 @@ export function UserDetail({ id }: { id: string }) {
               }
             }}
           >
-            <Trash2 className="size-3.5" />
-            Eliminar
-          </Button>
+            <Trash2 className="size-3.5" />{t("Eliminar ")}</Button>
         </div>
       </div>
 
       <Card className="shadow-xs">
         <CardHeader>
-          <CardTitle className="text-base">Información</CardTitle>
-          <CardDescription>Datos sincronizados con la cuenta en la nube.</CardDescription>
+          <CardTitle className="text-base">{t("Información")}</CardTitle>
+          <CardDescription>{t("Datos sincronizados con la cuenta en la nube.")}</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4 sm:grid-cols-2">
           <div>
-            <p className="text-xs text-muted-foreground">Correo</p>
+            <p className="text-xs text-muted-foreground">{t("Correo")}</p>
             <p className="text-sm font-medium">{user.email}</p>
           </div>
           <div>
-            <p className="text-xs text-muted-foreground">Teléfono</p>
+            <p className="text-xs text-muted-foreground">{t("Teléfono")}</p>
             <p className="text-sm font-medium">
               {user.phone ? formatPhone(user.phone) : "—"}
             </p>
           </div>
           <div>
-            <p className="text-xs text-muted-foreground">Rol</p>
-            <p className="text-sm font-medium">{user.role}</p>
+            <p className="text-xs text-muted-foreground">{t("Rol")}</p>
+            <p className="text-sm font-medium">{t(user.role)}</p>
           </div>
           <div>
-            <p className="text-xs text-muted-foreground">Negocio</p>
+            <p className="text-xs text-muted-foreground">{t("Negocio")}</p>
             <p className="text-sm font-medium">{user.businessName || "—"}</p>
           </div>
         </CardContent>

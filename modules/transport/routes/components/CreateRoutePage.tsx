@@ -1,4 +1,5 @@
 "use client";
+import { usePreferences } from "@/lib/preferences/Preferences";
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -7,6 +8,7 @@ import { useRoutes } from "../hooks/useRoutes";
 import { RouteForm } from "./RouteForm";
 
 export function CreateRoutePage() {
+  const { t } = usePreferences();
   const router = useRouter();
   const { create } = useRoutes();
 
@@ -14,15 +16,11 @@ export function CreateRoutePage() {
     <div className="mx-auto max-w-3xl space-y-6">
       <div>
         <p className="text-sm font-medium text-primary">
-          <Link href="/dashboard/publications" className="hover:underline">
-            Rutas
-          </Link>
-          <span className="text-muted-foreground"> / Nueva</span>
+          <Link href="/dashboard/publications" className="hover:underline">{t("Rutas ")}</Link>
+          <span className="text-muted-foreground">{t(" / Nueva")}</span>
         </p>
-        <h1 className="mt-1 text-xl font-semibold tracking-tight">Nueva ruta</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Define origen, destino y el costo por persona del traslado.
-        </p>
+        <h1 className="mt-1 text-xl font-semibold tracking-tight">{t("Nueva ruta")}</h1>
+        <p className="mt-1 text-sm text-muted-foreground">{t("Define origen, destino y el costo por persona del traslado. ")}</p>
       </div>
 
       <RouteForm

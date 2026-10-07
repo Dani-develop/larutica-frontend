@@ -1,4 +1,5 @@
 "use client";
+import { usePreferences } from "@/lib/preferences/Preferences";
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -9,6 +10,7 @@ import { useUsers } from "../hooks/useUsers";
 import { UserForm } from "./UserForm";
 
 export function EditUserPage({ id }: { id: string }) {
+  const { t } = usePreferences();
   const router = useRouter();
   const { role } = useDashboardRole();
   const { getById, update, loading } = useUsers();
@@ -22,20 +24,18 @@ export function EditUserPage({ id }: { id: string }) {
 
   if (role !== "Admin") {
     return (
-      <p className="text-sm text-muted-foreground">
-        Redirigiendo a tu perfil...
-      </p>
+      <p className="text-sm text-muted-foreground">{t("Redirigiendo a tu perfil... ")}</p>
     );
   }
 
-  if (loading) return <p className="text-sm text-muted-foreground">Cargando usuario...</p>;
+  if (loading) return <p className="text-sm text-muted-foreground">{t("Cargando usuario...")}</p>;
 
   if (!user) {
     return (
       <div className="mx-auto max-w-3xl space-y-4">
-        <h1 className="text-lg font-semibold">Usuario no encontrado</h1>
+        <h1 className="text-lg font-semibold">{t("Usuario no encontrado")}</h1>
         <Button asChild variant="outline">
-          <Link href="/dashboard/users">Volver al listado</Link>
+          <Link href="/dashboard/users">{t("Volver al listado")}</Link>
         </Button>
       </div>
     );
@@ -54,14 +54,10 @@ export function EditUserPage({ id }: { id: string }) {
     <div className="mx-auto max-w-3xl space-y-6">
       <div>
         <p className="text-sm font-medium text-primary">
-          <Link href="/dashboard/users" className="hover:underline">
-            Usuarios
-          </Link>
-          <span className="text-muted-foreground"> / Editar</span>
+          <Link href="/dashboard/users" className="hover:underline">{t("Usuarios ")}</Link>
+          <span className="text-muted-foreground">{t(" / Editar")}</span>
         </p>
-        <h1 className="mt-1 text-xl font-semibold tracking-tight">
-          Editar usuario
-        </h1>
+        <h1 className="mt-1 text-xl font-semibold tracking-tight">{t("Editar usuario ")}</h1>
         <p className="mt-1 text-sm text-muted-foreground">{user.name}</p>
       </div>
 

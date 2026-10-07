@@ -1,4 +1,5 @@
 "use client";
+import { usePreferences } from "@/lib/preferences/Preferences";
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -17,6 +18,7 @@ import { useVehicles } from "@/modules/transport/vehicles/hooks/useVehicles";
 import { RouteStatusBadge } from "./RouteStatusBadge";
 
 export function RouteDetail({ id }: { id: string }) {
+  const { t } = usePreferences();
   const router = useRouter();
   const { getById, remove } = useRoutes();
   const { getById: getVehicleById } = useVehicles();
@@ -26,9 +28,9 @@ export function RouteDetail({ id }: { id: string }) {
   if (!route) {
     return (
       <div className="mx-auto max-w-3xl space-y-4">
-        <h1 className="text-lg font-semibold">Ruta no encontrada</h1>
+        <h1 className="text-lg font-semibold">{t("Ruta no encontrada")}</h1>
         <Button asChild variant="outline">
-          <Link href="/dashboard/publications">Volver al listado</Link>
+          <Link href="/dashboard/publications">{t("Volver al listado")}</Link>
         </Button>
       </div>
     );
@@ -39,10 +41,8 @@ export function RouteDetail({ id }: { id: string }) {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <p className="text-sm font-medium text-primary">
-            <Link href="/dashboard/publications" className="hover:underline">
-              Rutas
-            </Link>
-            <span className="text-muted-foreground"> / Detalle</span>
+            <Link href="/dashboard/publications" className="hover:underline">{t("Rutas ")}</Link>
+            <span className="text-muted-foreground">{t(" / Detalle")}</span>
           </p>
           <h1 className="mt-1 text-xl font-semibold tracking-tight">
             {routeTitle(route)}
@@ -50,7 +50,7 @@ export function RouteDetail({ id }: { id: string }) {
           <div className="mt-2 flex flex-wrap items-center gap-2">
             <RouteStatusBadge status={route.status} />
             <span className="text-sm text-muted-foreground">
-              {vehicle ? `${vehicle.name} · ${vehicle.type}` : route.vehicleType}{" "}
+              {vehicle ? `${vehicle.name} · ${vehicle.type}` : route.vehicleType}{t(" ")}
               · {route.providerName}
             </span>
           </div>
@@ -58,9 +58,7 @@ export function RouteDetail({ id }: { id: string }) {
         <div className="flex gap-2">
           <Button variant="outline" size="sm" asChild className="gap-1.5">
             <Link href={`/dashboard/publications/${route.id}/edit`}>
-              <Pencil className="size-3.5" />
-              Editar
-            </Link>
+              <Pencil className="size-3.5" />{t("Editar ")}</Link>
           </Button>
           <Button
             variant="outline"
@@ -73,9 +71,7 @@ export function RouteDetail({ id }: { id: string }) {
               }
             }}
           >
-            <Trash2 className="size-3.5" />
-            Eliminar
-          </Button>
+            <Trash2 className="size-3.5" />{t("Eliminar ")}</Button>
         </div>
       </div>
 
@@ -90,12 +86,12 @@ export function RouteDetail({ id }: { id: string }) {
 
       <Card className="shadow-xs">
         <CardHeader>
-          <CardTitle>Resumen</CardTitle>
+          <CardTitle>{t("Resumen")}</CardTitle>
           <CardDescription>{route.excerpt}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div>
-            <h2 className="mb-2 text-sm font-semibold">Qué incluye</h2>
+            <h2 className="mb-2 text-sm font-semibold">{t("Qué incluye")}</h2>
             <ul className="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
               {route.includes.map((item) => (
                 <li key={item}>{item}</li>
@@ -105,21 +101,21 @@ export function RouteDetail({ id }: { id: string }) {
 
           <div className="grid grid-cols-2 gap-3 rounded-lg border bg-muted/40 p-4 text-sm sm:grid-cols-4">
             <div>
-              <p className="text-muted-foreground">Duración</p>
+              <p className="text-muted-foreground">{t("Duración")}</p>
               <p className="font-medium">{route.duration}</p>
             </div>
             <div>
-              <p className="text-muted-foreground">Vehículo</p>
+              <p className="text-muted-foreground">{t("Vehículo")}</p>
               <p className="font-medium">
                 {vehicle ? `${vehicle.name} · ${vehicle.type}` : route.vehicleType}
               </p>
             </div>
             <div>
-              <p className="text-muted-foreground">Precio / persona</p>
+              <p className="text-muted-foreground">{t("Precio / persona")}</p>
               <p className="font-medium">${route.priceUsd}</p>
             </div>
             <div>
-              <p className="text-muted-foreground">Asientos</p>
+              <p className="text-muted-foreground">{t("Asientos")}</p>
               <p className="font-medium">{route.seats}</p>
             </div>
           </div>

@@ -19,6 +19,8 @@ Referencias: [precios y moneda del viajero en Booking](https://developers.bookin
 
 ## Verificación
 
+El dashboard usa el mismo selector ES/EN y la misma preferencia persistente que la landing. Solo muestra el control de idioma: cambiarlo traduce navegación, formularios, estados y fechas sin recargar ni consultar servicios de traducción. Las opciones enviadas al servidor mantienen sus valores originales; los nombres y descripciones escritos por usuarios y proveedores no se traducen.
+
 Pruebas aisladas de conversión, validación de cotizaciones, caché del servidor, peticiones simultáneas y fallo de conexión. Pruebas de navegador con respuestas simuladas para persistencia, ES/EN, CRC/EUR, foco, presentación móvil, reutilización del catálogo y envío de reserva sin precio convertido. Estas pruebas no escriben en Supabase.
 
 La funcionalidad no requiere migraciones de base de datos ni nuevas dependencias. Para recibirla en otro equipo, traer los cambios del repositorio y usar el Site publicado, que incorpora el nuevo endpoint.

@@ -1,4 +1,5 @@
 "use client";
+import { usePreferences } from "@/lib/preferences/Preferences";
 
 import {
   useEffect,
@@ -26,6 +27,7 @@ export function EditPublicationPage({
 }: {
   id: string;
 }) {
+  const { t } = usePreferences();
   const router =
     useRouter();
 
@@ -145,9 +147,7 @@ export function EditPublicationPage({
     return (
       <div className="mx-auto w-full max-w-5xl">
         <div className="rounded-2xl border border-red-200 bg-red-50 p-6">
-          <h1 className="!m-0 !text-lg !font-semibold !tracking-normal text-red-800">
-            No se pudo cargar la publicación
-          </h1>
+          <h1 className="!m-0 !text-lg !font-semibold !tracking-normal text-red-800">{t("No se pudo cargar la publicación ")}</h1>
 
           <p className="mt-2 text-sm text-red-700">
             {error ??
@@ -159,9 +159,7 @@ export function EditPublicationPage({
             asChild
             className="mt-4"
           >
-            <Link href="/dashboard/publications">
-              Volver al listado
-            </Link>
+            <Link href="/dashboard/publications">{t("Volver al listado ")}</Link>
           </Button>
         </div>
       </div>
@@ -185,20 +183,13 @@ export function EditPublicationPage({
           >
             <ArrowLeft
               size={15}
-            />
-
-            Volver al detalle
-          </Link>
+            />{t("Volver al detalle ")}</Link>
         </Button>
 
         <div className="rounded-2xl border border-amber-200 bg-amber-50 p-6">
-          <h1 className="!m-0 !text-lg !font-semibold !tracking-normal text-amber-900">
-            Publicación inactiva
-          </h1>
+          <h1 className="!m-0 !text-lg !font-semibold !tracking-normal text-amber-900">{t("Publicación inactiva ")}</h1>
 
-          <p className="mt-2 text-sm leading-6 text-amber-800">
-            Esta publicación fue desactivada y ya no puede editarse.
-          </p>
+          <p className="mt-2 text-sm leading-6 text-amber-800">{t("Esta publicación fue desactivada y ya no puede editarse. ")}</p>
         </div>
       </div>
     );
@@ -275,25 +266,17 @@ export function EditPublicationPage({
           >
             <ArrowLeft
               size={15}
-            />
-
-            Volver al detalle
-          </Link>
+            />{t("Volver al detalle ")}</Link>
         </Button>
       </div>
 
       {/* Encabezado */}
       <div className="mb-6">
-        <p className="mb-1 text-xs font-medium text-[#0d684e]">
-          Dashboard / Publicaciones / Editar
-        </p>
+        <p className="mb-1 text-xs font-medium text-[#0d684e]">{t("Dashboard / Publicaciones / Editar ")}</p>
 
-        <h1 className="!m-0 !text-[26px] !font-semibold !leading-tight !tracking-tight text-[#123a30]">
-          Editar publicación
-        </h1>
+        <h1 className="!m-0 !text-[26px] !font-semibold !leading-tight !tracking-tight text-[#123a30]">{t("Editar publicación ")}</h1>
 
-        <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-          Actualiza la información de{" "}
+        <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">{t("Actualiza la información de")}{t(" ")}
           <span className="font-medium text-foreground">
             {publication.title ??
               "esta publicación"}

@@ -1,4 +1,5 @@
 "use client";
+import { usePreferences } from "@/lib/preferences/Preferences";
 
 import { useEffect, useMemo, useState, useRef } from "react";
 import {
@@ -43,6 +44,7 @@ function DocumentPreviewModal({
   kind: DocumentKind;
   onClose: () => void;
 }) {
+  const { t } = usePreferences();
   const backdrop = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const previousOverflow = document.body.style.overflow;
@@ -71,7 +73,7 @@ function DocumentPreviewModal({
     >
       <div className="flex shrink-0 items-center justify-between gap-3 border-b border-white/10 px-4 py-3 text-white">
         <div className="min-w-0">
-          <p className="truncate !text-sm !font-medium">{title}</p>
+          <p className="truncate !text-sm !font-medium">{t(title)}</p>
         </div>
         <div className="flex shrink-0 items-center gap-2">
           <Button
@@ -82,9 +84,7 @@ function DocumentPreviewModal({
             asChild
           >
             <a href={url} target="_blank" rel="noopener noreferrer">
-              <ExternalLink className="size-4" />
-              Nueva pestaña
-            </a>
+              <ExternalLink className="size-4" />{t("Nueva pestaña ")}</a>
           </Button>
           <Button
             type="button"
@@ -94,13 +94,11 @@ function DocumentPreviewModal({
             asChild
           >
             <a href={url} download>
-              <Download className="size-4" />
-              Descargar
-            </a>
+              <Download className="size-4" />{t("Descargar ")}</a>
           </Button>
           <button
             type="button"
-            aria-label="Cerrar documento"
+            aria-label={t("Cerrar documento")}
             className="flex size-9 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/20"
             onClick={onClose}
           >
@@ -147,6 +145,7 @@ export function VerificationDocumentViewer({
   title = "Documento de verificación",
   className,
 }: VerificationDocumentViewerProps) {
+  const { t } = usePreferences();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -191,16 +190,16 @@ export function VerificationDocumentViewer({
             </span>
             <div>
               <h2 className="!m-0 !max-w-none !text-base !leading-6 !font-semibold !tracking-normal">
-                {title}
+                {t(title)}
               </h2>
               <p className="text-muted-foreground mt-1 text-sm!">
-                {hasDocument
+                {t(hasDocument
                   ? "El documento está almacenado de forma privada y el acceso generado es temporal."
-                  : "Esta agencia aún no ha cargado un documento de verificación."}
+                  : "Esta agencia aún no ha cargado un documento de verificación.")}
               </p>
               {error ? (
                 <p className="text-destructive mt-2 !text-xs" role="alert">
-                  {error}
+                  {t(error)}
                 </p>
               ) : null}
             </div>
@@ -218,7 +217,7 @@ export function VerificationDocumentViewer({
             ) : (
               <Eye className="size-4" />
             )}
-            {loading ? "Cargando…" : "Ver documento"}
+            {t(loading ? "Cargando…" : "Ver documento")}
           </Button>
         </div>
       </section>

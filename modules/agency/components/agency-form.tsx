@@ -1,4 +1,5 @@
 "use client";
+import { usePreferences } from "@/lib/preferences/Preferences";
 
 import {
   useEffect,
@@ -226,6 +227,7 @@ export default function AgencyForm({
   mode = "create",
   initialAgency = null,
 }: AgencyFormProps) {
+  const { t } = usePreferences();
   const router = useRouter();
   const { createAgency, updateAgency, saving, error } = useAgency();
 
@@ -637,16 +639,14 @@ export default function AgencyForm({
           <div className="mt-3 space-y-2">
             {isUploading && (
               <StatusMessage variant="info">
-                <Loader2 size={14} className="animate-spin" />
-                Espera a que terminen de subir los archivos antes de continuar.
-              </StatusMessage>
+                <Loader2 size={14} className="animate-spin" />{t("Espera a que terminen de subir los archivos antes de continuar. ")}</StatusMessage>
             )}
 
             {stepError && (
               <StatusMessage variant="error">{stepError}</StatusMessage>
             )}
 
-            {error && <StatusMessage variant="error">{error}</StatusMessage>}
+            {error && <StatusMessage variant="error">{t(error)}</StatusMessage>}
 
             {successMessage && (
               <StatusMessage variant="success">
@@ -682,6 +682,7 @@ function TopStepper({
   highestStep: StepId;
   onStepClick: (step: StepId) => void;
 }) {
+  const { t } = usePreferences();
   return (
     <div className="rounded-lg border bg-card px-5 py-3 shadow-[0_4px_18px_rgba(18,58,48,0.035)] sm:px-6">
       <div className="flex items-start">
@@ -720,7 +721,7 @@ function TopStepper({
                     active ? "text-primary" : "text-muted-foreground",
                   ].join(" ")}
                 >
-                  {step.shortTitle}
+                  {t(step.shortTitle)}
                 </span>
               </button>
 
@@ -758,15 +759,12 @@ function StepOne({
   selectedLanguageNames: string[];
   toggleLanguage: (id: number) => void;
 }) {
+  const { t } = usePreferences();
   return (
     <div>
       <div>
-        <h2 className="!m-0 !text-[15px] !font-semibold !leading-5 !tracking-[-0.01em]">
-          Datos generales
-        </h2>
-        <p className="text-muted-foreground !m-0 mt-0.5 !text-[10.5px] !leading-4">
-          Información básica sobre tu agencia.
-        </p>
+        <h2 className="!m-0 !text-[15px] !font-semibold !leading-5 !tracking-[-0.01em]">{t("Datos generales ")}</h2>
+        <p className="text-muted-foreground !m-0 mt-0.5 !text-[10.5px] !leading-4">{t("Información básica sobre tu agencia. ")}</p>
       </div>
 
       <div className="mt-2.5 grid gap-2.5 md:grid-cols-2">
@@ -775,7 +773,7 @@ function StepOne({
             value={form.agencyName}
             onChange={(event) => updateField("agencyName", event.target.value)}
             className={inputClass}
-            placeholder="Ej. Aventura Verde CR"
+            placeholder={t("Ej. Aventura Verde CR")}
           />
         </Field>
 
@@ -786,7 +784,7 @@ function StepOne({
               updateField("commercialName", event.target.value)
             }
             className={inputClass}
-            placeholder="Ej. Aventura Verde Costa Rica"
+            placeholder={t("Ej. Aventura Verde Costa Rica")}
           />
         </Field>
       </div>
@@ -825,11 +823,11 @@ function StepOne({
 
                 <span className="min-w-0 pt-px">
                   <span className="block truncate !text-[10.5px] !font-medium leading-[13px]">
-                    {type.label}
+                    {t(type.label)}
                   </span>
 
                   <span className="text-muted-foreground mt-0.5 block !text-[9px] leading-[11px]">
-                    {type.description}
+                    {t(type.description)}
                   </span>
                 </span>
 
@@ -860,7 +858,7 @@ function StepOne({
                 updateField("description", event.target.value)
               }
               className={`${textareaClass} min-h-[58px] pb-5`}
-              placeholder="Describe brevemente tu agencia, sus servicios y lo que la hace especial."
+              placeholder={t("Describe brevemente tu agencia, sus servicios y lo que la hace especial.")}
             />
             <span className="text-muted-foreground absolute bottom-1.5 right-3 !text-[9px]">
               {form.description.length} / 600
@@ -950,12 +948,13 @@ function StepTwo({
     value: AgencyFormData[K],
   ) => void;
 }) {
+  const { t } = usePreferences();
   return (
     <div>
       <StepHeader
         icon={<MapPin size={21} />}
-        title="Contacto y ubicación"
-        description="Agrega los medios por los que los viajeros podrán contactarte y localizarte."
+        title={t("Contacto y ubicación")}
+        description={t("Agrega los medios por los que los viajeros podrán contactarte y localizarte.")}
       />
 
       <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
@@ -965,21 +964,19 @@ function StepTwo({
             value={form.email}
             onChange={(event) => updateField("email", event.target.value)}
             className={inputClass}
-            placeholder="ejemplo@aventuraverde.cr"
+            placeholder={t("ejemplo@aventuraverde.cr")}
           />
         </Field>
 
         <Field label="Teléfono" required>
           <div className="bg-background focus-within:ring-ring flex h-9 overflow-hidden rounded-md border transition focus-within:ring-2">
-            <div className="text-muted-foreground flex items-center gap-1.5 border-r px-3 !text-xs !font-medium">
-              CR
-              <span className="!text-[9px]">▼</span>
+            <div className="text-muted-foreground flex items-center gap-1.5 border-r px-3 !text-xs !font-medium">{t("CR ")}<span className="!text-[9px]">▼</span>
             </div>
             <input
               value={form.phone}
               onChange={(event) => updateField("phone", event.target.value)}
               className="bg-background min-w-0 flex-1 px-3 !text-sm outline-none placeholder:text-muted-foreground/60"
-              placeholder="6000-0000"
+              placeholder={t("6000-0000")}
             />
           </div>
         </Field>
@@ -989,7 +986,7 @@ function StepTwo({
             value={form.website}
             onChange={(event) => updateField("website", event.target.value)}
             className={inputClass}
-            placeholder="https://www.ejemplo.com"
+            placeholder={t("https://www.ejemplo.com")}
           />
         </Field>
       </div>
@@ -1003,7 +1000,7 @@ function StepTwo({
             onChange={(event) => updateField("country", event.target.value)}
             className={inputClass}
           >
-            <option value="Costa Rica">Costa Rica</option>
+            <option value="Costa Rica">{t("Costa Rica")}</option>
           </select>
         </Field>
 
@@ -1013,7 +1010,7 @@ function StepTwo({
             onChange={(event) => updateField("province", event.target.value)}
             className={inputClass}
           >
-            <option value="">Selecciona</option>
+            <option value="">{t("Selecciona")}</option>
             {provinces.map((province) => (
               <option key={province} value={province}>
                 {province}
@@ -1027,7 +1024,7 @@ function StepTwo({
             value={form.city}
             onChange={(event) => updateField("city", event.target.value)}
             className={inputClass}
-            placeholder="La Fortuna"
+            placeholder={t("La Fortuna")}
           />
         </Field>
       </div>
@@ -1038,7 +1035,7 @@ function StepTwo({
             value={form.exactAddress}
             onChange={(event) => updateField("exactAddress", event.target.value)}
             className={inputClass}
-            placeholder="Ej. 200 metros norte del parque central"
+            placeholder={t("Ej. 200 metros norte del parque central")}
           />
         </Field>
       </div>
@@ -1046,13 +1043,8 @@ function StepTwo({
       <div className="mt-3">
         <div className="mb-2 flex items-center justify-between gap-3">
           <div>
-            <p className="!text-sm !font-medium">
-              Redes sociales
-            </p>
-            <p className="text-muted-foreground mt-0.5 !text-xs leading-4">
-              Opcional. Agrega los canales que utilizas para comunicarte con tus
-              clientes.
-            </p>
+            <p className="!text-sm !font-medium">{t("Redes sociales ")}</p>
+            <p className="text-muted-foreground mt-0.5 !text-xs leading-4">{t("Opcional. Agrega los canales que utilizas para comunicarte con tus clientes. ")}</p>
           </div>
         </div>
 
@@ -1060,21 +1052,21 @@ function StepTwo({
           <SocialInput
             icon={<AtSign size={14} />}
             value={form.instagramUrl}
-            placeholder="@aventuraverdecr"
+            placeholder={t("@aventuraverdecr")}
             onChange={(value) => updateField("instagramUrl", value)}
           />
 
           <SocialInput
             icon={<Globe2 size={14} />}
             value={form.facebookUrl}
-            placeholder="/aventuraverdecr"
+            placeholder={t("/aventuraverdecr")}
             onChange={(value) => updateField("facebookUrl", value)}
           />
 
           <SocialInput
             icon={<MessageCircle size={14} />}
             value={form.whatsapp}
-            placeholder="+506 6000 0000"
+            placeholder={t("+506 6000 0000")}
             onChange={(value) => updateField("whatsapp", value)}
           />
         </div>
@@ -1090,12 +1082,13 @@ function StepThree({
   form: AgencyFormData;
   toggleCategory: (id: number) => void;
 }) {
+  const { t } = usePreferences();
   return (
     <div>
       <StepHeader
         icon={<Tags size={21} />}
-        title="Categorías y servicios"
-        description="Selecciona las categorías que mejor representan los servicios y experiencias de tu agencia."
+        title={t("Categorías y servicios")}
+        description={t("Selecciona las categorías que mejor representan los servicios y experiencias de tu agencia.")}
       />
 
       <div className="mt-3 grid gap-2 sm:grid-cols-2 md:grid-cols-3">
@@ -1141,8 +1134,7 @@ function StepThree({
               <p className="mt-2 text-[11px] font-semibold text-[#20332B]">
                 {name}
               </p>
-              <p className="mt-0.5 text-[8px] leading-3.5 text-[#7C8781]">
-                Mostrar tu agencia dentro de experiencias relacionadas con {name.toLowerCase()}.
+              <p className="mt-0.5 text-[8px] leading-3.5 text-[#7C8781]">{t("Mostrar tu agencia dentro de experiencias relacionadas con ")}{name.toLowerCase()}.
               </p>
             </button>
           );
@@ -1165,18 +1157,19 @@ function StepFour({
   ) => void;
   onUploadingChange: (kind: AgencyUploadKind, uploading: boolean) => void;
 }) {
+  const { t } = usePreferences();
   return (
     <div>
       <StepHeader
         icon={<FileText size={21} />}
-        title="Información adicional"
-        description="Completa la identidad visual y agrega la documentación necesaria para verificar tu agencia."
+        title={t("Información adicional")}
+        description={t("Completa la identidad visual y agrega la documentación necesaria para verificar tu agencia.")}
       />
 
       <div className="mt-3 grid gap-3 md:grid-cols-3">
         <UploadBox
           kind="logo"
-          title="Logo de la agencia"
+          title={t("Logo de la agencia")}
           subtitle="JPG, PNG o SVG. Máx. 2MB"
           accept="image/jpeg,image/png,image/svg+xml"
           allowedMimeTypes={["image/jpeg", "image/png", "image/svg+xml"]}
@@ -1202,7 +1195,7 @@ function StepFour({
 
         <UploadBox
           kind="cover"
-          title="Imagen de portada"
+          title={t("Imagen de portada")}
           subtitle="JPG o PNG. Recomendado 1600x600px. Máx. 5MB"
           accept="image/jpeg,image/png"
           allowedMimeTypes={["image/jpeg", "image/png"]}
@@ -1226,7 +1219,7 @@ function StepFour({
 
         <UploadBox
           kind="verification"
-          title="Documento de verificación"
+          title={t("Documento de verificación")}
           subtitle="PDF, JPG o PNG. Máx. 5MB"
           accept="application/pdf,image/jpeg,image/png"
           allowedMimeTypes={["application/pdf", "image/jpeg", "image/png"]}
@@ -1262,14 +1255,11 @@ function StepFour({
             className="mt-0.5 size-4 accent-[#075E36]"
           />
 
-          <span className="text-[10px] leading-5 text-[#48564F]">
-            Confirmo que la información proporcionada es correcta y acepto los{" "}
+          <span className="text-[10px] leading-5 text-[#48564F]">{t("Confirmo que la información proporcionada es correcta y acepto los")}{t(" ")}
             <button
               type="button"
               className="font-semibold text-[#075E36] underline underline-offset-2"
-            >
-              términos y condiciones
-            </button>
+            >{t("términos y condiciones ")}</button>
             . <Required />
           </span>
         </label>
@@ -1278,13 +1268,8 @@ function StepFour({
       <div className="mt-3 flex items-start gap-2.5 rounded-md border border-[#D4E7DA] bg-[#F3FAF5] px-3.5 py-3">
         <ShieldCheck size={17} className="mt-0.5 shrink-0 text-[#075E36]" />
         <div>
-          <p className="text-[10px] font-semibold text-[#24533F]">
-            Verificación segura
-          </p>
-          <p className="mt-0.5 text-[9px] leading-4 text-[#6E7C75]">
-            El documento de verificación se utiliza únicamente durante el proceso
-            de revisión administrativa.
-          </p>
+          <p className="text-[10px] font-semibold text-[#24533F]">{t("Verificación segura ")}</p>
+          <p className="mt-0.5 text-[9px] leading-4 text-[#6E7C75]">{t("El documento de verificación se utiliza únicamente durante el proceso de revisión administrativa. ")}</p>
         </div>
       </div>
     </div>
@@ -1306,12 +1291,13 @@ function StepFive({
   selectedLanguageNames: string[];
   selectedBusinessType: string;
 }) {
+  const { t } = usePreferences();
   return (
     <div>
       <StepHeader
         icon={<Eye size={21} />}
-        title="Vista previa"
-        description="Revisa que toda la información esté correcta antes de enviarla a revisión."
+        title={t("Vista previa")}
+        description={t("Revisa que toda la información esté correcta antes de enviarla a revisión.")}
       />
 
       <div className="bg-card mt-3 overflow-hidden rounded-xl border">
@@ -1365,7 +1351,7 @@ function StepFive({
           </div>
 
           <div className="mt-3 grid gap-3 md:grid-cols-2">
-            <PreviewInfoCard title="Contacto">
+            <PreviewInfoCard title={t("Contacto")}>
               <PreviewRow label="Correo" value={form.email || "Sin información"} />
               <PreviewRow label="Teléfono" value={form.phone || "Sin información"} />
               <PreviewRow
@@ -1374,7 +1360,7 @@ function StepFive({
               />
             </PreviewInfoCard>
 
-            <PreviewInfoCard title="Ubicación">
+            <PreviewInfoCard title={t("Ubicación")}>
               <PreviewRow label="Ubicación" value={previewLocation} />
               <PreviewRow
                 label="Dirección"
@@ -1382,7 +1368,7 @@ function StepFive({
               />
             </PreviewInfoCard>
 
-            <PreviewInfoCard title="Categorías">
+            <PreviewInfoCard title={t("Categorías")}>
               <div className="flex flex-wrap gap-2">
                 {selectedCategoryNames.map((category) => (
                   <span
@@ -1395,7 +1381,7 @@ function StepFive({
               </div>
             </PreviewInfoCard>
 
-            <PreviewInfoCard title="Idiomas">
+            <PreviewInfoCard title={t("Idiomas")}>
               <div className="flex flex-wrap gap-2">
                 {selectedLanguageNames.map((language) => (
                   <span
@@ -1414,14 +1400,8 @@ function StepFive({
       <div className="mt-3 flex items-start gap-2.5 rounded-md border border-[#D4E7DA] bg-[#F3FAF5] px-3.5 py-3">
         <ShieldCheck size={18} className="mt-0.5 shrink-0 text-[#075E36]" />
         <div>
-          <p className="text-[10px] font-semibold text-[#24533F]">
-            Lista para revisión
-          </p>
-          <p className="mt-1 text-[9px] leading-4 text-[#6E7C75]">
-            Al enviar la agencia, administración revisará la información y los
-            documentos. Durante ese proceso el perfil quedará en estado de
-            revisión.
-          </p>
+          <p className="text-[10px] font-semibold text-[#24533F]">{t("Lista para revisión ")}</p>
+          <p className="mt-1 text-[9px] leading-4 text-[#6E7C75]">{t("Al enviar la agencia, administración revisará la información y los documentos. Durante ese proceso el perfil quedará en estado de revisión. ")}</p>
         </div>
       </div>
     </div>
@@ -1449,6 +1429,7 @@ function FormFooter({
   onNext: () => void;
   onSaveDraft: () => void;
 }) {
+  const { t } = usePreferences();
   return (
     <div className="border-t bg-muted/5 px-5 py-2.5 sm:flex sm:items-center sm:gap-2 sm:px-6">
       <button
@@ -1456,9 +1437,7 @@ function FormFooter({
         onClick={onCancel}
         disabled={saving || isUploading}
         className="bg-background hover:bg-muted inline-flex h-[34px] items-center justify-center rounded-md border px-4 !text-sm !font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50"
-      >
-        Cancelar
-      </button>
+      >{t("Cancelar ")}</button>
 
       <div className="mt-2 flex flex-col gap-2 sm:ml-auto sm:mt-0 sm:flex-row">
         <button
@@ -1472,11 +1451,11 @@ function FormFooter({
           ) : (
             <Save size={13} />
           )}
-          {saving
+          {t(saving
             ? "Guardando..."
             : mode === "edit"
               ? "Guardar cambios"
-              : "Guardar borrador"}
+              : "Guardar borrador")}
         </button>
 
         {currentStep > 1 && (
@@ -1486,9 +1465,7 @@ function FormFooter({
             disabled={saving || isUploading}
             className="bg-background hover:bg-muted inline-flex h-[34px] items-center justify-center gap-2 rounded-md border px-4 !text-sm !font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50"
           >
-            <ArrowLeft size={14} />
-            Anterior
-          </button>
+            <ArrowLeft size={14} />{t("Anterior ")}</button>
         )}
 
         {currentStep < 5 ? (
@@ -1497,9 +1474,7 @@ function FormFooter({
             onClick={onNext}
             disabled={saving || isUploading}
             className="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex h-[34px] min-w-[145px] items-center justify-center gap-2 rounded-md px-5 !text-sm !font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            Siguiente paso
-            <ArrowRight size={14} />
+          >{t("Siguiente paso ")}<ArrowRight size={14} />
           </button>
         ) : (
           <button
@@ -1512,11 +1487,11 @@ function FormFooter({
             ) : (
               <Send size={13} />
             )}
-            {saving
+            {t(saving
               ? "Guardando..."
               : isRejected
                 ? "Reenviar para revisión"
-                : "Enviar para revisión"}
+                : "Enviar para revisión")}
           </button>
         )}
       </div>
@@ -1533,6 +1508,7 @@ function StepHeader({
   title: string;
   description: string;
 }) {
+  const { t } = usePreferences();
   return (
     <div className="flex items-center gap-2">
       <div className="bg-primary/10 text-primary flex size-7 shrink-0 items-center justify-center rounded-[5px]">
@@ -1540,10 +1516,10 @@ function StepHeader({
       </div>
       <div className="min-w-0">
         <h2 className="!m-0 !text-sm !font-semibold !leading-5 !tracking-normal">
-          {title}
+          {t(title)}
         </h2>
         <p className="text-muted-foreground !m-0 mt-0.5 !text-[11px] !leading-4">
-          {description}
+          {t(description)}
         </p>
       </div>
     </div>
@@ -1574,9 +1550,10 @@ function FieldLabel({
   label: string;
   required?: boolean;
 }) {
+  const { t } = usePreferences();
   return (
     <span className="block !text-[12px] !font-medium leading-4">
-      {label}
+      {t(label)}
       {required && <Required />}
     </span>
   );
@@ -1597,6 +1574,7 @@ function SocialInput({
   placeholder: string;
   onChange: (value: string) => void;
 }) {
+  const { t } = usePreferences();
   return (
     <div className="bg-background focus-within:ring-ring flex h-9 overflow-hidden rounded-md border transition focus-within:ring-2">
       <span className="text-primary flex h-full w-9 shrink-0 items-center justify-center border-r">
@@ -1605,7 +1583,7 @@ function SocialInput({
       <input
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        placeholder={placeholder}
+        placeholder={placeholder ? t(placeholder) : undefined}
         className="min-w-0 flex-1 bg-transparent px-3 !text-sm outline-none placeholder:text-muted-foreground/60"
       />
     </div>
@@ -1639,6 +1617,7 @@ function UploadBox({
   maxSize: number;
   info?: boolean;
 }) {
+  const { t } = usePreferences();
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
@@ -1698,7 +1677,7 @@ function UploadBox({
   return (
     <div>
       <p className="flex items-center gap-1 text-[11px] font-semibold text-[#26352E]">
-        {title}
+        {t(title)}
         <Required />
         {info && <Info size={11} className="text-[#66706B]" />}
       </p>
@@ -1761,7 +1740,7 @@ function UploadBox({
           {uploading ? (
             <div className="flex flex-col items-center gap-2 text-[#075E36]">
               <Loader2 size={28} className="animate-spin" />
-              <span className="text-[9px] font-medium">Subiendo...</span>
+              <span className="text-[9px] font-medium">{t("Subiendo...")}</span>
             </div>
           ) : (
             preview
@@ -1777,24 +1756,22 @@ function UploadBox({
         </p>
 
         <p className="mt-1 text-[9px] font-semibold text-[#075E36]">
-          {value
+          {t(value
             ? "Selecciona otro archivo para reemplazarlo"
-            : "o selecciona un archivo"}
+            : "o selecciona un archivo")}
         </p>
 
-        <p className="mt-1.5 text-[8px] leading-4 text-[#87908C]">{subtitle}</p>
+        <p className="mt-1.5 text-[8px] leading-4 text-[#87908C]">{t(subtitle)}</p>
 
         {value && kind === "verification" && (
           <div className="mt-3 flex items-center gap-1.5 rounded-full bg-[#EAF5ED] px-2.5 py-1 text-[8px] font-medium text-[#075E36]">
-            <ShieldCheck size={10} />
-            Documento almacenado de forma privada
-          </div>
+            <ShieldCheck size={10} />{t("Documento almacenado de forma privada ")}</div>
         )}
       </div>
 
       {uploadError && (
         <p className="mt-1.5 text-[9px] leading-4 text-red-600">
-          {uploadError}
+          {uploadError && t(uploadError)}
         </p>
       )}
     </div>
@@ -1808,18 +1785,20 @@ function PreviewInfoCard({
   title: string;
   children: ReactNode;
 }) {
+  const { t } = usePreferences();
   return (
     <div className="rounded-md border border-[#E3E9E6] bg-[#FBFDFC] p-4">
-      <p className="text-[10px] font-semibold text-[#263A31]">{title}</p>
+      <p className="text-[10px] font-semibold text-[#263A31]">{t(title)}</p>
       <div className="mt-3 space-y-2">{children}</div>
     </div>
   );
 }
 
 function PreviewRow({ label, value }: { label: string; value: string }) {
+  const { t } = usePreferences();
   return (
     <div className="flex items-start justify-between gap-4 rounded-lg bg-white px-3 py-2.5">
-      <span className="text-[9px] text-[#7C8781]">{label}</span>
+      <span className="text-[9px] text-[#7C8781]">{t(label)}</span>
       <span className="max-w-[65%] text-right text-[9px] font-medium text-[#38463F]">
         {value}
       </span>

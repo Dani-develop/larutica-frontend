@@ -1,4 +1,5 @@
 "use client";
+import { usePreferences } from "@/lib/preferences/Preferences";
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -9,6 +10,7 @@ import { useUsers } from "../hooks/useUsers";
 import { UserForm } from "./UserForm";
 
 export function CreateUserPage() {
+  const { t } = usePreferences();
   const router = useRouter();
   const { role } = useDashboardRole();
   const { create } = useUsers();
@@ -21,9 +23,7 @@ export function CreateUserPage() {
 
   if (role !== "Admin") {
     return (
-      <p className="text-sm text-muted-foreground">
-        Redirigiendo a tu perfil...
-      </p>
+      <p className="text-sm text-muted-foreground">{t("Redirigiendo a tu perfil... ")}</p>
     );
   }
 
@@ -31,17 +31,11 @@ export function CreateUserPage() {
     <div className="mx-auto max-w-3xl space-y-6">
       <div>
         <p className="text-sm font-medium text-primary">
-          <Link href="/dashboard/users" className="hover:underline">
-            Usuarios
-          </Link>
-          <span className="text-muted-foreground"> / Nuevo</span>
+          <Link href="/dashboard/users" className="hover:underline">{t("Usuarios ")}</Link>
+          <span className="text-muted-foreground">{t(" / Nuevo")}</span>
         </p>
-        <h1 className="mt-1 text-xl font-semibold tracking-tight">
-          Nuevo usuario
-        </h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Crea una cuenta real en Supabase Auth y su perfil asociado.
-        </p>
+        <h1 className="mt-1 text-xl font-semibold tracking-tight">{t("Nuevo usuario ")}</h1>
+        <p className="mt-1 text-sm text-muted-foreground">{t("Crea una cuenta real en Supabase Auth y su perfil asociado. ")}</p>
       </div>
 
       <div className="bg-card rounded-xl p-5">

@@ -1,4 +1,5 @@
 "use client";
+import { usePreferences } from "@/lib/preferences/Preferences";
 
 import {
   useRouter,
@@ -24,6 +25,7 @@ import {
 } from "@/modules/agency/hooks/useAgency";
 
 export default function MyAgencyPage() {
+  const { t } = usePreferences();
   const router =
     useRouter();
 
@@ -44,8 +46,8 @@ export default function MyAgencyPage() {
     return (
       <div className="mx-auto w-full max-w-[1180px]">
         <PageHeader
-          title="Mi agencia"
-          description="Administra la información y el estado de tu agencia dentro de LaRutica."
+          title={t("Mi agencia")}
+          description={t("Administra la información y el estado de tu agencia dentro de LaRutica.")}
         />
 
         <section className="overflow-hidden rounded-[22px] border border-[#DDE6E1] bg-white shadow-[0_10px_35px_rgba(18,58,48,0.05)]">
@@ -58,15 +60,9 @@ export default function MyAgencyPage() {
                 />
               </div>
 
-              <h2 className="!m-0 !mt-5 !text-[24px] !font-bold !leading-8 !tracking-[-0.02em] text-[#123A30]">
-                Registra tu agencia en LaRutica
-              </h2>
+              <h2 className="!m-0 !mt-5 !text-[24px] !font-bold !leading-8 !tracking-[-0.02em] text-[#123A30]">{t("Registra tu agencia en LaRutica ")}</h2>
 
-              <p className="mx-auto mt-2 max-w-[560px] text-[12px] leading-5 text-[#66706B]">
-                Crea el perfil de tu negocio para comenzar el proceso de revisión
-                y preparar tu cuenta para publicar experiencias, gestionar
-                promociones y recibir reservas.
-              </p>
+              <p className="mx-auto mt-2 max-w-[560px] text-[12px] leading-5 text-[#66706B]">{t("Crea el perfil de tu negocio para comenzar el proceso de revisión y preparar tu cuenta para publicar experiencias, gestionar promociones y recibir reservas. ")}</p>
 
               <div className="mt-6">
                 <button
@@ -80,10 +76,7 @@ export default function MyAgencyPage() {
                 >
                   <Plus
                     size={15}
-                  />
-
-                  Registrar mi agencia
-                </button>
+                  />{t("Registrar mi agencia ")}</button>
               </div>
 
               <div className="mt-4 flex items-center justify-center gap-1.5 text-[10px] leading-4 text-[#7A837F]">
@@ -92,9 +85,7 @@ export default function MyAgencyPage() {
                   className="shrink-0 text-[#6B8176]"
                 />
 
-                <span>
-                  Tu agencia será revisada por administración antes de activarse.
-                </span>
+                <span>{t("Tu agencia será revisada por administración antes de activarse. ")}</span>
               </div>
             </div>
 
@@ -106,7 +97,7 @@ export default function MyAgencyPage() {
                     size={15}
                   />
                 }
-                title="Completa tu perfil"
+                title={t("Completa tu perfil")}
                 text="Agrega información del negocio, medios de contacto e identidad visual."
               />
 
@@ -117,7 +108,7 @@ export default function MyAgencyPage() {
                     size={15}
                   />
                 }
-                title="Envía a revisión"
+                title={t("Envía a revisión")}
                 text="Administración revisará la información y documentos enviados."
               />
 
@@ -128,7 +119,7 @@ export default function MyAgencyPage() {
                     size={15}
                   />
                 }
-                title="Activa tu agencia"
+                title={t("Activa tu agencia")}
                 text="Cuando sea aprobada podrás empezar a operar dentro de LaRutica."
               />
             </div>
@@ -138,13 +129,9 @@ export default function MyAgencyPage() {
         {error && (
           <div className="mt-3 flex flex-col gap-2 rounded-xl border border-[#F1E5C9] bg-[#FFFCF5] px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="text-[11px] font-semibold text-[#765B17]">
-                El servicio de agencias no está disponible temporalmente
-              </p>
+              <p className="text-[11px] font-semibold text-[#765B17]">{t("El servicio de agencias no está disponible temporalmente ")}</p>
 
-              <p className="mt-0.5 text-[10px] leading-4 text-[#8C7743]">
-                Intenta nuevamente dentro de unos momentos.
-              </p>
+              <p className="mt-0.5 text-[10px] leading-4 text-[#8C7743]">{t("Intenta nuevamente dentro de unos momentos. ")}</p>
             </div>
 
             <button
@@ -156,10 +143,7 @@ export default function MyAgencyPage() {
             >
               <RefreshCw
                 size={12}
-              />
-
-              Reintentar
-            </button>
+              />{t("Reintentar ")}</button>
           </div>
         )}
       </div>
@@ -186,8 +170,8 @@ export default function MyAgencyPage() {
   return (
     <div className="mx-auto w-full max-w-[1180px]">
       <PageHeader
-        title="Mi agencia"
-        description="Consulta y administra la información de tu agencia."
+        title={t("Mi agencia")}
+        description={t("Consulta y administra la información de tu agencia.")}
         action={
           canEdit ? (
             <button
@@ -219,15 +203,9 @@ export default function MyAgencyPage() {
           </div>
 
           <div>
-            <p className="text-[11px] font-semibold text-[#765B17]">
-              Tu agencia está en revisión
-            </p>
+            <p className="text-[11px] font-semibold text-[#765B17]">{t("Tu agencia está en revisión ")}</p>
 
-            <p className="mt-0.5 text-[10px] leading-4 text-[#8C7743]">
-              Administración está revisando la información y los documentos
-              enviados. Mientras el proceso esté activo no podrás modificar el
-              perfil.
-            </p>
+            <p className="mt-0.5 text-[10px] leading-4 text-[#8C7743]">{t("Administración está revisando la información y los documentos enviados. Mientras el proceso esté activo no podrás modificar el perfil. ")}</p>
           </div>
         </div>
       )}
@@ -235,13 +213,9 @@ export default function MyAgencyPage() {
       {agency.status ===
         "REJECTED" && (
         <div className="mb-4 rounded-xl border border-[#F2CACA] bg-[#FFF4F4] px-4 py-3">
-          <p className="text-[11px] font-semibold text-[#963333]">
-            La agencia requiere correcciones
-          </p>
+          <p className="text-[11px] font-semibold text-[#963333]">{t("La agencia requiere correcciones ")}</p>
 
-          <p className="mt-0.5 text-[10px] leading-4 text-[#A75A5A]">
-            Edita la información necesaria y vuelve a enviarla para revisión.
-          </p>
+          <p className="mt-0.5 text-[10px] leading-4 text-[#A75A5A]">{t("Edita la información necesaria y vuelve a enviarla para revisión. ")}</p>
         </div>
       )}
 
@@ -333,8 +307,8 @@ export default function MyAgencyPage() {
                   size={17}
                 />
               }
-              title="Contacto"
-              description="Información para contactar con la agencia."
+              title={t("Contacto")}
+              description={t("Información para contactar con la agencia.")}
               items={[
                 agency.email
                   ? {
@@ -370,8 +344,8 @@ export default function MyAgencyPage() {
                   size={17}
                 />
               }
-              title="Ubicación"
-              description="Ubicación registrada para la agencia."
+              title={t("Ubicación")}
+              description={t("Ubicación registrada para la agencia.")}
               items={[
                 location
                   ? {
@@ -419,13 +393,9 @@ export default function MyAgencyPage() {
                 </div>
 
                 <div>
-                  <p className="text-[12px] font-semibold text-[#252B28]">
-                    Categorías
-                  </p>
+                  <p className="text-[12px] font-semibold text-[#252B28]">{t("Categorías ")}</p>
 
-                  <p className="mt-0.5 text-[9px] leading-4 text-[#7A837F]">
-                    Tipos de servicios y experiencias que ofrece tu agencia.
-                  </p>
+                  <p className="mt-0.5 text-[9px] leading-4 text-[#7A837F]">{t("Tipos de servicios y experiencias que ofrece tu agencia. ")}</p>
                 </div>
               </div>
 
@@ -463,13 +433,9 @@ export default function MyAgencyPage() {
                 </div>
 
                 <div>
-                  <p className="text-[12px] font-semibold text-[#252B28]">
-                    Idiomas
-                  </p>
+                  <p className="text-[12px] font-semibold text-[#252B28]">{t("Idiomas ")}</p>
 
-                  <p className="mt-0.5 text-[9px] leading-4 text-[#7A837F]">
-                    Idiomas disponibles para atender a los viajeros.
-                  </p>
+                  <p className="mt-0.5 text-[9px] leading-4 text-[#7A837F]">{t("Idiomas disponibles para atender a los viajeros. ")}</p>
                 </div>
               </div>
 
@@ -567,19 +533,18 @@ function PageHeader({
   action?:
     React.ReactNode;
 }) {
+  const { t } = usePreferences();
   return (
     <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
       <div>
-        <p className="mb-1 text-[10px] font-medium text-[#075E36]">
-          Dashboard / Mi agencia
-        </p>
+        <p className="mb-1 text-[10px] font-medium text-[#075E36]">{t("Dashboard / Mi agencia ")}</p>
 
         <h1 className="!m-0 !max-w-none !text-[30px] !font-bold !leading-9 !tracking-[-0.025em] text-[#123A30]">
-          {title}
+          {t(title)}
         </h1>
 
         <p className="mt-1 text-[11px] leading-5 text-[#66706B]">
-          {description}
+          {t(description)}
         </p>
       </div>
 
@@ -603,6 +568,7 @@ function ProcessStep({
 
   text: string;
 }) {
+  const { t } = usePreferences();
   return (
     <div className="rounded-xl border border-[#E5E9E7] bg-[#FCFDFC] p-4">
       <div className="flex items-center gap-2.5">
@@ -616,7 +582,7 @@ function ProcessStep({
           </span>
 
           <p className="text-[11px] font-semibold text-[#252B28]">
-            {title}
+            {t(title)}
           </p>
         </div>
       </div>
@@ -652,6 +618,7 @@ function InfoCard({
     InfoItem | null
   >;
 }) {
+  const { t } = usePreferences();
   const validItems =
     items.filter(
       (
@@ -673,11 +640,11 @@ function InfoCard({
 
         <div>
           <p className="text-[12px] font-semibold text-[#252B28]">
-            {title}
+            {t(title)}
           </p>
 
           <p className="mt-0.5 text-[9px] leading-4 text-[#7A837F]">
-            {description}
+            {t(description)}
           </p>
         </div>
       </div>
@@ -721,6 +688,7 @@ function StatusCard({
 }: {
   status: string;
 }) {
+  const { t } = usePreferences();
   return (
     <div className="rounded-2xl border border-[#E3E9E6] bg-[#FBFDFC] p-5">
       <div className="flex items-start gap-3">
@@ -731,13 +699,9 @@ function StatusCard({
         </div>
 
         <div>
-          <p className="text-[12px] font-semibold text-[#252B28]">
-            Estado del perfil
-          </p>
+          <p className="text-[12px] font-semibold text-[#252B28]">{t("Estado del perfil ")}</p>
 
-          <p className="mt-0.5 text-[9px] leading-4 text-[#7A837F]">
-            Situación actual de tu agencia dentro de LaRutica.
-          </p>
+          <p className="mt-0.5 text-[9px] leading-4 text-[#7A837F]">{t("Situación actual de tu agencia dentro de LaRutica. ")}</p>
         </div>
       </div>
 
@@ -769,10 +733,9 @@ function StatusCard({
 }
 
 function EmptyInlineText() {
+  const { t } = usePreferences();
   return (
-    <span className="text-[9px] text-[#87908C]">
-      Sin información
-    </span>
+    <span className="text-[9px] text-[#87908C]">{t("Sin información ")}</span>
   );
 }
 

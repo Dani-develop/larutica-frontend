@@ -1,4 +1,5 @@
 "use client";
+import { usePreferences } from "@/lib/preferences/Preferences";
 
 import {
   useEffect,
@@ -34,6 +35,7 @@ export function PublicationDetail({
 }: {
   id: string;
 }) {
+  const { t } = usePreferences();
   const router =
     useRouter();
 
@@ -168,9 +170,7 @@ export function PublicationDetail({
     return (
       <div className="mx-auto w-full max-w-5xl">
         <div className="rounded-2xl border border-red-200 bg-red-50 p-6">
-          <h1 className="!m-0 !text-lg !font-semibold !tracking-normal text-red-800">
-            No se pudo cargar la publicación
-          </h1>
+          <h1 className="!m-0 !text-lg !font-semibold !tracking-normal text-red-800">{t("No se pudo cargar la publicación ")}</h1>
 
           <p className="mt-2 text-sm text-red-700">
             {error ??
@@ -182,9 +182,7 @@ export function PublicationDetail({
             asChild
             className="mt-4"
           >
-            <Link href="/dashboard/publications">
-              Volver al listado
-            </Link>
+            <Link href="/dashboard/publications">{t("Volver al listado ")}</Link>
           </Button>
         </div>
       </div>
@@ -204,19 +202,14 @@ export function PublicationDetail({
           <Link href="/dashboard/publications">
             <ArrowLeft
               size={15}
-            />
-
-            Volver a publicaciones
-          </Link>
+            />{t("Volver a publicaciones ")}</Link>
         </Button>
       </div>
 
       {/* Encabezado */}
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
-          <p className="mb-1 text-xs font-medium text-[#0d684e]">
-            Dashboard / Publicaciones / Detalle
-          </p>
+          <p className="mb-1 text-xs font-medium text-[#0d684e]">{t("Dashboard / Publicaciones / Detalle ")}</p>
 
           <h1 className="!m-0 !text-[26px] !font-semibold !leading-tight !tracking-tight text-[#123a30]">
             {publication.title ??
@@ -231,10 +224,10 @@ export function PublicationDetail({
             />
 
             <span className="text-xs text-muted-foreground">
-              {publication.serviceType ===
+              {t(publication.serviceType ===
               "TRANSPORT"
                 ? "Transporte"
-                : "Excursión"}
+                : "Excursión")}
             </span>
           </div>
         </div>
@@ -251,10 +244,7 @@ export function PublicationDetail({
             >
               <Pencil
                 size={14}
-              />
-
-              Editar
-            </Link>
+              />{t("Editar ")}</Link>
           </Button>
 
           <Button
@@ -275,12 +265,12 @@ export function PublicationDetail({
               size={14}
             />
 
-            {publication.status ===
+            {t(publication.status ===
             "INACTIVE"
               ? "Inactiva"
               : deleting
                 ? "Desactivando..."
-                : "Desactivar"}
+                : "Desactivar")}
           </Button>
         </div>
       </div>
@@ -300,17 +290,13 @@ export function PublicationDetail({
             className="h-72 w-full object-cover"
           />
         ) : (
-          <div className="flex h-64 items-center justify-center text-sm text-muted-foreground">
-            Sin imagen principal
-          </div>
+          <div className="flex h-64 items-center justify-center text-sm text-muted-foreground">{t("Sin imagen principal ")}</div>
         )}
       </div>
 
       {/* Descripción */}
       <section className="mt-5 rounded-2xl border border-black/10 bg-white p-5 shadow-sm">
-        <h2 className="!m-0 !text-sm !font-semibold !leading-5 !tracking-normal text-[#123a30]">
-          Descripción
-        </h2>
+        <h2 className="!m-0 !text-sm !font-semibold !leading-5 !tracking-normal text-[#123a30]">{t("Descripción ")}</h2>
 
         <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-muted-foreground">
           {publication.description ??
@@ -320,9 +306,7 @@ export function PublicationDetail({
 
       {/* Información principal */}
       <section className="mt-5 rounded-2xl border border-black/10 bg-white p-5 shadow-sm">
-        <h2 className="!m-0 !text-sm !font-semibold !leading-5 !tracking-normal text-[#123a30]">
-          Información del servicio
-        </h2>
+        <h2 className="!m-0 !text-sm !font-semibold !leading-5 !tracking-normal text-[#123a30]">{t("Información del servicio ")}</h2>
 
         <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <InfoItem
@@ -393,9 +377,7 @@ export function PublicationDetail({
             className="text-[#0d684e]"
           />
 
-          <h2 className="!m-0 !text-sm !font-semibold !leading-5 !tracking-normal text-[#123a30]">
-            Idiomas
-          </h2>
+          <h2 className="!m-0 !text-sm !font-semibold !leading-5 !tracking-normal text-[#123a30]">{t("Idiomas ")}</h2>
         </div>
 
         <div className="mt-3 flex flex-wrap gap-2">
@@ -415,9 +397,7 @@ export function PublicationDetail({
               ),
             )
           ) : (
-            <p className="text-sm text-muted-foreground">
-              Sin idiomas definidos.
-            </p>
+            <p className="text-sm text-muted-foreground">{t("Sin idiomas definidos. ")}</p>
           )}
         </div>
       </section>
@@ -425,9 +405,7 @@ export function PublicationDetail({
       {/* Incluye / no incluye */}
       <section className="mt-5 grid gap-4 md:grid-cols-2">
         <div className="rounded-2xl border border-black/10 bg-white p-5 shadow-sm">
-          <h2 className="!m-0 !text-sm !font-semibold !leading-5 !tracking-normal text-[#123a30]">
-            Qué incluye
-          </h2>
+          <h2 className="!m-0 !text-sm !font-semibold !leading-5 !tracking-normal text-[#123a30]">{t("Qué incluye ")}</h2>
 
           <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-muted-foreground">
             {publication.included ??
@@ -436,9 +414,7 @@ export function PublicationDetail({
         </div>
 
         <div className="rounded-2xl border border-black/10 bg-white p-5 shadow-sm">
-          <h2 className="!m-0 !text-sm !font-semibold !leading-5 !tracking-normal text-[#123a30]">
-            Qué no incluye
-          </h2>
+          <h2 className="!m-0 !text-sm !font-semibold !leading-5 !tracking-normal text-[#123a30]">{t("Qué no incluye ")}</h2>
 
           <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-muted-foreground">
             {publication.notIncluded ??
@@ -455,9 +431,7 @@ export function PublicationDetail({
             className="text-[#0d684e]"
           />
 
-          <h2 className="!m-0 !text-sm !font-semibold !leading-5 !tracking-normal text-[#123a30]">
-            Punto de encuentro
-          </h2>
+          <h2 className="!m-0 !text-sm !font-semibold !leading-5 !tracking-normal text-[#123a30]">{t("Punto de encuentro ")}</h2>
         </div>
 
         <p className="mt-3 text-sm leading-6 text-muted-foreground">
@@ -478,13 +452,14 @@ function InfoItem({
   label: string;
   value: string;
 }) {
+  const { t } = usePreferences();
   return (
     <div className="rounded-xl bg-muted/30 p-3">
       <div className="flex items-center gap-2 text-[#0d684e]">
         {icon}
 
         <span className="text-[11px] font-medium uppercase tracking-wide">
-          {label}
+          {t(label)}
         </span>
       </div>
 

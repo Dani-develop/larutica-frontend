@@ -1,4 +1,5 @@
 "use client";
+import { usePreferences } from "@/lib/preferences/Preferences";
 
 import {
   Building2,
@@ -22,6 +23,7 @@ interface AdminAgenciesTableProps {
 export default function AdminAgenciesTable({
   agencies,
 }: AdminAgenciesTableProps) {
+  const { t, language } = usePreferences();
   const router = useRouter();
 
   if (agencies.length === 0) {
@@ -31,13 +33,9 @@ export default function AdminAgenciesTable({
           <Building2 size={20} />
         </div>
 
-        <p className="mt-3 text-[12px] font-semibold text-[#252B28]">
-          No hay agencias para mostrar
-        </p>
+        <p className="mt-3 text-[12px] font-semibold text-[#252B28]">{t("No hay agencias para mostrar ")}</p>
 
-        <p className="mt-1 text-[10px] text-[#66706B]">
-          Intenta cambiar los filtros de búsqueda.
-        </p>
+        <p className="mt-1 text-[10px] text-[#66706B]">{t("Intenta cambiar los filtros de búsqueda. ")}</p>
       </div>
     );
   }
@@ -48,29 +46,17 @@ export default function AdminAgenciesTable({
         <table className="w-full border-collapse">
           <thead className="bg-[#F6F8F7]">
             <tr className="border-b border-[#E2E6E4]">
-              <TableHeader>
-                Agencia
-              </TableHeader>
+              <TableHeader>{t("Agencia ")}</TableHeader>
 
-              <TableHeader>
-                Ubicación
-              </TableHeader>
+              <TableHeader>{t("Ubicación ")}</TableHeader>
 
-              <TableHeader>
-                Tipo
-              </TableHeader>
+              <TableHeader>{t("Tipo ")}</TableHeader>
 
-              <TableHeader>
-                Estado
-              </TableHeader>
+              <TableHeader>{t("Estado ")}</TableHeader>
 
-              <TableHeader>
-                Registro
-              </TableHeader>
+              <TableHeader>{t("Registro ")}</TableHeader>
 
-              <TableHeader align="right">
-                Acción
-              </TableHeader>
+              <TableHeader align="right">{t("Acción ")}</TableHeader>
             </tr>
           </thead>
 
@@ -144,7 +130,7 @@ export default function AdminAgenciesTable({
 
                 <td className="px-4 py-3 text-[10px] text-[#66706B]">
                   {formatDate(
-                    agency.createdAt,
+                    agency.createdAt, language,
                   )}
                 </td>
 
@@ -157,10 +143,7 @@ export default function AdminAgenciesTable({
                       )
                     }
                     className="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border border-[#D7E1DC] bg-white px-3 text-[10px] font-semibold text-[#075E36] transition hover:border-[#0A6A42] hover:bg-[#EFF8F3]"
-                  >
-                    Ver detalle
-
-                    <ChevronRight size={12} />
+                  >{t("Ver detalle ")}<ChevronRight size={12} />
                   </button>
                 </td>
               </tr>
@@ -198,6 +181,7 @@ function StatusBadge({
 }: {
   status: AgencyStatus;
 }) {
+  const { t } = usePreferences();
   const config: Record<
     AgencyStatus,
     {
@@ -242,7 +226,7 @@ function StatusBadge({
     <span
       className={`inline-flex rounded-full border px-2 py-1 text-[9px] font-semibold ${current.className}`}
     >
-      {current.label}
+      {t(current.label)}
     </span>
   );
 }
@@ -269,7 +253,7 @@ function businessTypeLabel(
 }
 
 function formatDate(
-  value: string,
+  value: string, language: string = "es",
 ) {
   const date = new Date(value);
 
@@ -282,7 +266,7 @@ function formatDate(
   }
 
   return new Intl.DateTimeFormat(
-    "es-CR",
+    language === "en" ? "en-US" : "es-CR",
     {
       day: "2-digit",
       month: "2-digit",

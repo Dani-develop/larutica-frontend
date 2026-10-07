@@ -1,4 +1,5 @@
 "use client";
+import { usePreferences } from "@/lib/preferences/Preferences";
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -15,6 +16,7 @@ import { useVehicles } from "../hooks/useVehicles";
 import { VehicleStatusBadge } from "./VehicleStatusBadge";
 
 export function VehicleDetail({ id }: { id: string }) {
+  const { t } = usePreferences();
   const router = useRouter();
   const { getById, remove } = useVehicles();
   const vehicle = getById(id);
@@ -22,9 +24,9 @@ export function VehicleDetail({ id }: { id: string }) {
   if (!vehicle) {
     return (
       <div className="mx-auto max-w-3xl space-y-4">
-        <h1 className="text-lg font-semibold">Vehículo no encontrado</h1>
+        <h1 className="text-lg font-semibold">{t("Vehículo no encontrado")}</h1>
         <Button asChild variant="outline">
-          <Link href="/dashboard/agencies">Volver al listado</Link>
+          <Link href="/dashboard/agencies">{t("Volver al listado")}</Link>
         </Button>
       </div>
     );
@@ -35,10 +37,8 @@ export function VehicleDetail({ id }: { id: string }) {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <p className="text-sm font-medium text-primary">
-            <Link href="/dashboard/agencies" className="hover:underline">
-              Vehículos
-            </Link>
-            <span className="text-muted-foreground"> / Detalle</span>
+            <Link href="/dashboard/agencies" className="hover:underline">{t("Vehículos ")}</Link>
+            <span className="text-muted-foreground">{t(" / Detalle")}</span>
           </p>
           <h1 className="mt-1 text-xl font-semibold tracking-tight">
             {vehicle.name}
@@ -54,9 +54,7 @@ export function VehicleDetail({ id }: { id: string }) {
         <div className="flex gap-2">
           <Button variant="outline" size="sm" asChild className="gap-1.5">
             <Link href={`/dashboard/agencies/${vehicle.id}/edit`}>
-              <Pencil className="size-3.5" />
-              Editar
-            </Link>
+              <Pencil className="size-3.5" />{t("Editar ")}</Link>
           </Button>
           <Button
             variant="outline"
@@ -69,9 +67,7 @@ export function VehicleDetail({ id }: { id: string }) {
               }
             }}
           >
-            <Trash2 className="size-3.5" />
-            Eliminar
-          </Button>
+            <Trash2 className="size-3.5" />{t("Eliminar ")}</Button>
         </div>
       </div>
 
@@ -86,14 +82,12 @@ export function VehicleDetail({ id }: { id: string }) {
 
       <Card className="shadow-xs">
         <CardHeader>
-          <CardTitle>Ficha</CardTitle>
-          <CardDescription>
-            Estos datos se usan al asignar el vehículo a una ruta.
-          </CardDescription>
+          <CardTitle>{t("Ficha")}</CardTitle>
+          <CardDescription>{t("Estos datos se usan al asignar el vehículo a una ruta. ")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div>
-            <h2 className="mb-2 text-sm font-semibold">Equipamiento</h2>
+            <h2 className="mb-2 text-sm font-semibold">{t("Equipamiento")}</h2>
             <ul className="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
               {vehicle.features.map((item) => (
                 <li key={item}>{item}</li>
@@ -103,15 +97,15 @@ export function VehicleDetail({ id }: { id: string }) {
 
           <div className="grid grid-cols-2 gap-3 rounded-lg border bg-muted/40 p-4 text-sm sm:grid-cols-3">
             <div>
-              <p className="text-muted-foreground">Tipo</p>
+              <p className="text-muted-foreground">{t("Tipo")}</p>
               <p className="font-medium">{vehicle.type}</p>
             </div>
             <div>
-              <p className="text-muted-foreground">Asientos</p>
+              <p className="text-muted-foreground">{t("Asientos")}</p>
               <p className="font-medium">{vehicle.seats}</p>
             </div>
             <div>
-              <p className="text-muted-foreground">Placa</p>
+              <p className="text-muted-foreground">{t("Placa")}</p>
               <p className="font-medium">{vehicle.plate || "—"}</p>
             </div>
           </div>

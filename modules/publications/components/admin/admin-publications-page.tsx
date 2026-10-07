@@ -1,4 +1,5 @@
 "use client";
+import { usePreferences } from "@/lib/preferences/Preferences";
 
 import {
   useMemo,
@@ -55,6 +56,7 @@ const statusOptions: Array<{
 ];
 
 export default function AdminPublicationsPage() {
+  const { t } = usePreferences();
   const [
     status,
     setStatus,
@@ -94,17 +96,11 @@ export default function AdminPublicationsPage() {
   return (
     <div className="mx-auto w-full max-w-[1180px]">
       <div className="mb-5">
-        <p className="mb-1 text-[10px] font-medium text-[#075E36]">
-          Dashboard / Publicaciones
-        </p>
+        <p className="mb-1 text-[10px] font-medium text-[#075E36]">{t("Dashboard / Publicaciones ")}</p>
 
-        <h1 className="!m-0 !text-[30px] !font-bold !leading-9 !tracking-[-0.025em] text-[#123A30]">
-          Publicaciones
-        </h1>
+        <h1 className="!m-0 !text-[30px] !font-bold !leading-9 !tracking-[-0.025em] text-[#123A30]">{t("Publicaciones ")}</h1>
 
-        <p className="mt-1 text-[11px] leading-5 text-[#66706B]">
-          Revisa y administra las publicaciones enviadas por las agencias.
-        </p>
+        <p className="mt-1 text-[11px] leading-5 text-[#66706B]">{t("Revisa y administra las publicaciones enviadas por las agencias. ")}</p>
       </div>
 
       <section className="mb-3 rounded-xl border border-[#DDE2DF] bg-white p-3">
@@ -124,7 +120,7 @@ export default function AdminPublicationsPage() {
                   event.target.value,
                 )
               }
-              placeholder="Buscar por título o destino..."
+              placeholder={t("Buscar por título o destino...")}
               className="h-9 w-full rounded-lg border border-[#DDE2DF] bg-white pl-9 pr-3 text-[11px] text-[#252B28] outline-none transition placeholder:text-[#9AA19D] focus:border-[#08643B] focus:ring-2 focus:ring-[#08643B]/10"
             />
           </div>
@@ -161,7 +157,7 @@ export default function AdminPublicationsPage() {
                     )}
                   >
                     {
-                      option.label
+                      t(option.label)
                     }
                   </button>
                 );
@@ -174,7 +170,7 @@ export default function AdminPublicationsPage() {
       {error && (
         <div className="mb-3 flex items-center justify-between gap-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3">
           <p className="text-[10px] text-red-700">
-            {error}
+            {t(error)}
           </p>
 
           <button
@@ -186,9 +182,7 @@ export default function AdminPublicationsPage() {
           >
             <RefreshCw
               size={12}
-            />
-            Reintentar
-          </button>
+            />{t("Reintentar ")}</button>
         </div>
       )}
 

@@ -1,4 +1,6 @@
 "use client";
+import { usePreferences } from "@/lib/preferences/Preferences";
+import { PreferenceControls } from "@/components/preferences/PreferenceControls";
 
 import dynamic from "next/dynamic";
 import Link from "next/link";
@@ -47,6 +49,7 @@ interface HeaderUser {
 }
 
 function DashboardHeader({ user }: { user: HeaderUser }) {
+  const { t } = usePreferences();
   const { isMobile } = useSidebar();
   const router = useRouter();
   const { signOut } = useAuth();
@@ -66,12 +69,11 @@ function DashboardHeader({ user }: { user: HeaderUser }) {
       </div>
 
       <div className="flex items-center gap-2">
+        <PreferenceControls languageOnly />
         <Link
           href="/"
           className="inline-flex min-h-11 items-center gap-2 rounded-md border px-3 text-sm font-medium text-primary hover:bg-accent focus-visible:outline-2 focus-visible:outline-offset-2"
-        >
-          Ver sitio web
-          <ArrowUpRight className="size-4" aria-hidden="true" />
+        >{t("Ver sitio web ")}<ArrowUpRight className="size-4" aria-hidden="true" />
         </Link>
         {isMobile && (
           <DropdownMenu>
@@ -106,9 +108,7 @@ function DashboardHeader({ user }: { user: HeaderUser }) {
               <DropdownMenuItem onSelect={() => {
                 void signOut().then(() => router.replace("/login"));
               }}>
-                <LogOut className="mr-2 size-4" />
-                Cerrar sesión
-              </DropdownMenuItem>
+                <LogOut className="mr-2 size-4" />{t("Cerrar sesión ")}</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         )}
@@ -142,6 +142,7 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
 }
 
 export default function Layout({ children }: { children: React.ReactNode }) {
+  const { t } = usePreferences();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -159,19 +160,19 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   }, [loading, pathname, router, search, session, signOut, user?.role, user?.status]);
 
   if (loading) {
-    return <div className="grid min-h-screen place-items-center text-sm text-muted-foreground">Validando sesión...</div>;
+    return <div className="grid min-h-screen place-items-center text-sm text-muted-foreground">{t("Validando sesión...")}</div>;
   }
   if (!session) {
-    return <div className="grid min-h-screen place-items-center text-sm text-muted-foreground">Redirigiendo al inicio de sesión...</div>;
+    return <div className="grid min-h-screen place-items-center text-sm text-muted-foreground">{t("Redirigiendo al inicio de sesión...")}</div>;
   }
   if (user?.status === "Inactivo") {
-    return <div className="grid min-h-screen place-items-center text-sm text-muted-foreground">Cerrando una cuenta inactiva...</div>;
+    return <div className="grid min-h-screen place-items-center text-sm text-muted-foreground">{t("Cerrando una cuenta inactiva...")}</div>;
   }
   if (error || !user) {
     return <div className="grid min-h-screen place-items-center p-6 text-center text-sm text-destructive">{error ?? "No se encontró el perfil asociado a esta sesión."}</div>;
   }
   if (user.role === "Viajero") {
-    return <div className="grid min-h-screen place-items-center text-sm text-muted-foreground">Abriendo tu viaje...</div>;
+    return <div className="grid min-h-screen place-items-center text-sm text-muted-foreground">{t("Abriendo tu viaje...")}</div>;
   }
 
   return (

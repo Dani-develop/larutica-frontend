@@ -1,4 +1,5 @@
 "use client";
+import { usePreferences } from "@/lib/preferences/Preferences";
 
 import Link from "next/link";
 import {
@@ -19,6 +20,7 @@ import {
 } from "@/modules/agency/hooks/useAgency";
 
 export default function EditAgencyPage() {
+  const { t } = usePreferences();
   const router =
     useRouter();
 
@@ -56,9 +58,7 @@ export default function EditAgencyPage() {
     return (
       <div className="mx-auto w-full max-w-[1180px]">
         <div className="rounded-xl border border-red-200 bg-red-50 p-5">
-          <h1 className="!m-0 !text-lg !font-semibold !tracking-normal text-red-800">
-            No se pudo cargar la agencia
-          </h1>
+          <h1 className="!m-0 !text-lg !font-semibold !tracking-normal text-red-800">{t("No se pudo cargar la agencia ")}</h1>
 
           <p className="mt-2 text-sm text-red-700">
             {error ??
@@ -68,9 +68,7 @@ export default function EditAgencyPage() {
           <Link
             href="/dashboard/my-agency"
             className="mt-4 inline-block text-sm font-medium text-[#075E36] hover:underline"
-          >
-            Volver a Mi agencia
-          </Link>
+          >{t("Volver a Mi agencia ")}</Link>
         </div>
       </div>
     );
@@ -87,8 +85,8 @@ export default function EditAgencyPage() {
             size={22}
           />
         }
-        title="Tu agencia está en revisión"
-        description="Mientras administración revisa la información enviada, no puedes modificar el perfil. Cuando finalice la revisión podrás continuar según el resultado."
+        title={t("Tu agencia está en revisión")}
+        description={t("Mientras administración revisa la información enviada, no puedes modificar el perfil. Cuando finalice la revisión podrás continuar según el resultado.")}
         buttonText="Volver a Mi agencia"
         onBack={() =>
           router.push(
@@ -110,8 +108,8 @@ export default function EditAgencyPage() {
             size={22}
           />
         }
-        title="La agencia está inactiva"
-        description="Una agencia inactiva no puede modificarse desde este formulario."
+        title={t("La agencia está inactiva")}
+        description={t("Una agencia inactiva no puede modificarse desde este formulario.")}
         buttonText="Volver a Mi agencia"
         onBack={() =>
           router.push(
@@ -135,19 +133,12 @@ export default function EditAgencyPage() {
       >
         <ArrowLeft
           size={14}
-        />
-
-        Volver a Mi agencia
-      </button>
+        />{t("Volver a Mi agencia ")}</button>
 
       <div className="mb-3">
-        <h1 className="!m-0 !max-w-none !text-[26px] !font-bold !leading-8 !tracking-[-0.02em] text-[#0B5433]">
-          Editar agencia
-        </h1>
+        <h1 className="!m-0 !max-w-none !text-[26px] !font-bold !leading-8 !tracking-[-0.02em] text-[#0B5433]">{t("Editar agencia ")}</h1>
 
-        <p className="mt-1 text-[12px] leading-5 text-[#66706B]">
-          Actualiza la información de tu negocio.
-        </p>
+        <p className="mt-1 text-[12px] leading-5 text-[#66706B]">{t("Actualiza la información de tu negocio. ")}</p>
       </div>
 
       {agency.status ===
@@ -160,14 +151,9 @@ export default function EditAgencyPage() {
           </span>
 
           <div>
-            <p className="text-[11px] font-semibold text-[#765B17]">
-              Estás modificando una agencia verificada
-            </p>
+            <p className="text-[11px] font-semibold text-[#765B17]">{t("Estás modificando una agencia verificada ")}</p>
 
-            <p className="mt-0.5 text-[10px] leading-4 text-[#8C7743]">
-              Al guardar cambios, la agencia volverá a estado borrador y
-              tendrás que enviarla nuevamente para revisión.
-            </p>
+            <p className="mt-0.5 text-[10px] leading-4 text-[#8C7743]">{t("Al guardar cambios, la agencia volverá a estado borrador y tendrás que enviarla nuevamente para revisión. ")}</p>
           </div>
         </div>
       )}
@@ -182,14 +168,9 @@ export default function EditAgencyPage() {
           </span>
 
           <div>
-            <p className="text-[11px] font-semibold text-[#963333]">
-              Tu agencia requiere correcciones
-            </p>
+            <p className="text-[11px] font-semibold text-[#963333]">{t("Tu agencia requiere correcciones ")}</p>
 
-            <p className="mt-0.5 text-[10px] leading-4 text-[#A75A5A]">
-              Revisa y corrige la información necesaria. Luego podrás
-              reenviarla para una nueva revisión.
-            </p>
+            <p className="mt-0.5 text-[10px] leading-4 text-[#A75A5A]">{t("Revisa y corrige la información necesaria. Luego podrás reenviarla para una nueva revisión. ")}</p>
           </div>
         </div>
       )}
@@ -227,6 +208,7 @@ function BlockedEditState({
 
   onBack: () => void;
 }) {
+  const { t } = usePreferences();
   return (
     <div className="mx-auto w-full max-w-[760px]">
       <div className="rounded-xl border border-[#DDE2DF] bg-white px-6 py-10 text-center">
@@ -235,11 +217,11 @@ function BlockedEditState({
         </div>
 
         <h1 className="!m-0 !mt-4 !text-[21px] !font-semibold !leading-7 !tracking-[-0.015em] text-[#123A30]">
-          {title}
+          {t(title)}
         </h1>
 
         <p className="mx-auto mt-2 max-w-[540px] text-[11px] leading-5 text-[#66706B]">
-          {description}
+          {t(description)}
         </p>
 
         <button

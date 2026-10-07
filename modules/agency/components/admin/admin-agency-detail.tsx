@@ -1,4 +1,5 @@
 "use client";
+import { usePreferences } from "@/lib/preferences/Preferences";
 
 import { useEffect, useRef, useState } from "react";
 import {
@@ -47,6 +48,7 @@ const statusLabel: Record<AgencyStatus, string> = {
 };
 
 function StatusBadge({ status }: { status: AgencyStatus }) {
+  const { t } = usePreferences();
   return (
     <span
       className={cn(
@@ -54,7 +56,7 @@ function StatusBadge({ status }: { status: AgencyStatus }) {
         statusBadgeClass[status],
       )}
     >
-      {statusLabel[status]}
+      {t(statusLabel[status])}
     </span>
   );
 }
@@ -74,10 +76,10 @@ function businessTypeLabel(value: BusinessType) {
   }
 }
 
-function formatDate(value: string) {
+function formatDate(value: string, language: string = "es") {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "—";
-  return new Intl.DateTimeFormat("es-CR", {
+  return new Intl.DateTimeFormat(language === "en" ? "en-US" : "es-CR", {
     day: "2-digit",
     month: "long",
     year: "numeric",
@@ -93,6 +95,7 @@ function InfoRow({
   label: string;
   value: string | null | undefined;
 }) {
+  const { t } = usePreferences();
   return (
     <div className="flex items-start gap-3 py-3">
       <span className="bg-muted text-muted-foreground mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full">
@@ -100,7 +103,7 @@ function InfoRow({
       </span>
       <div className="min-w-0">
         <p className="text-muted-foreground !text-xs !font-medium tracking-wide uppercase">
-          {label}
+          {t(label)}
         </p>
         <p className="mt-0.5 break-words !text-sm !font-medium">
           {value?.trim() ? value : "—"}
@@ -111,9 +114,10 @@ function InfoRow({
 }
 
 function TagList({ title, values }: { title: string; values: string[] }) {
+  const { t } = usePreferences();
   return (
     <div>
-      <p className="!m-0 !text-sm !font-semibold">{title}</p>
+      <p className="!m-0 !text-sm !font-semibold">{t(title)}</p>
       <div className="mt-2.5 flex flex-wrap gap-1.5">
         {values.length > 0 ? (
           values.map((value) => (
@@ -125,7 +129,7 @@ function TagList({ title, values }: { title: string; values: string[] }) {
             </span>
           ))
         ) : (
-          <span className="text-muted-foreground !text-xs">Sin información</span>
+          <span className="text-muted-foreground !text-xs">{t("Sin información")}</span>
         )}
       </div>
     </div>
@@ -158,6 +162,7 @@ function ImageLightbox({
   alt: string;
   onClose: () => void;
 }) {
+  const { t } = usePreferences();
   const backdrop = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const previousOverflow = document.body.style.overflow;
@@ -187,7 +192,7 @@ function ImageLightbox({
     >
       <button
         type="button"
-        aria-label="Cerrar imagen"
+        aria-label={t("Cerrar imagen")}
         className="absolute top-4 right-4 flex size-10 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/20"
         onClick={onClose}
       >
@@ -208,6 +213,7 @@ export default function AdminAgencyDetail({
 }: {
   agencyId: string;
 }) {
+  const { t, language } = usePreferences();
   const {
     agency,
     loading,
@@ -234,19 +240,15 @@ export default function AdminAgencyDetail({
                 href="/dashboard"
                 className="flex items-center gap-1.5 !text-sm"
               >
-                <Home className="size-3.5" />
-                Inicio
-              </BreadcrumbLink>
+                <Home className="size-3.5" />{t("Inicio ")}</BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
-              <BreadcrumbLink href="/dashboard/agencies" className="!text-sm">
-                Agencias
-              </BreadcrumbLink>
+              <BreadcrumbLink href="/dashboard/agencies" className="!text-sm">{t("Agencias ")}</BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
-              <BreadcrumbPage className="!text-sm">Detalle</BreadcrumbPage>
+              <BreadcrumbPage className="!text-sm">{t("Detalle")}</BreadcrumbPage>
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
@@ -255,18 +257,16 @@ export default function AdminAgencyDetail({
           <div className="bg-muted flex size-14 items-center justify-center rounded-full">
             <Building2 className="text-muted-foreground/40 size-7" />
           </div>
-          <p className="!text-sm !font-medium">No se pudo cargar la agencia</p>
+          <p className="!text-sm !font-medium">{t("No se pudo cargar la agencia")}</p>
           {error ? (
-            <p className="text-destructive !text-xs">{error}</p>
+            <p className="text-destructive !text-xs">{t(error)}</p>
           ) : null}
           <Button
             type="button"
             variant="outline"
             className="!text-sm"
             onClick={() => void loadAgency()}
-          >
-            Intentar de nuevo
-          </Button>
+          >{t("Intentar de nuevo ")}</Button>
         </div>
       </div>
     );
@@ -286,15 +286,11 @@ export default function AdminAgencyDetail({
               href="/dashboard"
               className="flex items-center gap-1.5 !text-sm"
             >
-              <Home className="size-3.5" />
-              Inicio
-            </BreadcrumbLink>
+              <Home className="size-3.5" />{t("Inicio ")}</BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
-            <BreadcrumbLink href="/dashboard/agencies" className="!text-sm">
-              Agencias
-            </BreadcrumbLink>
+            <BreadcrumbLink href="/dashboard/agencies" className="!text-sm">{t("Agencias ")}</BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
@@ -307,12 +303,8 @@ export default function AdminAgencyDetail({
 
       <div className="flex flex-row items-start justify-between gap-4">
         <div className="min-w-0">
-          <h1 className="!m-0 !max-w-none !text-2xl !leading-8 !font-semibold !tracking-tight">
-            Detalle de agencia
-          </h1>
-          <p className="text-muted-foreground mt-0.5 !text-sm !leading-5">
-            Revisa la información y el documento de verificación.
-          </p>
+          <h1 className="!m-0 !max-w-none !text-2xl !leading-8 !font-semibold !tracking-tight">{t("Detalle de agencia ")}</h1>
+          <p className="text-muted-foreground mt-0.5 !text-sm !leading-5">{t("Revisa la información y el documento de verificación. ")}</p>
         </div>
       </div>
 
@@ -321,7 +313,7 @@ export default function AdminAgencyDetail({
           className="border-destructive/20 bg-destructive/5 text-destructive rounded-lg border px-3 py-2 !text-sm"
           role="alert"
         >
-          {error}
+          {t(error)}
         </p>
       ) : null}
 
@@ -331,7 +323,7 @@ export default function AdminAgencyDetail({
             <button
               type="button"
               className="group relative size-full cursor-zoom-in"
-              aria-label="Ver portada en grande"
+              aria-label={t("Ver portada en grande")}
               onClick={() =>
                 setLightbox({
                   src: agency.coverUrl!,
@@ -345,9 +337,7 @@ export default function AdminAgencyDetail({
                 alt=""
                 className="size-full object-cover transition duration-300 group-hover:scale-[1.02]"
               />
-              <span className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/35 to-transparent px-4 py-3 text-left !text-xs font-medium text-white opacity-0 transition group-hover:opacity-100">
-                Toca para ver en grande
-              </span>
+              <span className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/35 to-transparent px-4 py-3 text-left !text-xs font-medium text-white opacity-0 transition group-hover:opacity-100">{t("Toca para ver en grande ")}</span>
             </button>
           ) : (
             <div className="text-muted-foreground/25 flex size-full items-center justify-center">
@@ -361,7 +351,7 @@ export default function AdminAgencyDetail({
             <button
               type="button"
               className="bg-muted ring-background group size-16 shrink-0 cursor-zoom-in overflow-hidden rounded-2xl ring-1 transition hover:ring-primary/30 sm:size-20"
-              aria-label="Ver logo en grande"
+              aria-label={t("Ver logo en grande")}
               onClick={() =>
                 setLightbox({
                   src: agency.logoUrl!,
@@ -392,7 +382,7 @@ export default function AdminAgencyDetail({
                   {agency.status === "APPROVED" ? (
                     <BadgeCheck
                       className="text-primary size-5 shrink-0"
-                      aria-label="Agencia verificada"
+                      aria-label={t("Agencia verificada")}
                     />
                   ) : null}
                 </div>
@@ -423,15 +413,11 @@ export default function AdminAgencyDetail({
             ) : null}
 
             {agency.status === "APPROVED" ? (
-              <p className="text-primary !text-xs !font-medium">
-                Agencia aprobada · puede operar dentro de LaRutica
-              </p>
+              <p className="text-primary !text-xs !font-medium">{t("Agencia aprobada · puede operar dentro de LaRutica ")}</p>
             ) : null}
 
             {agency.status === "REJECTED" ? (
-              <p className="text-destructive !text-xs !font-medium">
-                Agencia rechazada · el propietario puede corregirla y reenviar
-              </p>
+              <p className="text-destructive !text-xs !font-medium">{t("Agencia rechazada · el propietario puede corregirla y reenviar ")}</p>
             ) : null}
           </div>
         </div>
@@ -439,9 +425,7 @@ export default function AdminAgencyDetail({
 
       <div className="grid gap-6 lg:grid-cols-2">
         <section className="bg-card rounded-xl p-5">
-          <h2 className="!m-0 !max-w-none !text-base !leading-6 !font-semibold !tracking-normal">
-            Contacto y ubicación
-          </h2>
+          <h2 className="!m-0 !max-w-none !text-base !leading-6 !font-semibold !tracking-normal">{t("Contacto y ubicación ")}</h2>
           <div className="mt-2 divide-y">
             <InfoRow icon={Mail} label="Correo" value={agency.email} />
             <InfoRow icon={Phone} label="Teléfono" value={agency.phone} />
@@ -456,9 +440,7 @@ export default function AdminAgencyDetail({
         </section>
 
         <section className="bg-card rounded-xl p-5">
-          <h2 className="!m-0 !max-w-none !text-base !leading-6 !font-semibold !tracking-normal">
-            Información de la cuenta
-          </h2>
+          <h2 className="!m-0 !max-w-none !text-base !leading-6 !font-semibold !tracking-normal">{t("Información de la cuenta ")}</h2>
           <div className="mt-2 divide-y">
             <InfoRow
               icon={Building2}
@@ -477,7 +459,7 @@ export default function AdminAgencyDetail({
             <InfoRow
               icon={FileText}
               label="Fecha de registro"
-              value={formatDate(agency.createdAt)}
+              value={formatDate(agency.createdAt, language)}
             />
           </div>
 
@@ -485,11 +467,11 @@ export default function AdminAgencyDetail({
 
           <div className="space-y-5">
             <TagList
-              title="Categorías"
+              title={t("Categorías")}
               values={agency.categories.map((item) => item.name)}
             />
             <TagList
-              title="Idiomas"
+              title={t("Idiomas")}
               values={agency.languages.map((item) => item.name)}
             />
           </div>
@@ -505,13 +487,8 @@ export default function AdminAgencyDetail({
       {canReview ? (
         <section className="bg-card flex flex-col gap-4 rounded-xl p-5 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h2 className="!m-0 !max-w-none !text-base !leading-6 !font-semibold !tracking-normal">
-              Decisión de revisión
-            </h2>
-            <p className="text-muted-foreground mt-1 !text-sm">
-              Aprueba la agencia si la información y documentación son correctas,
-              o recházala para que pueda corregirse.
-            </p>
+            <h2 className="!m-0 !max-w-none !text-base !leading-6 !font-semibold !tracking-normal">{t("Decisión de revisión ")}</h2>
+            <p className="text-muted-foreground mt-1 !text-sm">{t("Aprueba la agencia si la información y documentación son correctas, o recházala para que pueda corregirse. ")}</p>
           </div>
           <div className="flex flex-wrap gap-2">
             <Button
@@ -529,9 +506,7 @@ export default function AdminAgencyDetail({
                 }
               }}
             >
-              <X className="size-4" />
-              Rechazar
-            </Button>
+              <X className="size-4" />{t("Rechazar ")}</Button>
             <Button
               type="button"
               className="gap-2 !text-sm"
@@ -547,7 +522,7 @@ export default function AdminAgencyDetail({
               }}
             >
               <Check className="size-4" />
-              {reviewing ? "Procesando…" : "Aprobar"}
+              {t(reviewing ? "Procesando…" : "Aprobar")}
             </Button>
           </div>
         </section>

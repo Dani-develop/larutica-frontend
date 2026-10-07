@@ -62,7 +62,7 @@ function RoleBadge({ role }: { role: DashboardRole }) {
         roleBadgeClass[role],
       )}
     >
-      {role}
+      {t(role)}
     </span>
   );
 }
@@ -76,7 +76,7 @@ function StatusBadge({ status }: { status: UserStatus }) {
         statusBadgeClass[status],
       )}
     >
-      {status}
+      {t(status)}
     </span>
   );
 }
@@ -347,7 +347,7 @@ export function MyProfilePage({ appearance = "dashboard" }: { appearance?: "dash
           )}
           role="status"
         >
-          {message}
+          {t(message)}
         </p>
       ) : null}
 

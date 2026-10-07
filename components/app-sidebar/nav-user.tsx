@@ -1,4 +1,5 @@
 "use client";
+import { usePreferences } from "@/lib/preferences/Preferences";
 
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -53,6 +54,7 @@ export function UserAvatar({
 }
 
 export function NavUser({ user }: NavUserProps) {
+  const { t } = usePreferences();
   const { isMobile } = useSidebar();
   const router = useRouter();
   const { signOut } = useAuth();
@@ -65,7 +67,7 @@ export function NavUser({ user }: NavUserProps) {
     <SidebarMenu>
       <SidebarMenuItem>
         <div className="flex items-center gap-1">
-          <SidebarMenuButton asChild size="lg" tooltip="Mi usuario" className="flex-1">
+          <SidebarMenuButton asChild size="lg" tooltip={t("Mi usuario")} className="flex-1">
             <Link href="/dashboard/profile">
               <UserAvatar initials={initials} className="size-8" />
               <div className="grid flex-1 text-left text-sm leading-tight">
@@ -83,7 +85,7 @@ export function NavUser({ user }: NavUserProps) {
             <DropdownMenuTrigger asChild>
               <button
                 type="button"
-                aria-label="Abrir menú de usuario"
+                aria-label={t("Abrir menú de usuario")}
                 className="flex size-8 shrink-0 items-center justify-center rounded-md text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
               >
                 <ChevronsUpDown className="size-4" />
@@ -109,7 +111,7 @@ export function NavUser({ user }: NavUserProps) {
                   )}
                   {user?.role && (
                     <span className="text-muted-foreground truncate text-[11px] uppercase tracking-wide">
-                      {user.role}
+                      {t(user.role)}
                     </span>
                   )}
                 </div>
@@ -121,9 +123,7 @@ export function NavUser({ user }: NavUserProps) {
             <DropdownMenuItem onSelect={() => {
               void signOut().then(() => router.replace("/login"));
             }}>
-              <LogOut className="mr-2 size-4" />
-              Cerrar sesión
-            </DropdownMenuItem>
+              <LogOut className="mr-2 size-4" />{t("Cerrar sesión ")}</DropdownMenuItem>
           </DropdownMenuContent>
           </DropdownMenu>
         </div>

@@ -1,3 +1,5 @@
+"use client";
+import { usePreferences } from "@/lib/preferences/Preferences";
 import Link from "next/link";
 import { BrandMark } from "@/components/brand/BrandMark";
 import {
@@ -9,6 +11,7 @@ import {
 import { SITE } from "@/modules/landing/constants/site";
 
 export function SidebarBrand() {
+  const { t } = usePreferences();
   const { setOpenMobile, isMobile } = useSidebar();
 
   return (
@@ -31,9 +34,7 @@ export function SidebarBrand() {
             <BrandMark className="size-9" />
             <div className="grid flex-1 text-left leading-tight">
               <span className="truncate text-sm font-semibold">{SITE.name}</span>
-              <span className="text-muted-foreground truncate text-xs">
-                Panel administrativo
-              </span>
+              <span className="text-muted-foreground truncate text-xs">{t("Panel administrativo ")}</span>
             </div>
           </Link>
         </SidebarMenuButton>

@@ -1,3 +1,5 @@
+"use client";
+import { usePreferences } from "@/lib/preferences/Preferences";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import type { VehicleStatus } from "../models/Vehicle";
@@ -14,9 +16,10 @@ export function VehicleStatusBadge({
   status: VehicleStatus;
   className?: string;
 }) {
+  const { t } = usePreferences();
   return (
     <Badge variant="outline" className={cn(statusClass[status], className)}>
-      {status}
+      {t(status)}
     </Badge>
   );
 }

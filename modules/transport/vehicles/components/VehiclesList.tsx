@@ -1,4 +1,5 @@
 "use client";
+import { usePreferences } from "@/lib/preferences/Preferences";
 
 import Link from "next/link";
 import { Pencil, Plus, Trash2 } from "lucide-react";
@@ -15,32 +16,27 @@ import { vehicleLabel } from "../models/Vehicle";
 import { VehicleStatusBadge } from "./VehicleStatusBadge";
 
 export function VehiclesList() {
+  const { t } = usePreferences();
   const { vehicles, remove } = useVehicles();
 
   return (
     <div className="mx-auto max-w-7xl space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight">Mis vehículos</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Registra la flota y elige el vehículo al publicar una ruta.
-          </p>
+          <h1 className="text-xl font-semibold tracking-tight">{t("Mis vehículos")}</h1>
+          <p className="mt-1 text-sm text-muted-foreground">{t("Registra la flota y elige el vehículo al publicar una ruta. ")}</p>
         </div>
         <Button asChild className="gap-2 self-start sm:self-auto">
           <Link href="/dashboard/agencies/new">
-            <Plus className="size-4" />
-            Nuevo vehículo
-          </Link>
+            <Plus className="size-4" />{t("Nuevo vehículo ")}</Link>
         </Button>
       </div>
 
       {vehicles.length === 0 ? (
         <Card className="shadow-xs">
           <CardHeader>
-            <CardTitle>Sin vehículos</CardTitle>
-            <CardDescription>
-              Crea el primero para asignarlo a tus rutas.
-            </CardDescription>
+            <CardTitle>{t("Sin vehículos")}</CardTitle>
+            <CardDescription>{t("Crea el primero para asignarlo a tus rutas. ")}</CardDescription>
           </CardHeader>
         </Card>
       ) : (
@@ -72,8 +68,7 @@ export function VehiclesList() {
                   </Link>
                 </CardTitle>
                 <p className="text-sm text-muted-foreground">
-                  {vehicle.seats} asientos
-                </p>
+                  {vehicle.seats}{t(" asientos ")}</p>
               </CardHeader>
               <CardContent className="flex flex-wrap items-center justify-between gap-3 border-t pt-4">
                 <p className="text-sm text-muted-foreground">
@@ -81,7 +76,7 @@ export function VehiclesList() {
                 </p>
                 <div className="flex gap-2">
                   <Button variant="outline" size="sm" asChild>
-                    <Link href={`/dashboard/agencies/${vehicle.id}`}>Ver</Link>
+                    <Link href={`/dashboard/agencies/${vehicle.id}`}>{t("Ver")}</Link>
                   </Button>
                   <Button
                     variant="outline"
@@ -90,9 +85,7 @@ export function VehiclesList() {
                     className="gap-1.5"
                   >
                     <Link href={`/dashboard/agencies/${vehicle.id}/edit`}>
-                      <Pencil className="size-3.5" />
-                      Editar
-                    </Link>
+                      <Pencil className="size-3.5" />{t("Editar ")}</Link>
                   </Button>
                   <Button
                     variant="outline"
@@ -108,9 +101,7 @@ export function VehiclesList() {
                       }
                     }}
                   >
-                    <Trash2 className="size-3.5" />
-                    Eliminar
-                  </Button>
+                    <Trash2 className="size-3.5" />{t("Eliminar ")}</Button>
                 </div>
               </CardContent>
             </Card>

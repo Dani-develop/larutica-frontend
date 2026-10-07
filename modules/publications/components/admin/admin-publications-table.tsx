@@ -1,4 +1,5 @@
 "use client";
+import { usePreferences } from "@/lib/preferences/Preferences";
 
 import {
   ChevronRight,
@@ -22,6 +23,7 @@ interface AdminPublicationsTableProps {
 export default function AdminPublicationsTable({
   publications,
 }: AdminPublicationsTableProps) {
+  const { t } = usePreferences();
   const router =
     useRouter();
 
@@ -36,13 +38,9 @@ export default function AdminPublicationsTable({
           className="mx-auto text-[#87908C]"
         />
 
-        <p className="mt-3 text-[12px] font-semibold text-[#252B28]">
-          No hay publicaciones para mostrar
-        </p>
+        <p className="mt-3 text-[12px] font-semibold text-[#252B28]">{t("No hay publicaciones para mostrar ")}</p>
 
-        <p className="mt-1 text-[10px] text-[#66706B]">
-          Cambia los filtros o espera nuevas publicaciones enviadas a revisión.
-        </p>
+        <p className="mt-1 text-[10px] text-[#66706B]">{t("Cambia los filtros o espera nuevas publicaciones enviadas a revisión. ")}</p>
       </div>
     );
   }
@@ -53,31 +51,19 @@ export default function AdminPublicationsTable({
         <table className="w-full border-collapse">
           <thead className="bg-[#F6F8F7]">
             <tr className="border-b border-[#E2E6E4]">
-              <Header>
-                Publicación
-              </Header>
+              <Header>{t("Publicación ")}</Header>
 
-              <Header>
-                Agencia
-              </Header>
+              <Header>{t("Agencia ")}</Header>
 
-              <Header>
-                Destino
-              </Header>
+              <Header>{t("Destino ")}</Header>
 
-              <Header>
-                Precio
-              </Header>
+              <Header>{t("Precio ")}</Header>
 
-              <Header>
-                Estado
-              </Header>
+              <Header>{t("Estado ")}</Header>
 
               <Header
                 align="right"
-              >
-                Acción
-              </Header>
+              >{t("Acción ")}</Header>
             </tr>
           </thead>
 
@@ -163,9 +149,7 @@ export default function AdminPublicationsTable({
                         )
                       }
                       className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-[#D7E1DC] bg-white px-3 text-[10px] font-semibold text-[#075E36] hover:bg-[#EFF8F3]"
-                    >
-                      Ver detalle
-                      <ChevronRight
+                    >{t("Ver detalle ")}<ChevronRight
                         size={12}
                       />
                     </button>
@@ -212,6 +196,7 @@ function StatusBadge({
   status:
     AdminPublicationStatus;
 }) {
+  const { t } = usePreferences();
   const styles: Record<
     AdminPublicationStatus,
     string
@@ -256,7 +241,7 @@ function StatusBadge({
     <span
       className={`inline-flex rounded-full border px-2 py-1 text-[9px] font-semibold ${styles[status]}`}
     >
-      {labels[status]}
+      {t(labels[status])}
     </span>
   );
 }

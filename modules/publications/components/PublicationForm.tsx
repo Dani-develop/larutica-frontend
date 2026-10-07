@@ -1,4 +1,5 @@
 "use client";
+import { usePreferences } from "@/lib/preferences/Preferences";
 
 import {
   useEffect,
@@ -58,6 +59,7 @@ export function PublicationForm({
   draftLabel = "Guardar borrador",
   submitLabel = "Enviar a revisión",
 }: PublicationFormProps) {
+  const { t } = usePreferences();
   const [
     value,
     setValue,
@@ -203,15 +205,15 @@ export function PublicationForm({
           role="alert"
           className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
         >
-          {error}
+          {t(error)}
         </div>
       ) : null}
 
       {/* Tipo de servicio */}
       <section className="rounded-2xl border border-black/10 bg-white p-5 shadow-sm">
         <SectionHeader
-          title="Tipo de servicio"
-          description="Selecciona qué tipo de experiencia vas a publicar."
+          title={t("Tipo de servicio")}
+          description={t("Selecciona qué tipo de experiencia vas a publicar.")}
         />
 
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
@@ -225,8 +227,8 @@ export function PublicationForm({
                 size={18}
               />
             }
-            title="Excursión"
-            description="Tours, actividades y experiencias."
+            title={t("Excursión")}
+            description={t("Tours, actividades y experiencias.")}
             onClick={() =>
               patch(
                 "serviceType",
@@ -245,8 +247,8 @@ export function PublicationForm({
                 size={18}
               />
             }
-            title="Transporte"
-            description="Traslados y servicios de transporte."
+            title={t("Transporte")}
+            description={t("Traslados y servicios de transporte.")}
             onClick={() =>
               patch(
                 "serviceType",
@@ -260,8 +262,8 @@ export function PublicationForm({
       {/* Información principal */}
       <section className="rounded-2xl border border-black/10 bg-white p-5 shadow-sm">
         <SectionHeader
-          title="Información principal"
-          description="Información que verá el viajero al consultar la publicación."
+          title={t("Información principal")}
+          description={t("Información que verá el viajero al consultar la publicación.")}
         />
 
         <div className="mt-5 space-y-4">
@@ -282,7 +284,7 @@ export function PublicationForm({
                     .value,
                 )
               }
-              placeholder="Ej. Excursión al Volcán Arenal"
+              placeholder={t("Ej. Excursión al Volcán Arenal")}
               maxLength={150}
             />
           </FormField>
@@ -305,7 +307,7 @@ export function PublicationForm({
                     .value,
                 )
               }
-              placeholder="Describe brevemente la experiencia, recorrido y principales características."
+              placeholder={t("Describe brevemente la experiencia, recorrido y principales características.")}
               maxLength={1000}
               className="min-h-24 resize-y"
             />
@@ -345,7 +347,7 @@ export function PublicationForm({
                       .value,
                   )
                 }
-                placeholder="Ej. La Fortuna, Alajuela"
+                placeholder={t("Ej. La Fortuna, Alajuela")}
                 className="pl-9"
               />
             </div>
@@ -356,8 +358,8 @@ export function PublicationForm({
       {/* Precio, duración y capacidad */}
       <section className="rounded-2xl border border-black/10 bg-white p-5 shadow-sm">
         <SectionHeader
-          title="Detalles del servicio"
-          description="Define precio, duración y capacidad máxima."
+          title={t("Detalles del servicio")}
+          description={t("Define precio, duración y capacidad máxima.")}
         />
 
         <div className="mt-5 grid gap-4 md:grid-cols-3">
@@ -394,14 +396,12 @@ export function PublicationForm({
                         ),
                   )
                 }
-                placeholder="0.00"
+                placeholder={t("0.00")}
                 className="pl-9"
               />
             </div>
 
-            <p className="mt-1 text-[11px] text-muted-foreground">
-              USD
-            </p>
+            <p className="mt-1 text-[11px] text-muted-foreground">{t("USD ")}</p>
           </FormField>
 
           <FormField
@@ -437,14 +437,12 @@ export function PublicationForm({
                         ),
                   )
                 }
-                placeholder="240"
+                placeholder={t("240")}
                 className="pl-9"
               />
             </div>
 
-            <p className="mt-1 text-[11px] text-muted-foreground">
-              Minutos
-            </p>
+            <p className="mt-1 text-[11px] text-muted-foreground">{t("Minutos ")}</p>
           </FormField>
 
           <FormField
@@ -480,14 +478,12 @@ export function PublicationForm({
                         ),
                   )
                 }
-                placeholder="20"
+                placeholder={t("20")}
                 className="pl-9"
               />
             </div>
 
-            <p className="mt-1 text-[11px] text-muted-foreground">
-              Personas
-            </p>
+            <p className="mt-1 text-[11px] text-muted-foreground">{t("Personas ")}</p>
           </FormField>
         </div>
       </section>
@@ -495,8 +491,8 @@ export function PublicationForm({
       {/* Idiomas */}
       <section className="rounded-2xl border border-black/10 bg-white p-5 shadow-sm">
         <SectionHeader
-          title="Idiomas"
-          description="Selecciona los idiomas disponibles durante el servicio."
+          title={t("Idiomas")}
+          description={t("Selecciona los idiomas disponibles durante el servicio.")}
         />
 
         <div className="mt-4 flex flex-wrap gap-2">
@@ -553,8 +549,8 @@ export function PublicationForm({
       {/* Incluye */}
       <section className="rounded-2xl border border-black/10 bg-white p-5 shadow-sm">
         <SectionHeader
-          title="Detalles de la experiencia"
-          description="Aclara qué recibe el viajero y qué debe considerar por separado."
+          title={t("Detalles de la experiencia")}
+          description={t("Aclara qué recibe el viajero y qué debe considerar por separado.")}
         />
 
         <div className="mt-5 grid gap-4 md:grid-cols-2">
@@ -576,7 +572,7 @@ export function PublicationForm({
                     .value,
                 )
               }
-              placeholder="Ej. Guía turístico, entrada al parque y refrigerio."
+              placeholder={t("Ej. Guía turístico, entrada al parque y refrigerio.")}
               className="min-h-28 resize-y"
             />
           </FormField>
@@ -599,7 +595,7 @@ export function PublicationForm({
                     .value,
                 )
               }
-              placeholder="Ej. Alimentación, transporte hasta el punto de encuentro."
+              placeholder={t("Ej. Alimentación, transporte hasta el punto de encuentro.")}
               className="min-h-28 resize-y"
             />
           </FormField>
@@ -630,7 +626,7 @@ export function PublicationForm({
                       .value,
                   )
                 }
-                placeholder="Ej. Parque Central de La Fortuna"
+                placeholder={t("Ej. Parque Central de La Fortuna")}
                 className="pl-9"
               />
             </div>
@@ -641,8 +637,8 @@ export function PublicationForm({
       {/* Imagen */}
       <section className="rounded-2xl border border-black/10 bg-white p-5 shadow-sm">
         <SectionHeader
-          title="Imagen principal"
-          description="De momento utilizaremos una URL. Más adelante podemos conectarlo con Storage."
+          title={t("Imagen principal")}
+          description={t("De momento utilizaremos una URL. Más adelante podemos conectarlo con Storage.")}
         />
 
         <div className="mt-5">
@@ -671,7 +667,7 @@ export function PublicationForm({
                       .value,
                   )
                 }
-                placeholder="https://..."
+                placeholder={t("https://...")}
                 className="pl-9"
               />
             </div>
@@ -696,9 +692,7 @@ export function PublicationForm({
                   className="mx-auto text-muted-foreground"
                 />
 
-                <p className="mt-2 text-xs text-muted-foreground">
-                  La vista previa aparecerá aquí.
-                </p>
+                <p className="mt-2 text-xs text-muted-foreground">{t("La vista previa aparecerá aquí. ")}</p>
               </div>
             </div>
           )}
@@ -714,9 +708,7 @@ export function PublicationForm({
           onClick={
             onCancel
           }
-        >
-          Cancelar
-        </Button>
+        >{t("Cancelar ")}</Button>
 
         <Button
           type="button"
@@ -849,14 +841,15 @@ function SectionHeader({
   title: string;
   description: string;
 }) {
+  const { t } = usePreferences();
   return (
     <div>
       <h2 className="!m-0 !text-sm !font-semibold !leading-5 !tracking-normal text-[#123a30]">
-        {title}
+        {t(title)}
       </h2>
 
       <p className="mt-1 text-xs leading-5 text-muted-foreground">
-        {description}
+        {t(description)}
       </p>
     </div>
   );
@@ -872,10 +865,11 @@ function FormField({
   children:
     React.ReactNode;
 }) {
+  const { t } = usePreferences();
   return (
     <div>
       <label className="mb-1.5 block text-xs font-medium text-foreground">
-        {label}
+        {t(label)}
 
         {required ? (
           <span className="ml-1 text-red-500">
@@ -902,6 +896,7 @@ function ServiceTypeButton({
   description: string;
   onClick: () => void;
 }) {
+  const { t } = usePreferences();
   return (
     <button
       type="button"
@@ -933,11 +928,11 @@ function ServiceTypeButton({
               : "text-foreground",
           ].join(" ")}
         >
-          {title}
+          {t(title)}
         </p>
 
         <p className="mt-0.5 text-xs leading-5 text-muted-foreground">
-          {description}
+          {t(description)}
         </p>
       </div>
     </button>

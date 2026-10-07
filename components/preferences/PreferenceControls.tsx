@@ -9,13 +9,13 @@ function LanguageFlag({language}:{language:string}) {
     {language==='es'?<><rect width="30" height="20" fill="#002b7f"/><rect y="3.33" width="30" height="13.34" fill="white"/><rect y="6.67" width="30" height="6.66" fill="#ce1126"/></>:<><rect width="30" height="20" fill="white"/>{Array.from({length:7},(_,n)=><rect key={n} y={n*40/13} width="30" height={20/13} fill="#b22234"/>)}<rect width="13" height="10.77" fill="#3c3b6e"/>{Array.from({length:20},(_,n)=><circle key={n} cx={1.5+(n%5)*2.5} cy={1.5+Math.floor(n/5)*2.5} r=".5" fill="white"/>)}</>}
   </svg>;
 }
-export function PreferenceControls() {
+export function PreferenceControls({ languageOnly = false }: { languageOnly?: boolean }) {
   const {language,currency,setLanguage,setCurrency,rates,loadRates,rateLoading,rateError,t}=usePreferences();
   const [panel,setPanel]=useState<'language'|'currency'|null>(null);
   const trigger=useRef<HTMLButtonElement|null>(null);
   const currencies:{id:Currency;name:string}[]=[{id:'USD',name:'Dólar estadounidense'},{id:'CRC',name:'Colón costarricense'},{id:'EUR',name:'Euro'}];
   return <div className="preference-controls">
-    <button type="button" className="preference-trigger" aria-label={`${t('Selecciona tu moneda')}: ${currency}`} title={t('Selecciona tu moneda')} onPointerEnter={()=>void loadRates()} onFocus={()=>void loadRates()} onClick={event=>{trigger.current=event.currentTarget;setPanel('currency');void loadRates();}}>{currency}</button>
+    {!languageOnly && <button type="button" className="preference-trigger" aria-label={`${t('Selecciona tu moneda')}: ${currency}`} title={t('Selecciona tu moneda')} onPointerEnter={()=>void loadRates()} onFocus={()=>void loadRates()} onClick={event=>{trigger.current=event.currentTarget;setPanel('currency');void loadRates();}}>{currency}</button>}
     <button type="button" className="preference-trigger" aria-label={t('Selecciona tu idioma')} title={t('Selecciona tu idioma')} onClick={event=>{trigger.current=event.currentTarget;setPanel('language');}}><LanguageFlag language={language}/></button>
     <Dialog.Root open={panel!==null} onOpenChange={open=>{if(!open)setPanel(null);}}><Dialog.Portal><Dialog.Overlay className="preference-overlay"/><Dialog.Content className="preference-dialog" onCloseAutoFocus={event=>{event.preventDefault();trigger.current?.focus();}}>
       <Dialog.Title>{t(panel==='language'?'Selecciona tu idioma':'Selecciona tu moneda')}</Dialog.Title>

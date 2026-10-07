@@ -1,4 +1,5 @@
 "use client";
+import { usePreferences } from "@/lib/preferences/Preferences";
 
 import {
   useParams,
@@ -19,6 +20,7 @@ import {
 } from "@/modules/transport/vehicles/components/VehicleDetail";
 
 export default function Page() {
+  const { t } = usePreferences();
   const {
     role,
   } =
@@ -59,8 +61,8 @@ export default function Page() {
 
   return (
     <DashboardSectionPage
-      title="Agencias"
-      description="Esta sección está disponible para administración."
+      title={t("Agencias")}
+      description={t("Esta sección está disponible para administración.")}
     />
   );
 }

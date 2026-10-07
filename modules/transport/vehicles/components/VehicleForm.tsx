@@ -1,4 +1,5 @@
 "use client";
+import { usePreferences } from "@/lib/preferences/Preferences";
 
 import { useState } from "react";
 import { Plus, Trash2 } from "lucide-react";
@@ -28,6 +29,7 @@ export function VehicleForm({
   onSubmit,
   onCancel,
 }: VehicleFormProps) {
+  const { t } = usePreferences();
   const [value, setValue] = useState<VehicleInput>(initialValue);
 
   function patch<K extends keyof VehicleInput>(key: K, next: VehicleInput[K]) {
@@ -48,26 +50,24 @@ export function VehicleForm({
     >
       <section className="space-y-4 rounded-xl border bg-card p-5 shadow-xs">
         <div>
-          <h2 className="text-base font-semibold">Datos del vehículo</h2>
-          <p className="text-sm text-muted-foreground">
-            Tipo, capacidad y placa que usarás al publicar rutas.
-          </p>
+          <h2 className="text-base font-semibold">{t("Datos del vehículo")}</h2>
+          <p className="text-sm text-muted-foreground">{t("Tipo, capacidad y placa que usarás al publicar rutas. ")}</p>
         </div>
 
         <FieldGroup className="gap-4">
           <Field>
-            <FieldLabel htmlFor="name">Nombre</FieldLabel>
+            <FieldLabel htmlFor="name">{t("Nombre")}</FieldLabel>
             <Input
               id="name"
               value={value.name}
               onChange={(event) => patch("name", event.target.value)}
-              placeholder="Ej. Van Nosara"
+              placeholder={t("Ej. Van Nosara")}
             />
           </Field>
 
           <div className="grid gap-4 sm:grid-cols-2">
             <Field>
-              <FieldLabel htmlFor="type">Tipo</FieldLabel>
+              <FieldLabel htmlFor="type">{t("Tipo")}</FieldLabel>
               <select
                 id="type"
                 value={value.type}
@@ -82,7 +82,7 @@ export function VehicleForm({
               </select>
             </Field>
             <Field>
-              <FieldLabel htmlFor="status">Estado</FieldLabel>
+              <FieldLabel htmlFor="status">{t("Estado")}</FieldLabel>
               <select
                 id="status"
                 value={value.status}
@@ -91,15 +91,15 @@ export function VehicleForm({
                 }
                 className={selectClassName}
               >
-                <option value="Disponible">Disponible</option>
-                <option value="En mantenimiento">En mantenimiento</option>
+                <option value="Disponible">{t("Disponible")}</option>
+                <option value="En mantenimiento">{t("En mantenimiento")}</option>
               </select>
             </Field>
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
             <Field>
-              <FieldLabel htmlFor="seats">Asientos</FieldLabel>
+              <FieldLabel htmlFor="seats">{t("Asientos")}</FieldLabel>
               <Input
                 id="seats"
                 type="number"
@@ -111,23 +111,23 @@ export function VehicleForm({
               />
             </Field>
             <Field>
-              <FieldLabel htmlFor="plate">Placa</FieldLabel>
+              <FieldLabel htmlFor="plate">{t("Placa")}</FieldLabel>
               <Input
                 id="plate"
                 value={value.plate}
                 onChange={(event) => patch("plate", event.target.value)}
-                placeholder="Ej. TS-2041"
+                placeholder={t("Ej. TS-2041")}
               />
             </Field>
           </div>
 
           <Field>
-            <FieldLabel htmlFor="photoUrl">Foto (URL)</FieldLabel>
+            <FieldLabel htmlFor="photoUrl">{t("Foto (URL)")}</FieldLabel>
             <Input
               id="photoUrl"
               value={value.photoUrl}
               onChange={(event) => patch("photoUrl", event.target.value)}
-              placeholder="https://..."
+              placeholder={t("https://...")}
             />
           </Field>
 
@@ -146,17 +146,15 @@ export function VehicleForm({
 
       <section className="space-y-4 rounded-xl border bg-card p-5 shadow-xs">
         <div>
-          <h2 className="text-base font-semibold">Equipamiento</h2>
-          <p className="text-sm text-muted-foreground">
-            Lo que el viajero verá asociado a este vehículo.
-          </p>
+          <h2 className="text-base font-semibold">{t("Equipamiento")}</h2>
+          <p className="text-sm text-muted-foreground">{t("Lo que el viajero verá asociado a este vehículo. ")}</p>
         </div>
         <div className="space-y-2">
           {value.features.map((item, index) => (
             <div key={index} className="flex gap-2">
               <Input
                 value={item}
-                placeholder="Ej. Aire acondicionado"
+                placeholder={t("Ej. Aire acondicionado")}
                 onChange={(event) => {
                   const next = [...value.features];
                   next[index] = event.target.value;
@@ -175,7 +173,7 @@ export function VehicleForm({
                   )
                 }
                 disabled={value.features.length <= 1}
-                aria-label="Eliminar ítem"
+                aria-label={t("Eliminar ítem")}
               >
                 <Trash2 className="size-4" />
               </Button>
@@ -188,16 +186,12 @@ export function VehicleForm({
             className="gap-1.5"
             onClick={() => patch("features", [...value.features, ""])}
           >
-            <Plus className="size-4" />
-            Agregar
-          </Button>
+            <Plus className="size-4" />{t("Agregar ")}</Button>
         </div>
       </section>
 
       <div className="flex flex-wrap justify-end gap-2">
-        <Button type="button" variant="outline" onClick={onCancel}>
-          Cancelar
-        </Button>
+        <Button type="button" variant="outline" onClick={onCancel}>{t("Cancelar ")}</Button>
         <Button type="submit">{submitLabel}</Button>
       </div>
     </form>

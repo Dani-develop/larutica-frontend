@@ -1,4 +1,5 @@
 "use client";
+import { usePreferences } from "@/lib/preferences/Preferences";
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -17,6 +18,7 @@ import {
 } from "../types/publication.types";
 
 export function CreatePublicationPage() {
+  const { t } = usePreferences();
   const router =
     useRouter();
 
@@ -56,35 +58,22 @@ export function CreatePublicationPage() {
           <Link href="/dashboard/publications">
             <ArrowLeft
               size={15}
-            />
-
-            Volver a publicaciones
-          </Link>
+            />{t("Volver a publicaciones ")}</Link>
         </Button>
       </div>
 
       {/* Encabezado */}
       <div className="mb-6">
-        <p className="mb-1 text-xs font-medium text-[#0d684e]">
-          Dashboard / Publicaciones / Nueva
-        </p>
+        <p className="mb-1 text-xs font-medium text-[#0d684e]">{t("Dashboard / Publicaciones / Nueva ")}</p>
 
-        <h1 className="!m-0 !text-[26px] !font-semibold !leading-tight !tracking-tight text-[#123a30]">
-          Nueva publicación
-        </h1>
+        <h1 className="!m-0 !text-[26px] !font-semibold !leading-tight !tracking-tight text-[#123a30]">{t("Nueva publicación ")}</h1>
 
-        <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-          Completa la información del servicio que deseas ofrecer en LaRutica.
-          Puedes guardar el formulario como borrador y terminarlo más adelante.
-        </p>
+        <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">{t("Completa la información del servicio que deseas ofrecer en LaRutica. Puedes guardar el formulario como borrador y terminarlo más adelante. ")}</p>
       </div>
 
       {/* Aviso */}
       <div className="mb-5 rounded-xl border border-[#cfe3dc] bg-[#f3faf7] px-4 py-3">
-        <p className="text-xs leading-5 text-[#315c50]">
-          Las publicaciones enviadas a revisión serán evaluadas antes de estar
-          disponibles para los viajeros.
-        </p>
+        <p className="text-xs leading-5 text-[#315c50]">{t("Las publicaciones enviadas a revisión serán evaluadas antes de estar disponibles para los viajeros. ")}</p>
       </div>
 
       {/* Formulario */}

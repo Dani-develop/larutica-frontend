@@ -1,4 +1,5 @@
 "use client";
+import { usePreferences } from "@/lib/preferences/Preferences";
 
 import Link from "next/link";
 
@@ -16,6 +17,7 @@ import { usePublications } from "../hooks/usePublications";
 import { PublicationStatusBadge } from "./PublicationStatusBadge";
 
 export function PublicationsList() {
+  const { t } = usePreferences();
   const {
     publications,
     loading,
@@ -87,17 +89,11 @@ export function PublicationsList() {
       {/* Encabezado */}
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p className="mb-1 text-xs font-medium text-[#0d684e]">
-            Dashboard / Publicaciones
-          </p>
+          <p className="mb-1 text-xs font-medium text-[#0d684e]">{t("Dashboard / Publicaciones ")}</p>
 
-          <h1 className="!m-0 !text-[26px] !font-semibold !leading-tight !tracking-tight text-[#123a30]">
-            Publicaciones
-          </h1>
+          <h1 className="!m-0 !text-[26px] !font-semibold !leading-tight !tracking-tight text-[#123a30]">{t("Publicaciones ")}</h1>
 
-          <p className="mt-2 text-sm text-muted-foreground">
-            Administra las experiencias y servicios publicados por tu agencia.
-          </p>
+          <p className="mt-2 text-sm text-muted-foreground">{t("Administra las experiencias y servicios publicados por tu agencia. ")}</p>
         </div>
 
         <Button
@@ -105,16 +101,14 @@ export function PublicationsList() {
           className="gap-2 self-start bg-[#0d684e] text-white hover:bg-[#0b5943] sm:self-auto"
         >
           <Link href="/dashboard/publications/new">
-            <Plus size={16} />
-            Nueva publicación
-          </Link>
+            <Plus size={16} />{t("Nueva publicación ")}</Link>
         </Button>
       </div>
 
       {/* Error */}
       {error ? (
         <div className="mb-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-          {error}
+          {t(error)}
         </div>
       ) : null}
 
@@ -126,23 +120,16 @@ export function PublicationsList() {
               <Plus size={24} />
             </div>
 
-            <h2 className="!mb-0 !mt-4 !text-base !font-semibold !leading-6 !tracking-normal text-[#123a30]">
-              Aún no tienes publicaciones
-            </h2>
+            <h2 className="!mb-0 !mt-4 !text-base !font-semibold !leading-6 !tracking-normal text-[#123a30]">{t("Aún no tienes publicaciones ")}</h2>
 
-            <p className="mt-2 text-sm leading-6 text-muted-foreground">
-              Crea tu primera publicación para empezar a ofrecer experiencias o
-              servicios dentro de LaRutica.
-            </p>
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">{t("Crea tu primera publicación para empezar a ofrecer experiencias o servicios dentro de LaRutica. ")}</p>
 
             <Button
               asChild
               className="mt-5 bg-[#0d684e] text-white hover:bg-[#0b5943]"
             >
               <Link href="/dashboard/publications/new">
-                <Plus size={16} />
-                Crear publicación
-              </Link>
+                <Plus size={16} />{t("Crear publicación ")}</Link>
             </Button>
           </div>
         </div>
@@ -167,9 +154,7 @@ export function PublicationsList() {
                       className="size-full object-cover"
                     />
                   ) : (
-                    <div className="flex size-full items-center justify-center text-xs text-muted-foreground">
-                      Sin imagen
-                    </div>
+                    <div className="flex size-full items-center justify-center text-xs text-muted-foreground">{t("Sin imagen ")}</div>
                   )}
 
                   <div className="absolute left-3 top-3">
@@ -184,10 +169,10 @@ export function PublicationsList() {
                   <div className="flex items-start justify-between gap-4">
                     <div className="min-w-0">
                       <p className="text-[11px] font-medium uppercase tracking-wide text-[#0d684e]">
-                        {publication.serviceType ===
+                        {t(publication.serviceType ===
                         "TRANSPORT"
                           ? "Transporte"
-                          : "Excursión"}
+                          : "Excursión")}
                       </p>
 
                       <Link
@@ -218,9 +203,7 @@ export function PublicationsList() {
 
                   <div className="mt-4 grid grid-cols-2 gap-3 rounded-xl bg-muted/30 p-3 text-xs sm:grid-cols-3">
                     <div>
-                      <p className="text-muted-foreground">
-                        Destino
-                      </p>
+                      <p className="text-muted-foreground">{t("Destino ")}</p>
 
                       <p className="mt-0.5 truncate font-medium">
                         {publication.destination ??
@@ -229,9 +212,7 @@ export function PublicationsList() {
                     </div>
 
                     <div>
-                      <p className="text-muted-foreground">
-                        Duración
-                      </p>
+                      <p className="text-muted-foreground">{t("Duración ")}</p>
 
                       <p className="mt-0.5 font-medium">
                         {publication.durationMinutes
@@ -241,9 +222,7 @@ export function PublicationsList() {
                     </div>
 
                     <div>
-                      <p className="text-muted-foreground">
-                        Capacidad
-                      </p>
+                      <p className="text-muted-foreground">{t("Capacidad ")}</p>
 
                       <p className="mt-0.5 font-medium">
                         {publication.defaultCapacity
@@ -264,9 +243,7 @@ export function PublicationsList() {
                       <Link
                         href={`/dashboard/publications/${publication.id}`}
                       >
-                        <Eye size={14} />
-                        Ver
-                      </Link>
+                        <Eye size={14} />{t("Ver ")}</Link>
                     </Button>
 
                     <Button
@@ -278,9 +255,7 @@ export function PublicationsList() {
                       <Link
                         href={`/dashboard/publications/${publication.id}/edit`}
                       >
-                        <Pencil size={14} />
-                        Editar
-                      </Link>
+                        <Pencil size={14} />{t("Editar ")}</Link>
                     </Button>
 
                     <Button
@@ -301,10 +276,10 @@ export function PublicationsList() {
                     >
                       <Trash2 size={14} />
 
-                      {publication.status ===
+                      {t(publication.status ===
                       "INACTIVE"
                         ? "Inactiva"
-                        : "Desactivar"}
+                        : "Desactivar")}
                     </Button>
                   </div>
                 </div>

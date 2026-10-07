@@ -1,4 +1,5 @@
 "use client";
+import { usePreferences } from "@/lib/preferences/Preferences";
 import Link from "next/link";
 
 import { Menu } from "lucide-react";
@@ -25,6 +26,7 @@ type Props = {
 };
 
 export function BottomNav({ role }: Props) {
+  const { t } = usePreferences();
   const pathname = usePathname();
   const isMobile = useIsMobile();
   const { openMobile, setOpenMobile } = useSidebar();
@@ -48,7 +50,7 @@ export function BottomNav({ role }: Props) {
     <div
       data-slot="bottom-nav"
       role="navigation"
-      aria-label="Navegación principal"
+      aria-label={t("Navegación principal")}
       className="bg-background/95 supports-backdrop-filter:bg-background/80 fixed inset-x-0 bottom-0 z-50 flex h-16 items-stretch justify-around border-t backdrop-blur-md pb-[env(safe-area-inset-bottom)] md:hidden"
     >
       {primaryItems.map((item) => {
@@ -68,7 +70,7 @@ export function BottomNav({ role }: Props) {
               className={cn("size-5 shrink-0", active && "stroke-[2.25px]")}
               aria-hidden="true"
             />
-            <span className="max-w-full truncate">{item.label}</span>
+            <span className="max-w-full truncate">{t(item.label)}</span>
           </Link>
         );
       })}
@@ -77,7 +79,7 @@ export function BottomNav({ role }: Props) {
         type="button"
         onClick={() => setOpenMobile(!openMobile)}
         aria-expanded={openMobile}
-        aria-label="Más opciones"
+        aria-label={t("Más opciones")}
         className={cn(
           "flex min-h-0 min-w-0 flex-1 flex-col items-center justify-center gap-0.5 rounded-none bg-transparent px-1 py-0 text-[10px] font-medium transition-colors",
           openMobile ? "text-primary" : "text-muted-foreground",
@@ -87,7 +89,7 @@ export function BottomNav({ role }: Props) {
           className={cn("size-5 shrink-0", openMobile && "stroke-[2.25px]")}
           aria-hidden="true"
         />
-        <span className="truncate">Más</span>
+        <span className="truncate">{t("Más")}</span>
       </button>
     </div>
   );

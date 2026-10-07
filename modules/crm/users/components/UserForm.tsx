@@ -110,20 +110,20 @@ export function UserForm({
               <FieldLabel className="!text-sm">{t("Rol")}</FieldLabel>
               {lockRole ? (
                 <p className="bg-muted/40 text-foreground rounded-md px-3 py-2 !text-sm !font-medium">
-                  {value.role}
+                  {t(value.role)}
                 </p>
               ) : (
                 <select
                   id="role"
-                  value={value.role}
+                  value={t(value.role)}
                   onChange={(event) =>
                     patch("role", event.target.value as DashboardRole)
                   }
                   className={selectClassName}
                 >
                   {DASHBOARD_ROLES.map((role) => (
-                    <option key={role} value={role}>
-                      {role}
+                    <option key={t(role)} value={t(role)}>
+                      {t(role)}
                     </option>
                   ))}
                 </select>
@@ -134,12 +134,12 @@ export function UserForm({
               <FieldLabel className="!text-sm">{t("Estado")}</FieldLabel>
               {lockStatus ? (
                 <p className="bg-muted/40 text-foreground rounded-md px-3 py-2 !text-sm !font-medium">
-                  {value.status}
+                  {t(value.status)}
                 </p>
               ) : (
                 <select
                   id="status"
-                  value={value.status}
+                  value={t(value.status)}
                   onChange={(event) =>
                     patch("status", event.target.value as UserStatus)
                   }
