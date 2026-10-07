@@ -9,6 +9,9 @@ import { safeBookingReturn } from "@/modules/auth/utils/returnTo";
 import { AuthShell } from "@/components/auth/AuthShell";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { PrivacyPolicyContent } from "@/components/legal/PrivacyPolicyContent";
+import { PRIVACY_POLICY_UPDATED_AT } from "@/lib/privacyPolicy";
 import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { PhoneNumberInput } from "@/components/ui/phone-input";
@@ -50,6 +53,7 @@ export default function RegisterForm() {
   const [role, setRole] = useState<AuthRole | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [confirmationSent, setConfirmationSent] = useState(false);
+  const [privacyOpen, setPrivacyOpen] = useState(false);
   const needsBusinessName = role === "Agencia" || role === "Transporte";
   const form = useForm({
     defaultValues: { ...SignUpDtoDefaultValues, role: role ?? "Viajero" as AuthRole },
@@ -198,7 +202,26 @@ export default function RegisterForm() {
                 <div className="flex items-start gap-3">
                   <Checkbox id={field.name} name={field.name} checked={field.state.value} onCheckedChange={(checked) => field.handleChange(checked === true)} onBlur={field.handleBlur} required aria-invalid={isInvalid} aria-describedby={isInvalid ? "privacy-policy-error" : undefined} className="mt-0.5" />
                   <FieldLabel htmlFor={field.name} required className="inline leading-relaxed">
-                    He leído y acepto la{" "}<Link href="/privacidad" target="_blank" rel="noopener noreferrer" className="font-semibold text-primary underline underline-offset-4">Política de privacidad<span className="sr-only"> (se abre en una pestaña nueva)</span></Link>{" "}y autorizo el tratamiento de mis datos para las funciones de LaRutica descritas en ella.
+                    He leído y acepto la{" "}
+                    <Dialog open={privacyOpen} onOpenChange={setPrivacyOpen}>
+                      <DialogTrigger asChild>
+                        <button type="button" className="cursor-pointer font-semibold text-primary underline underline-offset-4">Política de privacidad</button>
+                      </DialogTrigger>
+                      <DialogContent className="flex max-h-[85svh] max-w-3xl flex-col gap-0 overflow-hidden p-0">
+                        <div className="shrink-0 border-b px-6 py-5 pr-16">
+                          <DialogTitle>Política de privacidad</DialogTitle>
+                          <DialogDescription className="mt-1">LaRutica · Última actualización: {PRIVACY_POLICY_UPDATED_AT}</DialogDescription>
+                        </div>
+                        <div className="min-h-0 overflow-y-auto px-6 py-2 text-sm" role="region" aria-label="Contenido de la política de privacidad">
+                          <PrivacyPolicyContent />
+                        </div>
+                        <div className="flex shrink-0 flex-wrap justify-end gap-3 border-t px-6 py-4">
+                          <DialogClose asChild><Button type="button" variant="outline">Cerrar</Button></DialogClose>
+                          <Button type="button" onClick={() => { field.handleChange(true); setPrivacyOpen(false); }}>Aceptar política</Button>
+                        </div>
+                      </DialogContent>
+                    </Dialog>{" "}
+                    y autorizo el tratamiento de mis datos para las funciones de LaRutica descritas en ella.
                   </FieldLabel>
                 </div>
                 {isInvalid ? <FieldError id="privacy-policy-error" errors={field.state.meta.errors} /> : null}
