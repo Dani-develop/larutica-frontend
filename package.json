@@ -31,6 +31,7 @@
     "react": "19.2.6",
     "react-dom": "19.2.6",
     "react-phone-number-input": "^3.4.18",
+    "sweetalert2": "11.26.25",
     "tailwind-merge": "^3.6.0",
     "zod": "^4.4.3"
   },

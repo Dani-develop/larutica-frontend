@@ -100,6 +100,7 @@ test("cancelar conserva la fila, el viajero no la borra y no se cambia la salida
 test("el cliente expone el CRUD y Mis reservas deja los datos fijos", async () => {
   const service = await read("modules/transport/reservations/services/reservation.service.ts");
   const page = await read("components/dashboard/TravelerViews.tsx");
+  const routes = await read("modules/landing/lib/travelerRoutes.ts");
   const landing = await read("app/page.tsx");
   for (const name of [
     "export async function listReservations",
@@ -121,7 +122,11 @@ test("el cliente expone el CRUD y Mis reservas deja los datos fijos", async () =
   assert.match(reservationsPage, /reservation\.status === "PAST"/);
   assert.match(reservationsPage, /No tienes reservas por venir/);
   assert.match(reservationsPage, /role="alert"/);
+  assert.match(reservationsPage, /updateReservation\(reservation\.id, \{ status: "CANCELLED" \}\)/);
+  assert.match(reservationsPage, /Cancelar viaje/);
+  assert.match(reservationsPage, /Swal\.fire/);
   assert.doesNotMatch(reservationsPage, /pub-arenal-01/);
+  assert.doesNotMatch(routes.slice(routes.indexOf("export const TRIP_MENU"), routes.indexOf("export type TripMenuId")), /perfil|Mi perfil/);
   assert.match(landing, /TravelerReservationsPage/);
 });
 

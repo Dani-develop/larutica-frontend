@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import Swal from "sweetalert2";
+import "sweetalert2/dist/sweetalert2.min.css";
 import { useAuth } from "@/modules/auth/context/AuthContext";
 import { ExperienceDetail } from "@/modules/booking/ExperienceDetail";
 import { dateLabel, money } from "@/modules/booking/types";
@@ -19,9 +21,18 @@ import {
 } from "@/modules/traveler/services/traveler.service";
 import {
   listReservations,
+  updateReservation,
   type Reservation,
   type ReservationStatus,
 } from "@/modules/transport/reservations/services/reservation.service";
+
+const reservationAlertClasses = {
+  popup: "larutica-swal-popup",
+  title: "larutica-swal-title",
+  htmlContainer: "larutica-swal-text",
+  confirmButton: "larutica-swal-confirm",
+  cancelButton: "larutica-swal-cancel",
+};
 
 function TripHeading({ eyebrow, title, lead }: { eyebrow: string; title: string; lead: string }) {
   return (
@@ -230,6 +241,7 @@ export function TravelerReservationsPage() {
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [cancellingReservationId, setCancellingReservationId] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -261,6 +273,50 @@ export function TravelerReservationsPage() {
     setReservations((current) => current.map((reservation) =>
       reservation.id === reservationId ? { ...reservation, rating: savedRating } : reservation,
     ));
+  }
+
+  async function cancelReservation(reservation: Reservation) {
+    const confirmation = await Swal.fire({
+      title: "¿Cancelar viaje?",
+      text: `¿Quieres cancelar tu reserva para ${reservation.publicationTitle}?`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Sí, cancelar viaje",
+      cancelButtonText: "Mantener reserva",
+      reverseButtons: true,
+      buttonsStyling: false,
+      customClass: reservationAlertClasses,
+    });
+    if (!confirmation.isConfirmed) return;
+
+    setCancellingReservationId(reservation.id);
+    let updated: Reservation;
+    try {
+      updated = await updateReservation(reservation.id, { status: "CANCELLED" });
+    } catch (cause) {
+      await Swal.fire({
+        title: "No se pudo cancelar el viaje",
+        text: cause instanceof Error ? cause.message : "Intenta de nuevo en unos momentos.",
+        icon: "error",
+        confirmButtonText: "Cerrar",
+        buttonsStyling: false,
+        customClass: reservationAlertClasses,
+      });
+      return;
+    } finally {
+      setCancellingReservationId(null);
+    }
+    setReservations((current) => current.map((item) =>
+      item.id === updated.id ? updated : item,
+    ));
+    await Swal.fire({
+      title: "Viaje cancelado",
+      text: "Tu reserva se canceló correctamente.",
+      icon: "success",
+      confirmButtonText: "Aceptar",
+      buttonsStyling: false,
+      customClass: reservationAlertClasses,
+    });
   }
 
   return (
@@ -306,6 +362,8 @@ export function TravelerReservationsPage() {
         }
         reservations={visibleReservations}
         onRate={saveRating}
+        onCancel={cancelReservation}
+        cancellingReservationId={cancellingReservationId}
       />
     </section>
   );
@@ -367,11 +425,15 @@ function ReservationGroup({
   emptyLabel,
   reservations,
   onRate,
+  onCancel,
+  cancellingReservationId,
 }: {
   title: string;
   emptyLabel: string;
   reservations: Reservation[];
   onRate: (reservationId: string, rating: number) => Promise<void>;
+  onCancel: (reservation: Reservation) => Promise<void>;
+  cancellingReservationId: string | null;
 }) {
   const headingId = title.replaceAll(" ", "-").toLowerCase();
   return (
@@ -397,6 +459,17 @@ function ReservationGroup({
                 <Link className="button button-outline" href={tripPath("detalle", { publicacion: reservation.publicationId })}>
                   Ver detalles
                 </Link>
+              ) : null}
+              {reservation.status === "PENDING" || reservation.status === "CONFIRMED" ? (
+                <button
+                  type="button"
+                  className="button button-danger"
+                  disabled={cancellingReservationId !== null}
+                  aria-busy={cancellingReservationId === reservation.id}
+                  onClick={() => void onCancel(reservation)}
+                >
+                  {cancellingReservationId === reservation.id ? "Cancelando..." : "Cancelar viaje"}
+                </button>
               ) : null}
               {reservation.status === "PAST" ? (
                 <ReservationRating reservation={reservation} onRate={onRate} />

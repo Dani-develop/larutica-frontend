@@ -12,7 +12,6 @@ export type TripQuery = (typeof TRIP_QUERIES)[number];
 export const TRIP_MENU = [
   { id: "guardados", label: "Guardados" },
   { id: "reservas", label: "Mis reservas" },
-  { id: "perfil", label: "Mi perfil" },
 ] as const;
 
 export type TripMenuId = (typeof TRIP_MENU)[number]["id"];
