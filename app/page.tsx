@@ -14,6 +14,7 @@ import {
   TravelerSavedPage,
 } from "@/components/dashboard/TravelerViews";
 import { useAuth } from "@/modules/auth/context/AuthContext";
+import { LandingExplore } from "@/modules/landing/components/LandingExplore";
 import { TripMenu } from "@/modules/landing/components/TripMenu";
 import { TransportConfirmView } from "@/modules/landing/components/TransportConfirmView";
 import { TransportDetailView } from "@/modules/landing/components/TransportDetailView";
@@ -181,7 +182,7 @@ export default function Home() {
   }
 
   return (
-    <div className={trip ? "landing-shell landing-trip" : "landing-shell"}>
+    <div className={trip ? "landing-shell landing-trip" : view === "explore" ? "landing-shell landing-discovery" : "landing-shell"}>
       <a className="skip-link" href="#main">{t("Ir al contenido principal")}</a>
       <header className="site-header">
         <button className="brand brand-button" type="button" onClick={() => navigate("explore")} aria-label={t("LaRutica, volver al inicio")}>
@@ -288,7 +289,6 @@ function ExploreView({
   category,
   onCategoryChange,
   onSearchTransport,
-  isTransport,
 }: {
   onSearch: (event: FormEvent<HTMLFormElement>) => void;
   searchInput: React.RefObject<HTMLInputElement | null>;
@@ -305,95 +305,7 @@ function ExploreView({
   onSearchTransport: () => void;
   isTransport: boolean;
 }) {
-  const { t } = usePreferences();
-  const [catalogFilters, setCatalogFilters] = useState({ destination:"", date:"", people:0 });
-
-  return (
-    <>
-      <section className="hero" aria-labelledby="hero-title">
-        <div className="hero-copy">
-          <p className="eyebrow">{t("Viaja a tu ritmo")}</p>
-          <h1 id="hero-title" ref={headingRef} tabIndex={-1}>{t("Costa Rica, más cerca de lo que imaginas. ")}</h1>
-          <p className="hero-lead">{t("Encuentra tours, transporte y experiencias verificadas en un solo lugar. ")}</p>
-          <form
-            className="search-panel"
-            onSubmit={event => {
-              event.preventDefault();
-              const values = new FormData(event.currentTarget);
-              setCatalogFilters({ destination:String(values.get("destination") || ""), date:String(values.get("date") || ""), people:Number(values.get("people") || 1) });
-              document.getElementById("results")?.scrollIntoView({behavior:"smooth"});
-              document.getElementById("results")?.focus({preventScroll:true});
-            }}
-            aria-label={isTransport ? t("Buscar transporte") : t("Buscar experiencias")}
-          >
-            <label>
-              <span>{isTransport ? t("¿De dónde a dónde?") : t("¿A dónde quieres ir?")}</span>
-              <input
-                ref={searchInput}
-                name="destination"
-                defaultValue=""
-                key={isTransport ? "transport-search" : "tour-search"}
-                autoComplete="address-level2"
-                placeholder={isTransport ? t("Nosara, Liberia, San José...") : undefined}
-              />
-              <small>{t("Atajo: presiona /")}</small>
-            </label>
-            <label>
-              <span>{t("Fecha")}</span>
-              <input name="date" type="date" />
-            </label>
-            <label>
-              <span>{t("Personas")}</span>
-              <select name="people" defaultValue="2">
-                <option value="1">{t("1 persona")}</option>
-                <option value="2">{t("2 personas")}</option>
-                <option value="3">{t("3 personas")}</option>
-                <option value="4">{t("4 o más")}</option>
-              </select>
-            </label>
-            <button className="button button-primary search-button" type="submit">{t("Buscar ")}</button>
-          </form>
-          <p className="status-line" role="status" aria-live="polite">{t("Elige un destino, una fecha y el número de personas para consultar disponibilidad. ")}</p>
-        </div>
-        <div className="hero-visual" role="img" aria-label={t("Bosque tropical de Costa Rica")}>
-          <div className="floating-note">
-            <strong>{t("Descubre Costa Rica")}</strong>
-            <span>{t("de proveedores locales")}</span>
-          </div>
-        </div>
-      </section>
-      <section className="section" aria-labelledby="results" id="destinos">
-        <div className="section-heading"><div><p className="eyebrow">{t("Proveedores locales")}</p><h2 id="results" tabIndex={-1}>{t("Experiencias para tu próximo viaje")}</h2></div></div>
-        <div className="filter-row" aria-label={t("Tipo de servicio")}>
-          {[{id:"all",label:t("Todos")},{id:"nature",label:"Excursiones"},{id:"transport",label:t("Transporte")},{id:"budget",label:t("Menos de USD 50")}].map(chip => <button key={chip.id} className={category === chip.id ? "chip chip-active" : "chip"} aria-pressed={category === chip.id} onClick={() => onCategoryChange(chip.id as ExploreCategory)}>{t(chip.label)}</button>)}
-        </div>
-        <button type="button" className="text-link" onClick={() => {setCatalogFilters({destination:"",date:"",people:0});onCategoryChange("all");document.querySelector<HTMLFormElement>(".hero form")?.reset();}}>{t("Limpiar búsqueda")}</button>
-        <TravelerExplorePage embedded filters={{...catalogFilters,type:category === "transport" ? "TRANSPORT" : category === "nature" ? "EXCURSION" : "",budget:category === "budget"}} />
-      </section>
-      <section className="transport-section" aria-labelledby="transport-title">
-        <div>
-          <p className="eyebrow eyebrow-light">{t("Muévete con confianza")}</p>
-          <h2 id="transport-title">{t("Transporte para conectar tu ruta.")}</h2>
-          <p>{t("Compara recorridos, vehículos, precios y contactos antes de salir.")}</p>
-          <button className="button button-light" type="button" onClick={onSearchTransport}>{t("Buscar transporte ")}</button>
-        </div>
-      </section>
-      <section className="trust-strip" aria-label={t("Beneficios de LaRutica")}>
-        <div>
-          <strong>{t("Información clara")}</strong>
-          <span>{t("Precio, duración y cupos visibles.")}</span>
-        </div>
-        <div>
-          <strong>{t("Proveedores verificados")}</strong>
-          <span>{t("Perfiles y servicios revisados.")}</span>
-        </div>
-        <div>
-          <strong>{t("Ayuda cuando la necesites")}</strong>
-          <span>{t("Soporte contextual y pasos sencillos.")}</span>
-        </div>
-      </section>
-    </>
-  );
+  return <LandingExplore searchInput={searchInput} headingRef={headingRef} category={category} onCategoryChange={onCategoryChange} onSearchTransport={onSearchTransport} />;
 }
 
 function DetailView({ onBack, setStatus, headingRef }: { onBack: () => void; setStatus: (value: string) => void; headingRef: React.RefObject<HTMLHeadingElement | null> }) {
