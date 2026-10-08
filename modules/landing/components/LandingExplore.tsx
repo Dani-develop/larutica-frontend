@@ -1,18 +1,16 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { ArrowRight, Bus, CalendarDays, Compass, Search, ShieldCheck, SlidersHorizontal, Trees, Wallet } from "lucide-react";
+import { ArrowRight, Bus, CalendarDays, Compass, ShieldCheck, SlidersHorizontal, Trees, Wallet } from "lucide-react";
 import { TravelerExplorePage } from "@/components/dashboard/TravelerViews";
 import { usePreferences } from "@/lib/preferences/Preferences";
+import { LandingSearchBox } from "./LandingSearchBox";
+import { beachImage as beach, forestImage as forest, mountainsImage as mountains, popularDestinations } from "../lib/landingImages";
 import "../landing.css";
 
 type Category = "all" | "adventure" | "nature" | "transport" | "budget";
 type Filters = { destination: string; date: string; people: number };
 const emptyFilters: Filters = { destination: "", date: "", people: 0 };
-const forest = "https://images.unsplash.com/photo-1516026672322-bc52d61a55d5?auto=format&fit=crop&w=1000&q=85";
-const mountains = "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1000&q=85";
-const beach = "/playa.jpg";
-
 const categories = [
   { id: "all", label: "Buscar todo", icon: Compass },
   { id: "nature", label: "Excursiones", icon: Trees },
@@ -51,6 +49,12 @@ export function LandingExplore({ searchInput, headingRef, category, onCategoryCh
     showResults();
   }
 
+  function applySearch(query: string) {
+    const values = formRef.current ? new FormData(formRef.current) : null;
+    setFilters({ destination: query.trim(), date: String(values?.get("date") || ""), people: Number(values?.get("people") || 0) });
+    showResults();
+  }
+
   return (
     <div className="discovery-page">
       <section className="discovery-search" aria-labelledby="hero-title">
@@ -64,16 +68,9 @@ export function LandingExplore({ searchInput, headingRef, category, onCategoryCh
         </div>
         <form ref={formRef} onSubmit={event => {
           event.preventDefault();
-          const values = new FormData(event.currentTarget);
-          setFilters({ destination: destination.trim(), date: String(values.get("date") || ""), people: Number(values.get("people") || 0) });
-          showResults();
+          applySearch(destination);
         }} aria-label={t(category === "transport" ? "Buscar transporte" : "Buscar experiencias")}>
-          <div className="discovery-search-bar">
-            <Search size={25} aria-hidden="true" />
-            <label className="sr-only" htmlFor="landing-destination">{t("Buscar por experiencia o destino")}</label>
-            <input id="landing-destination" ref={searchInput} name="destination" type="search" value={destination} onChange={event => setDestination(event.target.value)} placeholder={t("Destinos, excursiones y experiencias...")} />
-            <button type="submit">{t("Buscar")}</button>
-          </div>
+          <LandingSearchBox value={destination} onChange={setDestination} inputRef={searchInput} category={category} onSearch={applySearch} />
           <details className="discovery-availability">
             <summary><SlidersHorizontal size={15} aria-hidden="true" />{t("Fecha y personas")}</summary>
             <div className="discovery-availability-fields">
@@ -130,7 +127,7 @@ export function LandingExplore({ searchInput, headingRef, category, onCategoryCh
         <div className="discovery-container">
           <div className="discovery-section-heading"><h2 id="destination-title">{t("Tu próxima parada está en Costa Rica")}</h2><p>{t("Explora lugares para salir de la rutina.")}</p></div>
           <div className="discovery-image-grid">
-            {[{ name: "La Fortuna", image: mountains }, { name: "Guanacaste", image: beach }, { name: "Monteverde", image: forest }, { name: "Nosara", image: beach }].map(item => (
+            {popularDestinations.map(item => (
               <button key={item.name} type="button" className="discovery-image-tile discovery-destination-tile" onClick={() => searchDestination(item.name)}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={item.image} alt="" loading="lazy" decoding="async" /><span>{item.name}</span>

@@ -25,6 +25,24 @@
 .discovery-search-bar input::placeholder { color:#727872; opacity:1; }
 .discovery-search-bar button { min-height:48px; border:1px solid #00b84c; border-radius:30px; background:var(--discovery-green); padding:0 26px; font-weight:700; color:var(--discovery-ink); cursor:pointer; }
 .discovery-search-bar button:hover { background:#00cd53; }
+.discovery-search-combobox { position:relative; z-index:20; text-align:left; }
+.discovery-search-bar .discovery-search-clear { display:flex; align-items:center; justify-content:center; flex-shrink:0; width:36px; height:36px; min-height:0; padding:0; border:0; border-radius:50%; background:transparent; color:var(--discovery-ink); }
+.discovery-search-bar .discovery-search-clear:hover { background:#f2f4f2; }
+.discovery-search-bar input::-webkit-search-cancel-button { display:none; }
+.discovery-suggestions { position:absolute; top:calc(100% + 8px); left:0; right:0; max-height:min(480px,70vh); overflow-y:auto; padding:8px 0; border-radius:12px; background:#fff; box-shadow:0 8px 28px #002c1629, 0 0 0 1px #002c160f; }
+.discovery-suggestions ul { margin:0; padding:0; list-style:none; }
+.discovery-suggestion-heading { display:flex; align-items:center; justify-content:space-between; padding:12px 20px 6px; font-size:13px; font-weight:700; }
+.discovery-suggestion-heading button { border:0; background:none; color:inherit; font-size:13px; font-weight:500; text-decoration:underline; cursor:pointer; }
+.discovery-suggestion { display:flex; align-items:center; gap:14px; min-height:56px; padding:8px 20px; cursor:pointer; }
+.discovery-suggestion.is-active { background:#f2f4f2; }
+.discovery-suggestion-icon,.discovery-suggestion-thumb { display:flex; align-items:center; justify-content:center; flex-shrink:0; width:52px; height:52px; overflow:hidden; border-radius:8px; background:#f2f4f2; }
+.discovery-suggestion-thumb img { width:100%; height:100%; object-fit:cover; }
+.discovery-suggestion-text { display:grid; flex:1; min-width:0; gap:2px; }
+.discovery-suggestion-text strong { overflow:hidden; font-size:15px; font-weight:400; text-overflow:ellipsis; white-space:nowrap; }
+.discovery-suggestion-text mark { background:none; color:inherit; font-weight:700; }
+.discovery-suggestion-text small { overflow:hidden; color:#647266; font-size:13px; text-overflow:ellipsis; white-space:nowrap; }
+.discovery-suggestion-price { flex-shrink:0; font-size:14px; font-weight:700; }
+.discovery-suggestion-note { padding:12px 20px; color:#647266; font-size:14px; }
 .discovery-availability { width:max-content; max-width:100%; margin:12px auto 0; color:#557060; text-align:left; font-size:13px; }
 .discovery-availability summary { display:flex; justify-content:center; align-items:center; gap:6px; min-height:32px; cursor:pointer; list-style:none; }
 .discovery-availability summary::-webkit-details-marker { display:none; }

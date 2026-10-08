@@ -15,6 +15,7 @@ import type { SystemUser } from "@/modules/crm/users/models/User";
 import { MyProfilePage } from "@/modules/crm/users/components/MyProfilePage";
 import type { TravelerPublication } from "@/modules/traveler/types/traveler-publication.types";
 import { tripPath } from "@/modules/landing/lib/travelerRoutes";
+import { matchesQuery } from "@/modules/landing/lib/searchText";
 import {
   listSavedPublications,
   listCatalogPublications,
@@ -96,17 +97,14 @@ export function TravelerExplorePage({ embedded = false, discovery = false, filte
     return () => { cancelled = true; };
   }, [user?.id, user?.role]);
 
-  const normalizedSearch = (filters?.destination ?? search).trim().toLocaleLowerCase();
+  const searchQuery = filters?.destination ?? search;
   const visiblePublications = publications.filter((publication) =>
     (!providerKey || publication.providerSlug === providerKey)
     && (!filters?.type || publication.serviceType === filters.type)
     && (!filters?.budget || publication.pricePerPerson < 50)
     && (!filters?.date && !filters?.people || publication.departures?.some(d =>
       d.available >= (filters?.people || 1) && (!filters?.date || new Intl.DateTimeFormat('en-CA', {timeZone:'America/Costa_Rica',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(d.startAt)) === filters.date)))
-    && [publication.title, publication.destination, publication.description]
-      .join(" ")
-      .toLocaleLowerCase()
-      .includes(normalizedSearch),
+    && matchesQuery(`${publication.title} ${publication.destination} ${publication.description}`, searchQuery),
   );
   const providerName = providerKey ? visiblePublications[0]?.providerName : undefined;
 
