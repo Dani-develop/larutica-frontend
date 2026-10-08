@@ -1,6 +1,5 @@
 "use client";
 import { usePreferences } from "@/lib/preferences/Preferences";
-import { PreferenceControls } from "@/components/preferences/PreferenceControls";
 
 import Link from "next/link";
 import { FormEvent, useEffect, useRef, useState } from "react";
@@ -15,7 +14,8 @@ import {
 } from "@/components/dashboard/TravelerViews";
 import { useAuth } from "@/modules/auth/context/AuthContext";
 import { LandingExplore } from "@/modules/landing/components/LandingExplore";
-import { TripMenu } from "@/modules/landing/components/TripMenu";
+import { SiteHeader } from "@/modules/landing/components/SiteHeader";
+import { AccessDialog, HelpDialog } from "@/modules/landing/components/SiteDialogs";
 import { TransportConfirmView } from "@/modules/landing/components/TransportConfirmView";
 import { TransportDetailView } from "@/modules/landing/components/TransportDetailView";
 import { parseTrip, tripPath } from "@/modules/landing/lib/travelerRoutes";
@@ -44,9 +44,7 @@ export default function Home() {
   const { t } = usePreferences();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { session, user, loading: authLoading, signOut } = useAuth();
-  const [signingOut, setSigningOut] = useState(false);
-  const [logoutError, setLogoutError] = useState("");
+  const { session, user, loading: authLoading } = useAuth();
   const trip = parseTrip(searchParams.get("viaje"));
   const publicationId = searchParams.get("publicacion") ?? "";
   const showTrip = Boolean(trip && !authLoading && session && user?.role === "Viajero");
@@ -184,36 +182,17 @@ export default function Home() {
   return (
     <div className={trip ? "landing-shell landing-trip" : view === "explore" ? "landing-shell landing-discovery" : "landing-shell"}>
       <a className="skip-link" href="#main">{t("Ir al contenido principal")}</a>
-      <header className="site-header">
-        <button className="brand brand-button" type="button" onClick={() => navigate("explore")} aria-label={t("LaRutica, volver al inicio")}>
-          <span className="brand-mark" aria-hidden="true" /><span>{t("LaRutica")}</span>
-        </button>
-        <nav aria-label={t("Navegación principal")}>
-          <button className={trip === "explorar" || (!trip && (view === "explore" || view === "detail" || view === "route-detail" || view === "route-confirm")) ? "nav-active" : ""} onClick={openExplore} aria-current={trip === "explorar" || (!trip && view === "explore") ? "page" : undefined}>{t("Explorar")}</button>
-          <button onClick={() => { navigate("explore"); setStatus("Explora los destinos disponibles."); window.setTimeout(() => document.getElementById("destinos")?.scrollIntoView(), 100); }}>{t("Destinos")}</button>
-          {!authLoading && user?.role === "Viajero" ? (
-            <TripMenu
-              active={tripMenuActive}
-              onSelect={(id) => {
-                router.push(tripPath(id));
-                window.scrollTo({ top: 0, behavior: "smooth" });
-              }}
-            />
-          ) : null}
-          <button onClick={() => setHelpOpen(true)}>{t("Ayuda")}</button>
-        </nav>
-        <div className="header-actions">
-          <PreferenceControls />
-          <button className="button button-quiet access-button" type="button" onClick={() => setAccessOpen(true)}>{t("Accesibilidad")}</button>
-          {authLoading ? <span role="status">{t("Cargando cuenta…")}</span> : user ? <><Link className="button button-outline" href={user.role === "Viajero" ? tripPath("perfil") : "/dashboard"}>{t("Mi cuenta")}</Link><button className="button button-quiet account-logout" type="button" disabled={signingOut} onClick={async () => {
-            setSigningOut(true); setLogoutError("");
-            try { await signOut(); router.replace("/"); }
-            catch { setLogoutError("No pudimos confirmar el cierre de sesión. Intenta de nuevo."); }
-            finally { setSigningOut(false); }
-          }}>{signingOut ? t("Cerrando sesión…") : t("Cerrar sesión")}</button></> : <Link className="button button-outline" href="/login">{t("Ingresar")}</Link>}
-        </div>
-      </header>
-      {logoutError && <p className="notice" role="alert">{logoutError}</p>}
+      <SiteHeader
+        exploreActive={trip === "explorar" || (!trip && (view === "explore" || view === "detail" || view === "route-detail" || view === "route-confirm"))}
+        exploreCurrent={trip === "explorar" || (!trip && view === "explore")}
+        tripMenuActive={tripMenuActive}
+        onBrand={() => navigate("explore")}
+        onExplore={openExplore}
+        onDestinations={() => { navigate("explore"); setStatus("Explora los destinos disponibles."); window.setTimeout(() => document.getElementById("destinos")?.scrollIntoView(), 100); }}
+        onTripSelect={(id) => { router.push(tripPath(id)); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+        onHelp={() => setHelpOpen(true)}
+        onAccess={() => setAccessOpen(true)}
+      />
       <p className="global-status sr-only" role="status" aria-live="polite">{status}</p>
 
       <main id="main">
@@ -365,19 +344,3 @@ function DashboardShell({ title, subtitle, headingRef, actions, children }: { ti
   const { t } = usePreferences(); return <div className="dashboard"><header className="dashboard-header"><div><p className="eyebrow">{t("LaRutica")}</p><h1 ref={headingRef} tabIndex={-1}>{t(title)}</h1><p>{subtitle}</p></div>{actions}</header>{children}</div>; }
 function Metric({ value, label, note }: { value: string; label: string; note: string }) {
   const { t } = usePreferences(); return <article className="metric-card"><span>{t(label)}</span><strong>{value}</strong><small>{note}</small></article>; }
-
-function DialogBackdrop({ children, onClose }: { children: React.ReactNode; onClose: () => void }) {
-  const ref = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const close = (event: MouseEvent) => { if (event.target === ref.current) onClose(); };
-    window.addEventListener('mousedown', close);
-    return () => window.removeEventListener('mousedown', close);
-  }, [onClose]);
-  return <div ref={ref} className="dialog-backdrop">{children}</div>;
-}
-
-function HelpDialog({ onClose }: { onClose: () => void }) {
-  const { t } = usePreferences(); return <DialogBackdrop onClose={onClose}><section className="dialog" role="dialog" aria-modal="true" aria-labelledby="help-title"><button className="dialog-close" aria-label={t("Cerrar ayuda")} onClick={onClose}>{t("Cerrar")}</button><p className="eyebrow">{t("Ayuda contextual")}</p><h2 id="help-title">{t("¿Qué quieres hacer?")}</h2><div className="help-options"><button><strong>{t("Buscar una experiencia")}</strong><span>{t("Usa destino, fecha y cantidad de personas.")}</span></button><button><strong>{t("Publicar un servicio")}</strong><span>{t("Ingresa y regístrate como Agencia o Transporte.")}</span></button><button><strong>{t("Ingresar a tu cuenta")}</strong><span>{t("Usa el botón Ingresar o crea una en Registrarse.")}</span></button></div><p className="help-note">{t("Consejo: presiona ")}<kbd>{t("Esc")}</kbd>{t(" para cerrar cualquier panel.")}</p></section></DialogBackdrop>; }
-
-function AccessDialog({ largeText, setLargeText, highContrast, setHighContrast, onClose }: { largeText: boolean; setLargeText: (value: boolean) => void; highContrast: boolean; setHighContrast: (value: boolean) => void; onClose: () => void }) {
-  const { t } = usePreferences(); return <DialogBackdrop onClose={onClose}><section className="dialog access-dialog" role="dialog" aria-modal="true" aria-labelledby="access-title"><button className="dialog-close" aria-label={t("Cerrar opciones de accesibilidad")} onClick={onClose}>{t("Cerrar")}</button><p className="eyebrow">{t("Preferencias")}</p><h2 id="access-title">{t("Accesibilidad visual")}</h2><p>{t("Los cambios se aplican inmediatamente a todo el prototipo.")}</p><label className="toggle-row" aria-label={t("Texto más grande")}><span><strong>{t("Texto más grande")}</strong><small>{t("Aumenta el tamaño de lectura.")}</small></span><input type="checkbox" role="switch" checked={largeText} onChange={(event) => setLargeText(event.target.checked)} /></label><label className="toggle-row" aria-label={t("Contraste reforzado")}><span><strong>{t("Contraste reforzado")}</strong><small>{t("Oscurece textos y bordes.")}</small></span><input type="checkbox" role="switch" checked={highContrast} onChange={(event) => setHighContrast(event.target.checked)} /></label><div className="notice"><strong>{t("Navegación por teclado")}</strong><span>{t("Usa Tab para avanzar, Shift + Tab para volver y Enter para activar.")}</span></div></section></DialogBackdrop>; }

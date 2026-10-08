@@ -1,15 +1,5 @@
 /* Discovery landing: styles stay within the public home page. */
 .landing-discovery { --discovery-ink:#003b22; --discovery-green:#00df5b; background:#fff; color:var(--discovery-ink); font-family:"Trip Sans",var(--font-trip),"Roboto",Helvetica,Arial,sans-serif; }
-.landing-discovery .site-header { min-height:88px; padding:12px max(24px,calc((100% - 1120px)/2)); gap:24px; background:#fff; border-bottom:0; backdrop-filter:none; }
-.landing-discovery .brand { font-size:26px; font-weight:800; letter-spacing:-1px; }
-.landing-discovery .brand-mark { width:42px; height:42px; border-radius:50%; }
-.landing-discovery .site-header nav { gap:4px; margin-left:auto; }
-.landing-discovery .site-header nav button { color:var(--discovery-ink); font-size:15px; padding:10px 12px; border-radius:24px; }
-.landing-discovery .site-header nav .nav-active { background:transparent; }
-.landing-discovery .site-header nav button:hover { background:#f2f4f2; }
-.landing-discovery .header-actions { align-items:center; gap:8px; }
-.landing-discovery .header-actions .button-outline { background:var(--discovery-ink); color:#fff; border-color:var(--discovery-ink); white-space:nowrap; }
-.landing-discovery .access-button { font-size:13px; padding-inline:8px; }
 .discovery-page { padding-bottom:40px; }
 .discovery-container { width:min(1120px,calc(100% - 48px)); margin-inline:auto; }
 .discovery-search { width:min(900px,calc(100% - 48px)); padding:38px 0 32px; margin:0 auto; text-align:center; }
@@ -108,16 +98,7 @@
 .landing-discovery .footer-link { color:var(--discovery-ink); font-size:13px; }
 .landing-discovery .footer-brand .brand-mark { background-color:var(--discovery-ink); background-size:auto 62%; }
 .landing-discovery .footer-help { background:transparent; border-color:#b5c4b6; color:var(--discovery-ink); font-size:13px; }
-@media (max-width:1100px) {
-  .landing-discovery .site-header { flex-wrap:wrap; gap:12px; }
-  .landing-discovery .site-header nav { order:3; justify-content:center; width:100%; }
-  .landing-discovery .header-actions { margin-left:auto; }
-}
 @media (max-width:760px) {
-  .landing-discovery .site-header { display:flex; justify-content:space-between; padding:12px 20px; }
-  .landing-discovery .brand { font-size:23px; }
-  .landing-discovery .header-actions { width:auto; gap:4px; }
-  .landing-discovery .access-button { display:none; }
   .discovery-container,.discovery-search { width:calc(100% - 32px); }
   .discovery-search { padding-top:28px; }
   .discovery-categories { justify-content:flex-start; gap:22px; margin-inline:-4px; padding-inline:4px; }
@@ -138,10 +119,6 @@
   .discovery-transport { grid-template-columns:180px 1fr; gap:22px; }
 }
 @media (max-width:520px) {
-  .landing-discovery .header-actions .account-logout { display:none; }
-  .landing-discovery .header-actions .button { padding-inline:12px; font-size:13px; }
-  .landing-discovery .site-header nav { flex-wrap:nowrap; }
-  .landing-discovery .site-header nav button { padding-inline:10px; font-size:14px; }
   .discovery-search h1 { font-size:38px; letter-spacing:-1.5px; }
   .discovery-feature { grid-template-columns:1fr; }
   .discovery-feature-image { min-height:240px; }

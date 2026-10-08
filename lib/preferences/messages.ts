@@ -46,6 +46,7 @@ export const english: Record<string,string> = Object.fromEntries([
 ["servicios", "services"],
 ["No encontramos coincidencias exactas. Te sugerimos estas opciones.", "No exact matches. Here are some suggestions."],
 ["Experiencias recomendadas", "Recommended experiences"],
+["Desde", "From"],
 ["Transporte recomendado", "Recommended transport"],
 ["Cargando experiencias…", "Loading experiences…"],
 ["Aún no hay experiencias publicadas para esta categoría.", "There are no published experiences in this category yet."],
