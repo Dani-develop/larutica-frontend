@@ -1,13 +1,19 @@
 "use client";
+
 import { usePreferences } from "@/lib/preferences/Preferences";
 
 import {
   useEffect,
+  useRef,
   useState,
 } from "react";
 
 import {
+  ArrowLeft,
+  ArrowRight,
   Bus,
+  Check,
+  CheckCircle2,
   Clock3,
   DollarSign,
   ImageIcon,
@@ -39,6 +45,12 @@ type PublicationFormProps = {
   submitLabel?: string;
 };
 
+type FormStep =
+  | 1
+  | 2
+  | 3
+  | 4;
+
 const LANGUAGES = [
   {
     id: 1,
@@ -52,6 +64,42 @@ const LANGUAGES = [
   },
 ];
 
+const STEPS: {
+  id: FormStep;
+  title: string;
+  shortTitle: string;
+  description: string;
+}[] = [
+  {
+    id: 1,
+    title: "Datos básicos",
+    shortTitle: "Datos",
+    description:
+      "Define el tipo de servicio y la información principal de la publicación.",
+  },
+  {
+    id: 2,
+    title: "Detalles del servicio",
+    shortTitle: "Servicio",
+    description:
+      "Configura el precio, la duración y la capacidad predeterminada.",
+  },
+  {
+    id: 3,
+    title: "Experiencia e idiomas",
+    shortTitle: "Experiencia",
+    description:
+      "Indica los idiomas, lo que incluye la experiencia y el punto de encuentro.",
+  },
+  {
+    id: 4,
+    title: "Imagen y revisión",
+    shortTitle: "Revisión",
+    description:
+      "Agrega la imagen principal y revisa toda la información antes de guardar.",
+  },
+];
+
 export function PublicationForm({
   initialValue,
   onSubmit,
@@ -60,6 +108,12 @@ export function PublicationForm({
   submitLabel = "Enviar a revisión",
 }: PublicationFormProps) {
   const { t } = usePreferences();
+
+  const formTopRef =
+    useRef<HTMLDivElement | null>(
+      null,
+    );
+
   const [
     value,
     setValue,
@@ -67,6 +121,12 @@ export function PublicationForm({
     useState<CreatePublicationInput>(
       initialValue,
     );
+
+  const [
+    activeStep,
+    setActiveStep,
+  ] =
+    useState<FormStep>(1);
 
   const [
     submitting,
@@ -82,7 +142,9 @@ export function PublicationForm({
     );
 
   useEffect(() => {
-    queueMicrotask(() => setValue(initialValue));
+    queueMicrotask(() =>
+      setValue(initialValue),
+    );
   }, [initialValue]);
 
   function patch<
@@ -126,6 +188,68 @@ export function PublicationForm({
     );
   }
 
+  function scrollToFormTop() {
+    window.setTimeout(
+      () => {
+        formTopRef.current?.scrollIntoView(
+          {
+            behavior:
+              "smooth",
+            block:
+              "start",
+          },
+        );
+      },
+      20,
+    );
+  }
+
+  function goToStep(
+    step: FormStep,
+  ) {
+    setError(null);
+    setActiveStep(step);
+    scrollToFormTop();
+  }
+
+  function goNext() {
+    const validationError =
+      validateStep(
+        activeStep,
+        value,
+      );
+
+    if (validationError) {
+      setError(
+        validationError,
+      );
+
+      scrollToFormTop();
+
+      return;
+    }
+
+    if (
+      activeStep < 4
+    ) {
+      goToStep(
+        (activeStep +
+          1) as FormStep,
+      );
+    }
+  }
+
+  function goBack() {
+    if (
+      activeStep > 1
+    ) {
+      goToStep(
+        (activeStep -
+          1) as FormStep,
+      );
+    }
+  }
+
   async function handleSubmit(
     action:
       | "DRAFT"
@@ -145,6 +269,22 @@ export function PublicationForm({
         setError(
           validationError,
         );
+
+        const targetStep =
+          getStepForValidationError(
+            validationError,
+          );
+
+        if (
+          targetStep !==
+          activeStep
+        ) {
+          setActiveStep(
+            targetStep,
+          );
+        }
+
+        scrollToFormTop();
 
         return;
       }
@@ -193,645 +333,1464 @@ export function PublicationForm({
           ? submitError.message
           : "No se pudo guardar la publicación.",
       );
+
+      scrollToFormTop();
     } finally {
       setSubmitting(false);
     }
   }
 
+  const progress =
+    activeStep * 25;
+
   return (
-    <div className="space-y-5">
+    <div
+      ref={
+        formTopRef
+      }
+      className="scroll-mt-6"
+    >
+      {/* Navegación de pasos */}
+      <div className="mb-4 rounded-xl border border-black/10 bg-white px-4 py-3 shadow-sm">
+        <div className="relative">
+          <div className="absolute left-4 right-4 top-3.5 h-px bg-slate-200" />
+
+          <div
+            className="absolute left-4 top-3.5 h-px bg-[#0d684e] transition-all duration-300"
+            style={{
+              width:
+                activeStep === 1
+                  ? "0%"
+                  : activeStep === 2
+                    ? "31%"
+                    : activeStep === 3
+                      ? "64%"
+                      : "calc(100% - 2rem)",
+            }}
+          />
+
+          <div className="relative grid grid-cols-4">
+            {STEPS.map(
+              (
+                step,
+              ) => {
+                const current =
+                  activeStep ===
+                  step.id;
+
+                const completed =
+                  activeStep >
+                  step.id;
+
+                return (
+                  <button
+                    key={
+                      step.id
+                    }
+                    type="button"
+                    disabled={
+                      submitting ||
+                      step.id >
+                        activeStep
+                    }
+                    onClick={() => {
+                      if (
+                        step.id <
+                        activeStep
+                      ) {
+                        goToStep(
+                          step.id,
+                        );
+                      }
+                    }}
+                    className="flex min-w-0 flex-col items-center gap-1.5"
+                    title={t(
+                      step.title,
+                    )}
+                    aria-label={t(
+                      step.title,
+                    )}
+                  >
+                    <span
+                      className={[
+                        "z-10 flex size-7 items-center justify-center rounded-full border text-[10px] font-semibold transition",
+                        current
+                          ? "border-[#0d684e] bg-[#0d684e] text-white shadow-sm"
+                          : completed
+                            ? "border-[#0d684e] bg-white text-[#0d684e]"
+                            : "border-slate-200 bg-white text-slate-400",
+                      ].join(
+                        " ",
+                      )}
+                    >
+                      {completed ? (
+                        <Check
+                          size={
+                            12
+                          }
+                        />
+                      ) : (
+                        step.id
+                      )}
+                    </span>
+
+                    <span
+                      className={[
+                        "max-w-full truncate text-[10px] font-medium",
+                        current ||
+                        completed
+                          ? "text-[#123a30]"
+                          : "text-muted-foreground",
+                      ].join(
+                        " ",
+                      )}
+                    >
+                      {t(
+                        step.shortTitle,
+                      )}
+                    </span>
+                  </button>
+                );
+              },
+            )}
+          </div>
+        </div>
+      </div>
+
       {error ? (
         <div
           role="alert"
-          className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+          className="mb-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
         >
           {t(error)}
         </div>
       ) : null}
 
-      {/* Tipo de servicio */}
-      <section className="rounded-2xl border border-black/10 bg-white p-5 shadow-sm">
-        <SectionHeader
-          title={t("Tipo de servicio")}
-          description={t("Selecciona qué tipo de experiencia vas a publicar.")}
-        />
-
-        <div className="mt-4 grid gap-3 sm:grid-cols-2">
-          <ServiceTypeButton
-            active={
-              value.serviceType ===
-              "EXCURSION"
-            }
-            icon={
-              <Mountain
-                size={18}
-              />
-            }
-            title={t("Excursión")}
-            description={t("Tours, actividades y experiencias.")}
-            onClick={() =>
-              patch(
-                "serviceType",
-                "EXCURSION",
-              )
-            }
-          />
-
-          <ServiceTypeButton
-            active={
-              value.serviceType ===
-              "TRANSPORT"
-            }
-            icon={
-              <Bus
-                size={18}
-              />
-            }
-            title={t("Transporte")}
-            description={t("Traslados y servicios de transporte.")}
-            onClick={() =>
-              patch(
-                "serviceType",
-                "TRANSPORT",
-              )
-            }
-          />
-        </div>
-      </section>
-
-      {/* Información principal */}
-      <section className="rounded-2xl border border-black/10 bg-white p-5 shadow-sm">
-        <SectionHeader
-          title={t("Información principal")}
-          description={t("Información que verá el viajero al consultar la publicación.")}
-        />
-
-        <div className="mt-5 space-y-4">
-          <FormField
-            label="Nombre de la publicación"
-            required
-          >
-            <Input
-              value={
-                value.title ?? ""
-              }
-              onChange={(
-                event,
-              ) =>
-                patch(
-                  "title",
-                  event.target
-                    .value,
-                )
-              }
-              placeholder={t("Ej. Excursión al Volcán Arenal")}
-              maxLength={150}
-            />
-          </FormField>
-
-          <FormField
-            label="Descripción"
-            required
-          >
-            <Textarea
-              value={
-                value.description ??
-                ""
-              }
-              onChange={(
-                event,
-              ) =>
-                patch(
-                  "description",
-                  event.target
-                    .value,
-                )
-              }
-              placeholder={t("Describe brevemente la experiencia, recorrido y principales características.")}
-              maxLength={1000}
-              className="min-h-24 resize-y"
+      {/* =====================================================
+          PASO 1
+          Tipo + información principal
+      ====================================================== */}
+      {activeStep ===
+      1 ? (
+        <div className="space-y-4">
+          <section className="rounded-2xl border border-black/10 bg-white p-4 shadow-sm sm:p-5">
+            <StepHeading
+              title="Información básica"
             />
 
-            <p className="mt-1 text-right text-[11px] text-muted-foreground">
-              {
-                (
-                  value.description ??
-                  ""
-                ).length
-              }
-              /1000
-            </p>
-          </FormField>
-
-          <FormField
-            label="Destino"
-            required
-          >
-            <div className="relative">
-              <MapPin
-                size={15}
-                className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+            <div className="mt-4">
+              <SectionHeader
+                title={t(
+                  "Tipo de servicio",
+                )}
+                description=""
               />
 
-              <Input
-                value={
-                  value.destination ??
-                  ""
-                }
-                onChange={(
-                  event,
-                ) =>
-                  patch(
-                    "destination",
-                    event.target
-                      .value,
-                  )
-                }
-                placeholder={t("Ej. La Fortuna, Alajuela")}
-                className="pl-9"
-              />
-            </div>
-          </FormField>
-        </div>
-      </section>
-
-      {/* Precio, duración y capacidad */}
-      <section className="rounded-2xl border border-black/10 bg-white p-5 shadow-sm">
-        <SectionHeader
-          title={t("Detalles del servicio")}
-          description={t("Define precio, duración y capacidad máxima.")}
-        />
-
-        <div className="mt-5 grid gap-4 md:grid-cols-3">
-          <FormField
-            label="Precio por persona"
-            required
-          >
-            <div className="relative">
-              <DollarSign
-                size={15}
-                className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-              />
-
-              <Input
-                type="number"
-                min={0}
-                step="0.01"
-                value={
-                  value.pricePerPerson ??
-                  ""
-                }
-                onChange={(
-                  event,
-                ) =>
-                  patch(
-                    "pricePerPerson",
-                    event.target
-                      .value === ""
-                      ? null
-                      : Number(
-                          event
-                            .target
-                            .value,
-                        ),
-                  )
-                }
-                placeholder={t("0.00")}
-                className="pl-9"
-              />
-            </div>
-
-            <p className="mt-1 text-[11px] text-muted-foreground">{t("USD ")}</p>
-          </FormField>
-
-          <FormField
-            label="Duración"
-            required
-          >
-            <div className="relative">
-              <Clock3
-                size={15}
-                className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-              />
-
-              <Input
-                type="number"
-                min={1}
-                step={1}
-                value={
-                  value.durationMinutes ??
-                  ""
-                }
-                onChange={(
-                  event,
-                ) =>
-                  patch(
-                    "durationMinutes",
-                    event.target
-                      .value === ""
-                      ? null
-                      : Number(
-                          event
-                            .target
-                            .value,
-                        ),
-                  )
-                }
-                placeholder={t("240")}
-                className="pl-9"
-              />
-            </div>
-
-            <p className="mt-1 text-[11px] text-muted-foreground">{t("Minutos ")}</p>
-          </FormField>
-
-          <FormField
-            label="Capacidad máxima"
-            required
-          >
-            <div className="relative">
-              <Users
-                size={15}
-                className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-              />
-
-              <Input
-                type="number"
-                min={1}
-                step={1}
-                value={
-                  value.defaultCapacity ??
-                  ""
-                }
-                onChange={(
-                  event,
-                ) =>
-                  patch(
-                    "defaultCapacity",
-                    event.target
-                      .value === ""
-                      ? null
-                      : Number(
-                          event
-                            .target
-                            .value,
-                        ),
-                  )
-                }
-                placeholder={t("20")}
-                className="pl-9"
-              />
-            </div>
-
-            <p className="mt-1 text-[11px] text-muted-foreground">{t("Personas ")}</p>
-          </FormField>
-        </div>
-      </section>
-
-      {/* Idiomas */}
-      <section className="rounded-2xl border border-black/10 bg-white p-5 shadow-sm">
-        <SectionHeader
-          title={t("Idiomas")}
-          description={t("Selecciona los idiomas disponibles durante el servicio.")}
-        />
-
-        <div className="mt-4 flex flex-wrap gap-2">
-          {LANGUAGES.map(
-            (language) => {
-              const selected =
-                (
-                  value.languageIds ??
-                  []
-                ).includes(
-                  language.id,
-                );
-
-              return (
-                <button
-                  key={
-                    language.id
+              <div className="mt-3 grid gap-2.5 sm:grid-cols-2">
+                <ServiceTypeButton
+                  active={
+                    value.serviceType ===
+                    "EXCURSION"
                   }
-                  type="button"
+                  icon={
+                    <Mountain
+                      size={
+                        18
+                      }
+                    />
+                  }
+                  title={t(
+                    "Excursión",
+                  )}
+                  description={t(
+                    "Tours, actividades y experiencias.",
+                  )}
                   onClick={() =>
-                    toggleLanguage(
-                      language.id,
+                    patch(
+                      "serviceType",
+                      "EXCURSION",
                     )
                   }
-                  className={[
-                    "inline-flex h-9 items-center gap-2 rounded-lg border px-3 text-xs font-medium transition",
-                    selected
-                      ? "border-[#0d684e] bg-[#edf7f3] text-[#0d684e]"
-                      : "border-black/10 bg-white text-foreground hover:bg-muted/50",
-                  ].join(
-                    " ",
-                  )}
-                >
-                  <Languages
-                    size={14}
-                  />
-
-                  {
-                    language.name
-                  }
-
-                  <span className="text-[10px] uppercase opacity-60">
-                    {
-                      language.code
-                    }
-                  </span>
-                </button>
-              );
-            },
-          )}
-        </div>
-      </section>
-
-      {/* Incluye */}
-      <section className="rounded-2xl border border-black/10 bg-white p-5 shadow-sm">
-        <SectionHeader
-          title={t("Detalles de la experiencia")}
-          description={t("Aclara qué recibe el viajero y qué debe considerar por separado.")}
-        />
-
-        <div className="mt-5 grid gap-4 md:grid-cols-2">
-          <FormField
-            label="Qué incluye"
-            required
-          >
-            <Textarea
-              value={
-                value.included ??
-                ""
-              }
-              onChange={(
-                event,
-              ) =>
-                patch(
-                  "included",
-                  event.target
-                    .value,
-                )
-              }
-              placeholder={t("Ej. Guía turístico, entrada al parque y refrigerio.")}
-              className="min-h-28 resize-y"
-            />
-          </FormField>
-
-          <FormField
-            label="Qué no incluye"
-            required
-          >
-            <Textarea
-              value={
-                value.notIncluded ??
-                ""
-              }
-              onChange={(
-                event,
-              ) =>
-                patch(
-                  "notIncluded",
-                  event.target
-                    .value,
-                )
-              }
-              placeholder={t("Ej. Alimentación, transporte hasta el punto de encuentro.")}
-              className="min-h-28 resize-y"
-            />
-          </FormField>
-        </div>
-
-        <div className="mt-4">
-          <FormField
-            label="Punto de encuentro"
-            required
-          >
-            <div className="relative">
-              <MapPin
-                size={15}
-                className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-              />
-
-              <Input
-                value={
-                  value.meetingPoint ??
-                  ""
-                }
-                onChange={(
-                  event,
-                ) =>
-                  patch(
-                    "meetingPoint",
-                    event.target
-                      .value,
-                  )
-                }
-                placeholder={t("Ej. Parque Central de La Fortuna")}
-                className="pl-9"
-              />
-            </div>
-          </FormField>
-        </div>
-      </section>
-
-      {/* Imagen */}
-      <section className="rounded-2xl border border-black/10 bg-white p-5 shadow-sm">
-        <SectionHeader
-          title={t("Imagen principal")}
-          description={t("De momento utilizaremos una URL. Más adelante podemos conectarlo con Storage.")}
-        />
-
-        <div className="mt-5">
-          <FormField
-            label="URL de la imagen"
-            required
-          >
-            <div className="relative">
-              <ImageIcon
-                size={15}
-                className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-              />
-
-              <Input
-                type="url"
-                value={
-                  value.mainImageUrl ??
-                  ""
-                }
-                onChange={(
-                  event,
-                ) =>
-                  patch(
-                    "mainImageUrl",
-                    event.target
-                      .value,
-                  )
-                }
-                placeholder={t("https://...")}
-                className="pl-9"
-              />
-            </div>
-          </FormField>
-
-          {value.mainImageUrl ? (
-            <div className="mt-4 overflow-hidden rounded-xl border border-black/10 bg-muted">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={
-                  value.mainImageUrl
-                }
-                alt="Vista previa de la publicación"
-                className="h-56 w-full object-cover"
-              />
-            </div>
-          ) : (
-            <div className="mt-4 flex h-36 items-center justify-center rounded-xl border border-dashed border-black/15 bg-muted/30">
-              <div className="text-center">
-                <ImageIcon
-                  size={22}
-                  className="mx-auto text-muted-foreground"
                 />
 
-                <p className="mt-2 text-xs text-muted-foreground">{t("La vista previa aparecerá aquí. ")}</p>
+                <ServiceTypeButton
+                  active={
+                    value.serviceType ===
+                    "TRANSPORT"
+                  }
+                  icon={
+                    <Bus
+                      size={
+                        18
+                      }
+                    />
+                  }
+                  title={t(
+                    "Transporte",
+                  )}
+                  description={t(
+                    "Traslados y servicios de transporte.",
+                  )}
+                  onClick={() =>
+                    patch(
+                      "serviceType",
+                      "TRANSPORT",
+                    )
+                  }
+                />
               </div>
             </div>
-          )}
+
+            <div className="my-4 border-t border-black/10" />
+
+            <SectionHeader
+              title={t(
+                "Información principal",
+              )}
+              description=""
+            />
+
+            <div className="mt-4 space-y-3">
+              <FormField
+                label="Nombre de la publicación"
+                required
+              >
+                <Input
+                  value={
+                    value.title ??
+                    ""
+                  }
+                  onChange={(
+                    event,
+                  ) =>
+                    patch(
+                      "title",
+                      event
+                        .target
+                        .value,
+                    )
+                  }
+                  placeholder={t(
+                    "Ej. Excursión al Volcán Arenal",
+                  )}
+                  maxLength={
+                    150
+                  }
+                />
+              </FormField>
+
+              <FormField
+                label="Descripción"
+                required
+              >
+                <Textarea
+                  value={
+                    value.description ??
+                    ""
+                  }
+                  onChange={(
+                    event,
+                  ) =>
+                    patch(
+                      "description",
+                      event
+                        .target
+                        .value,
+                    )
+                  }
+                  placeholder={t(
+                    "Describe brevemente la experiencia, recorrido y principales características.",
+                  )}
+                  maxLength={
+                    1000
+                  }
+                  className="min-h-20 resize-y"
+                />
+
+                <p className="mt-1 text-right text-[11px] text-muted-foreground">
+                  {
+                    (
+                      value.description ??
+                      ""
+                    ).length
+                  }
+                  /1000
+                </p>
+              </FormField>
+
+              <FormField
+                label="Destino"
+                required
+              >
+                <div className="relative">
+                  <MapPin
+                    size={
+                      15
+                    }
+                    className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                  />
+
+                  <Input
+                    value={
+                      value.destination ??
+                      ""
+                    }
+                    onChange={(
+                      event,
+                    ) =>
+                      patch(
+                        "destination",
+                        event
+                          .target
+                          .value,
+                      )
+                    }
+                    placeholder={t(
+                      "Ej. La Fortuna, Alajuela",
+                    )}
+                    className="pl-9"
+                  />
+                </div>
+              </FormField>
+            </div>
+          </section>
+
+          <StepActions
+            submitting={
+              submitting
+            }
+            showBack={
+              false
+            }
+            onBack={
+              goBack
+            }
+            onCancel={
+              onCancel
+            }
+            onContinue={
+              goNext
+            }
+          />
         </div>
-      </section>
+      ) : null}
 
-      {/* Acciones */}
-      <div className="flex flex-col-reverse gap-2 border-t pt-5 sm:flex-row sm:justify-end">
-        <Button
-          type="button"
-          variant="outline"
-          disabled={submitting}
-          onClick={
-            onCancel
-          }
-        >{t("Cancelar ")}</Button>
+      {/* =====================================================
+          PASO 2
+          Precio + duración + capacidad
+      ====================================================== */}
+      {activeStep ===
+      2 ? (
+        <div className="space-y-4">
+          <section className="rounded-2xl border border-black/10 bg-white p-4 shadow-sm sm:p-5">
+            <StepHeading
+              title="Detalles del servicio"
+            />
 
-        <Button
-          type="button"
-          variant="outline"
-          disabled={submitting}
-          onClick={() =>
-            void handleSubmit(
-              "DRAFT",
-            )
-          }
-        >
-          {submitting
-            ? "Guardando..."
-            : draftLabel}
-        </Button>
+            <div className="mt-4 grid gap-3 md:grid-cols-3">
+              <FormField
+                label="Precio por persona"
+                required
+              >
+                <div className="relative">
+                  <DollarSign
+                    size={
+                      15
+                    }
+                    className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                  />
 
-        <Button
-          type="button"
-          disabled={submitting}
-          onClick={() =>
-            void handleSubmit(
-              "SUBMIT",
-            )
-          }
-          className="bg-[#0d684e] text-white hover:bg-[#0b5943]"
-        >
-          {submitting
-            ? "Procesando..."
-            : submitLabel}
-        </Button>
-      </div>
+                  <Input
+                    type="number"
+                    min={
+                      0
+                    }
+                    step="0.01"
+                    value={
+                      value.pricePerPerson ??
+                      ""
+                    }
+                    onChange={(
+                      event,
+                    ) =>
+                      patch(
+                        "pricePerPerson",
+                        event
+                          .target
+                          .value ===
+                          ""
+                          ? null
+                          : Number(
+                              event
+                                .target
+                                .value,
+                            ),
+                      )
+                    }
+                    placeholder={t(
+                      "0.00",
+                    )}
+                    className="pl-9"
+                  />
+                </div>
+
+                <p className="mt-1 text-[11px] text-muted-foreground">
+                  {t(
+                    "USD",
+                  )}
+                </p>
+              </FormField>
+
+              <FormField
+                label="Duración"
+                required
+              >
+                <div className="relative">
+                  <Clock3
+                    size={
+                      15
+                    }
+                    className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                  />
+
+                  <Input
+                    type="number"
+                    min={
+                      1
+                    }
+                    step={
+                      1
+                    }
+                    value={
+                      value.durationMinutes ??
+                      ""
+                    }
+                    onChange={(
+                      event,
+                    ) =>
+                      patch(
+                        "durationMinutes",
+                        event
+                          .target
+                          .value ===
+                          ""
+                          ? null
+                          : Number(
+                              event
+                                .target
+                                .value,
+                            ),
+                      )
+                    }
+                    placeholder={t(
+                      "240",
+                    )}
+                    className="pl-9"
+                  />
+                </div>
+
+                <p className="mt-1 text-[11px] text-muted-foreground">
+                  {t(
+                    "Minutos",
+                  )}
+                </p>
+              </FormField>
+
+              <FormField
+                label="Capacidad predeterminada"
+                required
+              >
+                <div className="relative">
+                  <Users
+                    size={
+                      15
+                    }
+                    className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                  />
+
+                  <Input
+                    type="number"
+                    min={
+                      1
+                    }
+                    step={
+                      1
+                    }
+                    value={
+                      value.defaultCapacity ??
+                      ""
+                    }
+                    onChange={(
+                      event,
+                    ) =>
+                      patch(
+                        "defaultCapacity",
+                        event
+                          .target
+                          .value ===
+                          ""
+                          ? null
+                          : Number(
+                              event
+                                .target
+                                .value,
+                            ),
+                      )
+                    }
+                    placeholder={t(
+                      "20",
+                    )}
+                    className="pl-9"
+                  />
+                </div>
+
+                <p className="mt-1 text-[11px] leading-5 text-muted-foreground">
+                  {t(
+                    "Se utilizará como capacidad inicial al crear nuevas salidas. Podrás modificarla para cada fecha.",
+                  )}
+                </p>
+              </FormField>
+            </div>
+
+            <div className="mt-4 rounded-xl border border-[#dcebe5] bg-[#f4faf7] px-3.5 py-2.5">
+              <div className="flex items-start gap-3">
+                <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-white text-[#0d684e] shadow-sm">
+                  <Users
+                    size={
+                      16
+                    }
+                  />
+                </div>
+
+                <div>
+                  <p className="text-xs font-semibold text-[#123a30]">
+                    {t(
+                      "La capacidad puede variar por salida",
+                    )}
+                  </p>
+
+                  <p className="mt-0.5 text-[11px] leading-4 text-muted-foreground">
+                    {t(
+                      "Este valor es solamente el predeterminado. En Salidas y cupos podrás asignar una capacidad distinta a cada fecha y horario.",
+                    )}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <StepActions
+            submitting={
+              submitting
+            }
+            showBack
+            onBack={
+              goBack
+            }
+            onCancel={
+              onCancel
+            }
+            onContinue={
+              goNext
+            }
+          />
+        </div>
+      ) : null}
+
+      {/* =====================================================
+          PASO 3
+          Idiomas + experiencia
+      ====================================================== */}
+      {activeStep ===
+      3 ? (
+        <div className="space-y-4">
+          <section className="rounded-2xl border border-black/10 bg-white p-4 shadow-sm sm:p-5">
+            <StepHeading
+              title="Experiencia e idiomas"
+            />
+
+            <div className="mt-4">
+              <SectionHeader
+                title={t(
+                  "Idiomas",
+                )}
+                description=""
+              />
+
+              <div className="mt-3 flex flex-wrap gap-2">
+                {LANGUAGES.map(
+                  (
+                    language,
+                  ) => {
+                    const selected =
+                      (
+                        value.languageIds ??
+                        []
+                      ).includes(
+                        language.id,
+                      );
+
+                    return (
+                      <button
+                        key={
+                          language.id
+                        }
+                        type="button"
+                        onClick={() =>
+                          toggleLanguage(
+                            language.id,
+                          )
+                        }
+                        className={[
+                          "inline-flex h-10 items-center gap-2 rounded-xl border px-3.5 text-xs font-medium transition",
+                          selected
+                            ? "border-[#0d684e] bg-[#edf7f3] text-[#0d684e] shadow-sm"
+                            : "border-black/10 bg-white text-foreground hover:border-black/20 hover:bg-muted/30",
+                        ].join(
+                          " ",
+                        )}
+                      >
+                        <Languages
+                          size={
+                            14
+                          }
+                        />
+
+                        {
+                          language.name
+                        }
+
+                        <span className="text-[10px] uppercase opacity-60">
+                          {
+                            language.code
+                          }
+                        </span>
+
+                        {selected ? (
+                          <Check
+                            size={
+                              13
+                            }
+                          />
+                        ) : null}
+                      </button>
+                    );
+                  },
+                )}
+              </div>
+            </div>
+
+            <div className="my-4 border-t border-black/10" />
+
+            <SectionHeader
+              title={t(
+                "Detalles de la experiencia",
+              )}
+              description=""
+            />
+
+            <div className="mt-4 grid gap-3 md:grid-cols-2">
+              <FormField
+                label="Qué incluye"
+                required
+              >
+                <Textarea
+                  value={
+                    value.included ??
+                    ""
+                  }
+                  onChange={(
+                    event,
+                  ) =>
+                    patch(
+                      "included",
+                      event
+                        .target
+                        .value,
+                    )
+                  }
+                  placeholder={t(
+                    "Ej. Guía turístico, entrada al parque y refrigerio.",
+                  )}
+                  className="min-h-24 resize-y"
+                />
+              </FormField>
+
+              <FormField
+                label="Qué no incluye"
+                required
+              >
+                <Textarea
+                  value={
+                    value.notIncluded ??
+                    ""
+                  }
+                  onChange={(
+                    event,
+                  ) =>
+                    patch(
+                      "notIncluded",
+                      event
+                        .target
+                        .value,
+                    )
+                  }
+                  placeholder={t(
+                    "Ej. Alimentación, transporte hasta el punto de encuentro.",
+                  )}
+                  className="min-h-24 resize-y"
+                />
+              </FormField>
+            </div>
+
+            <div className="mt-4">
+              <FormField
+                label="Punto de encuentro"
+                required
+              >
+                <div className="relative">
+                  <MapPin
+                    size={
+                      15
+                    }
+                    className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                  />
+
+                  <Input
+                    value={
+                      value.meetingPoint ??
+                      ""
+                    }
+                    onChange={(
+                      event,
+                    ) =>
+                      patch(
+                        "meetingPoint",
+                        event
+                          .target
+                          .value,
+                      )
+                    }
+                    placeholder={t(
+                      "Ej. Parque Central de La Fortuna",
+                    )}
+                    className="pl-9"
+                  />
+                </div>
+              </FormField>
+            </div>
+          </section>
+
+          <StepActions
+            submitting={
+              submitting
+            }
+            showBack
+            onBack={
+              goBack
+            }
+            onCancel={
+              onCancel
+            }
+            onContinue={
+              goNext
+            }
+          />
+        </div>
+      ) : null}
+
+      {/* =====================================================
+          PASO 4
+          Imagen + revisión
+      ====================================================== */}
+      {activeStep ===
+      4 ? (
+        <div className="space-y-4">
+          <section className="rounded-2xl border border-black/10 bg-white p-4 shadow-sm sm:p-5">
+            <StepHeading
+              title="Imagen y revisión"
+            />
+
+            <div className="mt-4">
+              <SectionHeader
+                title={t(
+                  "Imagen principal",
+                )}
+                description=""
+              />
+
+              <div className="mt-4">
+                <FormField
+                  label="URL de la imagen"
+                  required
+                >
+                  <div className="relative">
+                    <ImageIcon
+                      size={
+                        15
+                      }
+                      className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                    />
+
+                    <Input
+                      type="url"
+                      value={
+                        value.mainImageUrl ??
+                        ""
+                      }
+                      onChange={(
+                        event,
+                      ) =>
+                        patch(
+                          "mainImageUrl",
+                          event
+                            .target
+                            .value,
+                        )
+                      }
+                      placeholder={t(
+                        "https://...",
+                      )}
+                      className="pl-9"
+                    />
+                  </div>
+                </FormField>
+
+                {value.mainImageUrl ? (
+                  <div className="mt-3 overflow-hidden rounded-xl border border-black/10 bg-muted">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={
+                        value.mainImageUrl
+                      }
+                      alt="Vista previa de la publicación"
+                      className="h-44 w-full object-cover"
+                    />
+                  </div>
+                ) : (
+                  <div className="mt-3 flex h-28 items-center justify-center rounded-xl border border-dashed border-black/15 bg-muted/30">
+                    <div className="text-center">
+                      <ImageIcon
+                        size={
+                          22
+                        }
+                        className="mx-auto text-muted-foreground"
+                      />
+
+                      <p className="mt-2 text-xs text-muted-foreground">
+                        {t(
+                          "La vista previa aparecerá aquí.",
+                        )}
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="my-4 border-t border-black/10" />
+
+            <div className="flex items-center gap-2">
+              <CheckCircle2
+                size={
+                  18
+                }
+                className="text-[#0d684e]"
+              />
+
+              <div>
+                <h3 className="!m-0 !text-sm !font-semibold !tracking-normal text-[#123a30]">
+                  {t(
+                    "Revisa la información",
+                  )}
+                </h3>
+
+                <p className="mt-0.5 text-[11px] leading-4 text-muted-foreground">
+                  {t(
+                    "Puedes volver a cualquier paso anterior si necesitas realizar cambios.",
+                  )}
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-4 grid gap-2.5 md:grid-cols-2">
+              <ReviewItem
+                label="Tipo de servicio"
+                value={
+                  value.serviceType ===
+                  "TRANSPORT"
+                    ? "Transporte"
+                    : value.serviceType ===
+                        "EXCURSION"
+                      ? "Excursión"
+                      : "Sin definir"
+                }
+                onEdit={() =>
+                  goToStep(
+                    1,
+                  )
+                }
+              />
+
+              <ReviewItem
+                label="Nombre"
+                value={
+                  value.title?.trim() ||
+                  "Sin definir"
+                }
+                onEdit={() =>
+                  goToStep(
+                    1,
+                  )
+                }
+              />
+
+              <ReviewItem
+                label="Destino"
+                value={
+                  value.destination?.trim() ||
+                  "Sin definir"
+                }
+                onEdit={() =>
+                  goToStep(
+                    1,
+                  )
+                }
+              />
+
+              <ReviewItem
+                label="Precio"
+                value={
+                  value.pricePerPerson !==
+                    null &&
+                  value.pricePerPerson !==
+                    undefined
+                    ? `USD ${value.pricePerPerson.toFixed(
+                        2,
+                      )} por persona`
+                    : "Sin definir"
+                }
+                onEdit={() =>
+                  goToStep(
+                    2,
+                  )
+                }
+              />
+
+              <ReviewItem
+                label="Duración"
+                value={
+                  value.durationMinutes
+                    ? `${value.durationMinutes} minutos`
+                    : "Sin definir"
+                }
+                onEdit={() =>
+                  goToStep(
+                    2,
+                  )
+                }
+              />
+
+              <ReviewItem
+                label="Capacidad predeterminada"
+                value={
+                  value.defaultCapacity
+                    ? `${value.defaultCapacity} personas`
+                    : "Sin definir"
+                }
+                onEdit={() =>
+                  goToStep(
+                    2,
+                  )
+                }
+              />
+
+              <ReviewItem
+                label="Idiomas"
+                value={
+                  getLanguageNames(
+                    value.languageIds ??
+                      [],
+                  )
+                }
+                onEdit={() =>
+                  goToStep(
+                    3,
+                  )
+                }
+              />
+
+              <ReviewItem
+                label="Punto de encuentro"
+                value={
+                  value.meetingPoint?.trim() ||
+                  "Sin definir"
+                }
+                onEdit={() =>
+                  goToStep(
+                    3,
+                  )
+                }
+              />
+            </div>
+          </section>
+
+          <div className="flex flex-col gap-2 rounded-xl border border-black/10 bg-white p-3 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+            <Button
+              type="button"
+              variant="ghost"
+              disabled={
+                submitting
+              }
+              onClick={
+                goBack
+              }
+              className="justify-start gap-2 sm:justify-center"
+            >
+              <ArrowLeft
+                size={
+                  15
+                }
+              />
+
+              {t(
+                "Atrás",
+              )}
+            </Button>
+
+            <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+              <Button
+                type="button"
+                variant="outline"
+                disabled={
+                  submitting
+                }
+                onClick={
+                  onCancel
+                }
+              >
+                {t(
+                  "Cancelar",
+                )}
+              </Button>
+
+              <Button
+                type="button"
+                variant="outline"
+                disabled={
+                  submitting
+                }
+                onClick={() =>
+                  void handleSubmit(
+                    "DRAFT",
+                  )
+                }
+              >
+                {submitting
+                  ? t(
+                      "Guardando...",
+                    )
+                  : t(
+                      draftLabel,
+                    )}
+              </Button>
+
+              <Button
+                type="button"
+                disabled={
+                  submitting
+                }
+                onClick={() =>
+                  void handleSubmit(
+                    "SUBMIT",
+                  )
+                }
+                className="bg-[#0d684e] text-white hover:bg-[#0b5943]"
+              >
+                {submitting
+                  ? t(
+                      "Procesando...",
+                    )
+                  : t(
+                      submitLabel,
+                    )}
+              </Button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
 
-function validateForSubmit(
+function validateStep(
+  step: FormStep,
   value: CreatePublicationInput,
 ): string | null {
-  if (!value.serviceType) {
-    return "Selecciona el tipo de servicio.";
-  }
-
   if (
-    !value.title?.trim()
+    step === 1
   ) {
-    return "Ingresa el nombre de la publicación.";
+    if (
+      !value.serviceType
+    ) {
+      return "Selecciona el tipo de servicio.";
+    }
+
+    if (
+      !value.title?.trim()
+    ) {
+      return "Ingresa el nombre de la publicación.";
+    }
+
+    if (
+      !value.description?.trim()
+    ) {
+      return "Ingresa una descripción.";
+    }
+
+    if (
+      !value.destination?.trim()
+    ) {
+      return "Ingresa el destino.";
+    }
   }
 
   if (
-    !value.description?.trim()
+    step === 2
   ) {
-    return "Ingresa una descripción.";
+    if (
+      value.pricePerPerson ===
+        null ||
+      value.pricePerPerson ===
+        undefined ||
+      value.pricePerPerson <=
+        0
+    ) {
+      return "Ingresa un precio por persona válido.";
+    }
+
+    if (
+      value.durationMinutes ===
+        null ||
+      value.durationMinutes ===
+        undefined ||
+      value.durationMinutes <=
+        0
+    ) {
+      return "Ingresa una duración válida.";
+    }
+
+    if (
+      value.defaultCapacity ===
+        null ||
+      value.defaultCapacity ===
+        undefined ||
+      value.defaultCapacity <=
+        0
+    ) {
+      return "Ingresa una capacidad predeterminada válida.";
+    }
   }
 
   if (
-    !value.destination?.trim()
+    step === 3
   ) {
-    return "Ingresa el destino.";
+    if (
+      !value.languageIds ||
+      value.languageIds.length ===
+        0
+    ) {
+      return "Selecciona al menos un idioma.";
+    }
+
+    if (
+      !value.included?.trim()
+    ) {
+      return "Indica qué incluye el servicio.";
+    }
+
+    if (
+      !value.notIncluded?.trim()
+    ) {
+      return "Indica qué no incluye el servicio.";
+    }
+
+    if (
+      !value.meetingPoint?.trim()
+    ) {
+      return "Ingresa el punto de encuentro.";
+    }
   }
 
   if (
-    value.pricePerPerson ===
-      null ||
-    value.pricePerPerson ===
-      undefined ||
-    value.pricePerPerson <= 0
-  ) {
-    return "Ingresa un precio por persona válido.";
-  }
-
-  if (
-    value.durationMinutes ===
-      null ||
-    value.durationMinutes ===
-      undefined ||
-    value.durationMinutes <= 0
-  ) {
-    return "Ingresa una duración válida.";
-  }
-
-  if (
-    !value.languageIds ||
-    value.languageIds.length ===
-      0
-  ) {
-    return "Selecciona al menos un idioma.";
-  }
-
-  if (
-    !value.included?.trim()
-  ) {
-    return "Indica qué incluye el servicio.";
-  }
-
-  if (
-    !value.notIncluded?.trim()
-  ) {
-    return "Indica qué no incluye el servicio.";
-  }
-
-  if (
-    !value.meetingPoint?.trim()
-  ) {
-    return "Ingresa el punto de encuentro.";
-  }
-
-  if (
+    step === 4 &&
     !value.mainImageUrl?.trim()
   ) {
     return "Ingresa una imagen principal.";
   }
 
+  return null;
+}
+
+function validateForSubmit(
+  value: CreatePublicationInput,
+): string | null {
+  return (
+    validateStep(
+      1,
+      value,
+    ) ??
+    validateStep(
+      2,
+      value,
+    ) ??
+    validateStep(
+      3,
+      value,
+    ) ??
+    validateStep(
+      4,
+      value,
+    )
+  );
+}
+
+function getStepForValidationError(
+  message: string,
+): FormStep {
+  const firstStepErrors =
+    [
+      "tipo de servicio",
+      "nombre de la publicación",
+      "descripción",
+      "destino",
+    ];
+
   if (
-    value.defaultCapacity ===
-      null ||
-    value.defaultCapacity ===
-      undefined ||
-    value.defaultCapacity <= 0
+    firstStepErrors.some(
+      (text) =>
+        message
+          .toLowerCase()
+          .includes(
+            text,
+          ),
+    )
   ) {
-    return "Ingresa una capacidad máxima válida.";
+    return 1;
   }
 
-  return null;
+  const secondStepErrors =
+    [
+      "precio",
+      "duración",
+      "capacidad",
+    ];
+
+  if (
+    secondStepErrors.some(
+      (text) =>
+        message
+          .toLowerCase()
+          .includes(
+            text,
+          ),
+    )
+  ) {
+    return 2;
+  }
+
+  const thirdStepErrors =
+    [
+      "idioma",
+      "incluye",
+      "no incluye",
+      "punto de encuentro",
+    ];
+
+  if (
+    thirdStepErrors.some(
+      (text) =>
+        message
+          .toLowerCase()
+          .includes(
+            text,
+          ),
+    )
+  ) {
+    return 3;
+  }
+
+  return 4;
+}
+
+function getLanguageNames(
+  ids: number[],
+): string {
+  const names =
+    LANGUAGES.filter(
+      (language) =>
+        ids.includes(
+          language.id,
+        ),
+    ).map(
+      (language) =>
+        language.name,
+    );
+
+  return names.length >
+    0
+    ? names.join(
+        " · ",
+      )
+    : "Sin definir";
+}
+
+function StepHeading({
+  title,
+}: {
+  title: string;
+}) {
+  const { t } =
+    usePreferences();
+
+  return (
+    <div>
+      <h2 className="!m-0 !text-lg !font-semibold !leading-6 !tracking-normal text-[#123a30]">
+        {t(
+          title,
+        )}
+      </h2>
+    </div>
+  );
+}
+
+function StepActions({
+  submitting,
+  showBack,
+  onBack,
+  onCancel,
+  onContinue,
+}: {
+  submitting: boolean;
+  showBack: boolean;
+  onBack: () => void;
+  onCancel: () => void;
+  onContinue: () => void;
+}) {
+  const { t } =
+    usePreferences();
+
+  return (
+    <div className="flex flex-col-reverse gap-2 rounded-xl border border-black/10 bg-white p-3 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+      <div>
+        {showBack ? (
+          <Button
+            type="button"
+            variant="ghost"
+            disabled={
+              submitting
+            }
+            onClick={
+              onBack
+            }
+            className="w-full justify-start gap-2 sm:w-auto sm:justify-center"
+          >
+            <ArrowLeft
+              size={
+                15
+              }
+            />
+
+            {t(
+              "Atrás",
+            )}
+          </Button>
+        ) : (
+          <Button
+            type="button"
+            variant="ghost"
+            disabled={
+              submitting
+            }
+            onClick={
+              onCancel
+            }
+            className="w-full sm:w-auto"
+          >
+            {t(
+              "Cancelar",
+            )}
+          </Button>
+        )}
+      </div>
+
+      <Button
+        type="button"
+        disabled={
+          submitting
+        }
+        onClick={
+          onContinue
+        }
+        className="gap-2 bg-[#0d684e] text-white hover:bg-[#0b5943]"
+      >
+        {t(
+          "Continuar",
+        )}
+
+        <ArrowRight
+          size={
+            15
+          }
+        />
+      </Button>
+    </div>
+  );
+}
+
+function ReviewItem({
+  label,
+  value,
+  onEdit,
+}: {
+  label: string;
+  value: string;
+  onEdit: () => void;
+}) {
+  const { t } =
+    usePreferences();
+
+  return (
+    <div className="rounded-xl border border-black/10 bg-muted/20 p-3">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+            {t(
+              label,
+            )}
+          </p>
+
+          <p className="mt-1 break-words text-sm font-medium text-[#123a30]">
+            {t(
+              value,
+            )}
+          </p>
+        </div>
+
+        <button
+          type="button"
+          onClick={
+            onEdit
+          }
+          className="shrink-0 text-[11px] font-semibold text-[#0d684e] transition hover:underline"
+        >
+          {t(
+            "Editar",
+          )}
+        </button>
+      </div>
+    </div>
+  );
 }
 
 function SectionHeader({
@@ -841,16 +1800,24 @@ function SectionHeader({
   title: string;
   description: string;
 }) {
-  const { t } = usePreferences();
+  const { t } =
+    usePreferences();
+
   return (
     <div>
       <h2 className="!m-0 !text-sm !font-semibold !leading-5 !tracking-normal text-[#123a30]">
-        {t(title)}
+        {t(
+          title,
+        )}
       </h2>
 
-      <p className="mt-1 text-xs leading-5 text-muted-foreground">
-        {t(description)}
-      </p>
+      {description ? (
+        <p className="mt-0.5 text-[11px] leading-4 text-muted-foreground">
+          {t(
+            description,
+          )}
+        </p>
+      ) : null}
     </div>
   );
 }
@@ -865,11 +1832,15 @@ function FormField({
   children:
     React.ReactNode;
 }) {
-  const { t } = usePreferences();
+  const { t } =
+    usePreferences();
+
   return (
     <div>
-      <label className="mb-1.5 block text-xs font-medium text-foreground">
-        {t(label)}
+      <label className="mb-1 block text-[11px] font-medium text-foreground">
+        {t(
+          label,
+        )}
 
         {required ? (
           <span className="ml-1 text-red-500">
@@ -896,25 +1867,33 @@ function ServiceTypeButton({
   description: string;
   onClick: () => void;
 }) {
-  const { t } = usePreferences();
+  const { t } =
+    usePreferences();
+
   return (
     <button
       type="button"
-      onClick={onClick}
+      onClick={
+        onClick
+      }
       className={[
-        "flex items-start gap-3 rounded-xl border p-4 text-left transition",
+        "flex items-center gap-3 rounded-xl border px-3.5 py-3 text-left transition",
         active
           ? "border-[#0d684e] bg-[#edf7f3] shadow-sm"
           : "border-black/10 bg-white hover:border-black/20 hover:bg-muted/30",
-      ].join(" ")}
+      ].join(
+        " ",
+      )}
     >
       <div
         className={[
-          "flex size-9 shrink-0 items-center justify-center rounded-lg",
+          "flex size-8 shrink-0 items-center justify-center rounded-lg",
           active
             ? "bg-[#0d684e] text-white"
             : "bg-muted text-muted-foreground",
-        ].join(" ")}
+        ].join(
+          " ",
+        )}
       >
         {icon}
       </div>
@@ -926,13 +1905,19 @@ function ServiceTypeButton({
             active
               ? "text-[#0d684e]"
               : "text-foreground",
-          ].join(" ")}
+          ].join(
+            " ",
+          )}
         >
-          {t(title)}
+          {t(
+            title,
+          )}
         </p>
 
-        <p className="mt-0.5 text-xs leading-5 text-muted-foreground">
-          {t(description)}
+        <p className="mt-0.5 text-[11px] leading-4 text-muted-foreground">
+          {t(
+            description,
+          )}
         </p>
       </div>
     </button>

@@ -1,11 +1,18 @@
 "use client";
+
 import { DashboardBreadcrumb } from "@/components/dashboard/DashboardBreadcrumb";
 import { usePreferences } from "@/lib/preferences/Preferences";
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-import { ArrowLeft } from "lucide-react";
+import {
+  ArrowLeft,
+  CalendarDays,
+  ImageIcon,
+  Info,
+  LockKeyhole,
+} from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 
@@ -18,15 +25,18 @@ import {
   type CreatePublicationInput,
 } from "../types/publication.types";
 
+type PublicationTab =
+  | "general"
+  | "departures"
+  | "images";
+
 export function CreatePublicationPage() {
   const { t } = usePreferences();
-  const router =
-    useRouter();
+  const router = useRouter();
 
   const {
     create,
-  } =
-    usePublications();
+  } = usePublications();
 
   async function handleSubmit(
     value: CreatePublicationInput,
@@ -37,19 +47,76 @@ export function CreatePublicationPage() {
       );
 
     /*
-     * Después de crear correctamente
-     * la publicación, enviamos al usuario
-     * al detalle de la publicación.
+     * Guardar y continuar:
+     * crea primero la publicación para obtener
+     * el ID necesario por publication_departures
+     * y abre directamente "Salidas y cupos".
+     */
+    if (
+      value.action ===
+      "DRAFT"
+    ) {
+      router.push(
+        `/dashboard/publications/${created.id}/edit?tab=departures`,
+      );
+
+      return;
+    }
+
+    /*
+     * Si se envía directamente a revisión,
+     * mantenemos el comportamiento normal
+     * y vamos al detalle.
      */
     router.push(
       `/dashboard/publications/${created.id}`,
     );
   }
 
+  const tabs: {
+    id: PublicationTab;
+    label: string;
+    icon: React.ReactNode;
+    disabled?: boolean;
+  }[] = [
+    {
+      id: "general",
+      label:
+        "Información general",
+      icon: (
+        <Info
+          size={18}
+        />
+      ),
+    },
+    {
+      id: "departures",
+      label:
+        "Salidas y cupos",
+      icon: (
+        <CalendarDays
+          size={18}
+        />
+      ),
+      disabled: true,
+    },
+    {
+      id: "images",
+      label:
+        "Imágenes",
+      icon: (
+        <ImageIcon
+          size={18}
+        />
+      ),
+      disabled: true,
+    },
+  ];
+
   return (
-    <div className="mx-auto w-full max-w-5xl">
-      {/* Navegación */}
-      <div className="mb-5">
+    <div className="mx-auto w-full max-w-7xl">
+      {/* Volver */}
+      <div className="mb-4">
         <Button
           variant="ghost"
           size="sm"
@@ -59,22 +126,133 @@ export function CreatePublicationPage() {
           <Link href="/dashboard/publications">
             <ArrowLeft
               size={15}
-            />{t("Volver a publicaciones ")}</Link>
+            />
+
+            {t(
+              "Volver a publicaciones",
+            )}
+          </Link>
         </Button>
       </div>
 
       {/* Encabezado */}
-      <div className="mb-6">
-        <DashboardBreadcrumb className="mb-2" items={[{ label: "Publicaciones", href: "/dashboard/publications" }, { label: "Nueva publicación" }]} />
+      <div className="mb-5">
+        <DashboardBreadcrumb
+          className="mb-2"
+          items={[
+            {
+              label:
+                "Publicaciones",
+              href:
+                "/dashboard/publications",
+            },
+            {
+              label:
+                "Nueva publicación",
+            },
+          ]}
+        />
 
-        <h1 className="!m-0 !text-[26px] !font-semibold !leading-tight !tracking-tight text-[#123a30]">{t("Nueva publicación ")}</h1>
+        <h1 className="!m-0 !text-[30px] !font-semibold !leading-tight !tracking-tight text-[#123a30]">
+          {t(
+            "Nueva publicación",
+          )}
+        </h1>
 
-        <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">{t("Completa la información del servicio que deseas ofrecer en LaRutica. Puedes guardar el formulario como borrador y terminarlo más adelante. ")}</p>
+        <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
+          {t(
+            "Configura la información de tu experiencia antes de enviarla a revisión.",
+          )}
+        </p>
       </div>
 
-      {/* Aviso */}
-      <div className="mb-5 rounded-xl border border-[#cfe3dc] bg-[#f3faf7] px-4 py-3">
-        <p className="text-xs leading-5 text-[#315c50]">{t("Las publicaciones enviadas a revisión serán evaluadas antes de estar disponibles para los viajeros. ")}</p>
+      {/* Navegación principal */}
+      <div className="mb-5 border-b">
+        <div
+          className="flex gap-1 overflow-x-auto"
+          role="tablist"
+          aria-label={t(
+            "Secciones de la publicación",
+          )}
+        >
+          {tabs.map(
+            (tab) => {
+              const active =
+                tab.id ===
+                "general";
+
+              return (
+                <button
+                  key={
+                    tab.id
+                  }
+                  type="button"
+                  role="tab"
+                  aria-selected={
+                    active
+                  }
+                  aria-disabled={
+                    tab.disabled
+                  }
+                  disabled={
+                    tab.disabled
+                  }
+                  title={
+                    tab.disabled
+                      ? t(
+                          "Disponible después de guardar la publicación.",
+                        )
+                      : undefined
+                  }
+                  className={[
+                    "relative flex min-h-12 shrink-0 items-center gap-2 px-4 text-sm font-medium transition",
+                    active
+                      ? "text-[#0d684e]"
+                      : "text-muted-foreground",
+                    tab.disabled
+                      ? "cursor-not-allowed opacity-50"
+                      : "hover:text-foreground",
+                  ].join(
+                    " ",
+                  )}
+                >
+                  {tab.icon}
+
+                  <span>
+                    {t(
+                      tab.label,
+                    )}
+                  </span>
+
+                  {tab.disabled ? (
+                    <LockKeyhole
+                      size={13}
+                      className="ml-0.5 opacity-70"
+                    />
+                  ) : null}
+
+                  {active ? (
+                    <span className="absolute inset-x-0 bottom-0 h-0.5 rounded-full bg-[#0d684e]" />
+                  ) : null}
+                </button>
+              );
+            },
+          )}
+        </div>
+      </div>
+
+      {/* Aviso compacto */}
+      <div className="mb-5 flex items-start gap-2 rounded-xl border border-[#dcebe5] bg-[#f6fbf9] px-4 py-3 text-xs leading-5 text-[#315c50]">
+        <Info
+          size={15}
+          className="mt-0.5 shrink-0 text-[#0d684e]"
+        />
+
+        <p>
+          {t(
+            "Completa la información general y guarda para continuar con las salidas y cupos.",
+          )}
+        </p>
       </div>
 
       {/* Formulario */}
@@ -82,7 +260,7 @@ export function CreatePublicationPage() {
         initialValue={
           emptyPublicationInput
         }
-        draftLabel="Guardar borrador"
+        draftLabel="Guardar y continuar"
         submitLabel="Enviar a revisión"
         onCancel={() =>
           router.push(
