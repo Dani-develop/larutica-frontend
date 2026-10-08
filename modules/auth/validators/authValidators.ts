@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { AUTH_ROLES } from "../models/auth";
 import { isOptionalPhoneNumber } from "@/lib/phoneValidation";
+import { PRIVACY_POLICY_VERSION } from "@/lib/privacyPolicy";
 
 export const signInValidators = z.object({
   email: z
@@ -37,6 +38,8 @@ export const signUpValidators = z
       .min(8, { message: "La contraseña debe tener al menos 8 caracteres" })
       .max(128, { message: "La contraseña no puede tener más de 128 caracteres" }),
     confirmPassword: z.string().min(1, { message: "Confirma tu contraseña" }),
+    acceptPrivacyPolicy: z.boolean({ error: "Debes aceptar la política de privacidad para crear tu cuenta." }).refine((accepted) => accepted, { message: "Debes aceptar la política de privacidad para crear tu cuenta." }),
+    privacyPolicyVersion: z.string().refine((version) => version === PRIVACY_POLICY_VERSION, { message: "La política de privacidad ha cambiado. Actualiza la página y revisa la versión vigente." }),
   })
   .superRefine((value, ctx) => {
     if (value.password !== value.confirmPassword) {

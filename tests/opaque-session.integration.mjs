@@ -157,6 +157,8 @@ test(
         companyName: "",
         password,
         confirmPassword: password,
+        acceptPrivacyPolicy: true,
+        privacyPolicyVersion: "2026-10-07",
       }),
     });
     assert.equal(register.status, 201);

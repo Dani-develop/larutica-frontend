@@ -3,16 +3,56 @@ import { usePreferences } from "@/lib/preferences/Preferences";
 import { CurrencyNotice } from "@/components/preferences/PreferenceControls";
 import Link from 'next/link';
 import { type ReactNode, useEffect, useRef, useState } from 'react';
-import { CheckCircle2 } from 'lucide-react';
+import { Building2, CheckCircle2, Clock, MapPin } from 'lucide-react';
 import { useNow } from './useNow';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/modules/auth/context/AuthContext';
 import { createReservation, listReservations, type Reservation } from '@/modules/transport/reservations/services/reservation.service';
 import { PublicShell } from './PublicShell';
+import { SiteHeader } from '@/modules/landing/components/SiteHeader';
 import { type Experience } from './types';
+import './experience-detail.css';
 
 function EmbeddedShell({ children }: { children: ReactNode }) {
-  return <div className="booking-site booking-embedded">{children}</div>;
+  return <div className="booking-site booking-embedded booking-detail-page">{children}</div>;
+}
+
+function DetailShell({ children }: { children: ReactNode }) {
+  return <PublicShell className="booking-detail-page" header={<SiteHeader />}>{children}</PublicShell>;
+}
+
+function durationLabel(minutes: number) {
+  const hours = Math.floor(minutes / 60), rest = minutes % 60;
+  return [hours ? `${hours} h` : '', rest ? `${rest} min` : ''].filter(Boolean).join(' ');
+}
+
+function ExperienceDetailSkeleton() {
+  const { t } = usePreferences();
+  return <div className="detail-skeleton" aria-busy="true">
+    <p role="status" className="sr-only">{t("Consultando disponibilidad…")}</p>
+    <div aria-hidden="true">
+      <span className="skeleton-block" style={{ width: '70%', height: 44 }} />
+      <span className="skeleton-block" style={{ width: '45%', height: 18, marginTop: 14 }} />
+      <div className="booking-detail-grid">
+        <div>
+          <span className="skeleton-block skeleton-photo" />
+          <span className="skeleton-block" style={{ width: 220, height: 24, marginTop: 32 }} />
+          {['100%', '96%', '88%', '64%'].map((width, index) => <span key={index} className="skeleton-block" style={{ width, height: 14, marginTop: 12 }} />)}
+          <span className="skeleton-block" style={{ width: 180, height: 24, marginTop: 32 }} />
+          {['92%', '70%'].map((width, index) => <span key={index} className="skeleton-block" style={{ width, height: 14, marginTop: 12 }} />)}
+        </div>
+        <div className="booking-panel">
+          <span className="skeleton-block" style={{ width: 90, height: 14 }} />
+          <span className="skeleton-block" style={{ width: 140, height: 32, marginTop: 8 }} />
+          <span className="skeleton-block" style={{ width: 120, height: 14, marginTop: 24 }} />
+          <span className="skeleton-block skeleton-field" />
+          <span className="skeleton-block" style={{ width: 80, height: 14, marginTop: 20 }} />
+          <span className="skeleton-block skeleton-field" />
+          <span className="skeleton-block skeleton-button" />
+        </div>
+      </div>
+    </div>
+  </div>;
 }
 
 export function ExperienceDetail({ id, embedded = false }: { id: string; embedded?: boolean }) {
@@ -83,15 +123,15 @@ export function ExperienceDetail({ id, embedded = false }: { id: string; embedde
     } catch(e) { setError(e instanceof Error ? e.message : 'No pudimos enviar la solicitud. Revisa Mis reservas antes de volver a intentarlo.'); }
     finally { submitting.current = false; setBusy(false); }
   }
-  const Shell = embedded ? EmbeddedShell : PublicShell;
+  const Shell = embedded ? EmbeddedShell : DetailShell;
   const Content = embedded ? 'section' : 'main';
   return <Shell><Content id="contenido" tabIndex={-1} className={embedded ? "booking-container booking-embedded" : "booking-container"}>
-    <Link className="booking-back" href={embedded ? "/" : "/#experiencias"}>{t("Volver a explorar")}</Link>
     {created ? <section className="booking-success" role="status"><CheckCircle2 size={42} color="#0d684e" aria-hidden="true"/><h1>{t("Solicitud enviada")}</h1><span className="booking-status">{t("Pendiente de confirmación")}</span><CurrencyNotice usd={created.total}/><p className="mt-5">{item?.agency}{t(" revisará tu solicitud. Te confirmará si hay lugar para tu viaje. Puedes consultar su respuesta en Mis reservas.")}</p><dl className="booking-summary"><div><dt>{t("Experiencia")}</dt><dd>{created.publicationTitle}</dd></div><div><dt>{t("Salida")}</dt><dd>{dateLabel(created.departureStartAt)}</dd></div><div><dt>{t("Personas")}</dt><dd>{created.numberOfPeople}</dd></div><div className="booking-total"><dt>{t("Total")}</dt><dd>{money(created.total)}</dd></div></dl><p>{t("No se realizó ningún cobro. Guarda el número de reserva: ")}<strong>{created.id.slice(0,8).toUpperCase()}</strong>.</p><Button asChild><Link href={`/mis-reservas?reserva=${created.id}`}>{t("Ver mi reserva")}</Link></Button></section>
-    : loading ? <p role="status" className="booking-empty">{t("Consultando disponibilidad…")}</p> : !item ? <div className="booking-empty" role="alert"><h1>{t("No pudimos abrir esta experiencia")}</h1><p>{t(error)}</p><Button onClick={() => setReload(n => n+1)}>{t("Volver a intentar")}</Button></div> : <>
-    <div className="booking-detail-heading"><p className="booking-eyebrow">{item.serviceType === 'TRANSPORT' ? 'TRANSPORTE' : t("EXCURSIÓN")} · {item.destination}</p><h1>{item.title}</h1><p>{t("Organizado por ")}<strong>{item.agency}</strong>{item.duration ? ` · ${Math.floor(item.duration/60) ? `${Math.floor(item.duration/60)} h ` : ''}${item.duration%60 ? `${item.duration%60} min` : ''}` : ''}</p></div>
+    : loading && !item ? <ExperienceDetailSkeleton /> : !item ? <div className="booking-empty" role="alert"><h1>{t("No pudimos abrir esta experiencia")}</h1><p>{t(error)}</p><Button onClick={() => setReload(n => n+1)}>{t("Volver a intentar")}</Button></div> : <>
+    <div className="booking-detail-heading"><h1>{item.title}</h1>
+      <ul className="booking-detail-meta"><li><MapPin size={16} aria-hidden="true"/>{item.destination}</li>{item.duration ? <li><Clock size={16} aria-hidden="true"/>{durationLabel(item.duration)}</li> : null}<li><Building2 size={16} aria-hidden="true"/>{t("Organizado por ")}<strong>{item.agency}</strong></li></ul></div>
     <div className="booking-detail-grid"><div className="booking-prose"><img className="booking-detail-photo" src={item.image || '/playa.jpg'} alt={item.title}/><section><h2>{t("Sobre esta experiencia")}</h2><p>{item.description}</p></section><section><h2>{t("Qué incluye")}</h2><p>{item.included || t("Consulta los detalles con el proveedor.")}</p><h2>{t("Qué no incluye")}</h2><p>{item.notIncluded || t("El proveedor no ha indicado exclusiones.")}</p></section><section><h2>{t("Punto de encuentro")}</h2><p>{item.meetingPoint}</p><p>{t("Las horas se muestran en la zona horaria de Costa Rica.")}</p></section><section><h2>{t("Antes de reservar")}</h2><p>{t("Tu solicitud queda pendiente hasta que el proveedor la confirme. Consulta el estado en Mis reservas. Puedes cancelar desde ahí antes de la salida. LaRutica no procesa pagos en este formulario.")}</p></section></div>
-    <aside className="booking-panel" aria-label={t("Solicitar reserva")}><CurrencyNotice usd={item.price*(people || 0)}/><ol className="booking-steps"><li aria-current={step === 'choose' ? 'step' : undefined}>{t("1. Elige tu salida")}</li><li aria-current={step === 'review' ? 'step' : undefined}>{t("2. Revisa y envía")}</li></ol><h2>{step === 'choose' ? t("Haz espacio para tu próximo viaje") : t("Revisa tu solicitud")}</h2>
+    <aside className="booking-panel" aria-label={t("Solicitar reserva")}><p className="booking-price-from"><span>{t("Desde")}</span><strong>{money(item.price)}</strong><span>{t("por persona")}</span></p><CurrencyNotice usd={item.price*(people || 0)}/><ol className="booking-steps"><li aria-current={step === 'choose' ? 'step' : undefined}>{t("1. Elige tu salida")}</li><li aria-current={step === 'review' ? 'step' : undefined}>{t("2. Revisa y envía")}</li></ol><h2>{step === 'choose' ? t("Haz espacio para tu próximo viaje") : t("Revisa tu solicitud")}</h2>
     <p id="booking-block-reason" className={blockedReason ? 'booking-notice' : 'sr-only'} role="status">{t(blockedReason) || t("Puedes continuar con tu solicitud.")}</p>
     {existingReservation && <Button asChild variant="outline" className="w-full mb-4"><Link href={`/mis-reservas?reserva=${existingReservation.id}#reserva-${existingReservation.id}`}>{t("Ver mi reserva")}</Link></Button>}
     {!item.departures.length && <div className="booking-actions mb-4"><Button asChild variant="outline"><Link href={embedded ? "/" : "/#experiencias"}>{t("Explorar otras experiencias")}</Link></Button><Button variant="outline" onClick={() => setReload(n => n+1)}>{t("Consultar fechas de nuevo")}</Button></div>}

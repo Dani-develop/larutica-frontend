@@ -1,6 +1,5 @@
 "use client";
 import { usePreferences } from "@/lib/preferences/Preferences";
-import { PreferenceControls } from "@/components/preferences/PreferenceControls";
 
 import Link from "next/link";
 import { FormEvent, useEffect, useRef, useState } from "react";
@@ -14,7 +13,9 @@ import {
   TravelerSavedPage,
 } from "@/components/dashboard/TravelerViews";
 import { useAuth } from "@/modules/auth/context/AuthContext";
-import { TripMenu } from "@/modules/landing/components/TripMenu";
+import { LandingExplore } from "@/modules/landing/components/LandingExplore";
+import { SiteHeader } from "@/modules/landing/components/SiteHeader";
+import { AccessDialog, HelpDialog } from "@/modules/landing/components/SiteDialogs";
 import { TransportConfirmView } from "@/modules/landing/components/TransportConfirmView";
 import { TransportDetailView } from "@/modules/landing/components/TransportDetailView";
 import { parseTrip, tripPath } from "@/modules/landing/lib/travelerRoutes";
@@ -43,9 +44,7 @@ export default function Home() {
   const { t } = usePreferences();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { session, user, loading: authLoading, signOut } = useAuth();
-  const [signingOut, setSigningOut] = useState(false);
-  const [logoutError, setLogoutError] = useState("");
+  const { session, user, loading: authLoading } = useAuth();
   const trip = parseTrip(searchParams.get("viaje"));
   const publicationId = searchParams.get("publicacion") ?? "";
   const showTrip = Boolean(trip && !authLoading && session && user?.role === "Viajero");
@@ -181,38 +180,19 @@ export default function Home() {
   }
 
   return (
-    <div className={trip ? "landing-shell landing-trip" : "landing-shell"}>
+    <div className={trip ? "landing-shell landing-trip" : view === "explore" ? "landing-shell landing-discovery" : "landing-shell"}>
       <a className="skip-link" href="#main">{t("Ir al contenido principal")}</a>
-      <header className="site-header">
-        <button className="brand brand-button" type="button" onClick={() => navigate("explore")} aria-label={t("LaRutica, volver al inicio")}>
-          <span className="brand-mark" aria-hidden="true" /><span>{t("LaRutica")}</span>
-        </button>
-        <nav aria-label={t("Navegación principal")}>
-          <button className={trip === "explorar" || (!trip && (view === "explore" || view === "detail" || view === "route-detail" || view === "route-confirm")) ? "nav-active" : ""} onClick={openExplore} aria-current={trip === "explorar" || (!trip && view === "explore") ? "page" : undefined}>{t("Explorar")}</button>
-          <button onClick={() => { navigate("explore"); setStatus("Explora los destinos disponibles."); window.setTimeout(() => document.getElementById("destinos")?.scrollIntoView(), 100); }}>{t("Destinos")}</button>
-          {!authLoading && user?.role === "Viajero" ? (
-            <TripMenu
-              active={tripMenuActive}
-              onSelect={(id) => {
-                router.push(tripPath(id));
-                window.scrollTo({ top: 0, behavior: "smooth" });
-              }}
-            />
-          ) : null}
-          <button onClick={() => setHelpOpen(true)}>{t("Ayuda")}</button>
-        </nav>
-        <div className="header-actions">
-          <PreferenceControls />
-          <button className="button button-quiet access-button" type="button" onClick={() => setAccessOpen(true)}>{t("Accesibilidad")}</button>
-          {authLoading ? <span role="status">{t("Cargando cuenta…")}</span> : user ? <><Link className="button button-outline" href={user.role === "Viajero" ? tripPath("perfil") : "/dashboard"}>{t("Mi cuenta")}</Link><button className="button button-quiet account-logout" type="button" disabled={signingOut} onClick={async () => {
-            setSigningOut(true); setLogoutError("");
-            try { await signOut(); router.replace("/"); }
-            catch { setLogoutError("No pudimos confirmar el cierre de sesión. Intenta de nuevo."); }
-            finally { setSigningOut(false); }
-          }}>{signingOut ? t("Cerrando sesión…") : t("Cerrar sesión")}</button></> : <Link className="button button-outline" href="/login">{t("Ingresar")}</Link>}
-        </div>
-      </header>
-      {logoutError && <p className="notice" role="alert">{logoutError}</p>}
+      <SiteHeader
+        exploreActive={trip === "explorar" || (!trip && (view === "explore" || view === "detail" || view === "route-detail" || view === "route-confirm"))}
+        exploreCurrent={trip === "explorar" || (!trip && view === "explore")}
+        tripMenuActive={tripMenuActive}
+        onBrand={() => navigate("explore")}
+        onExplore={openExplore}
+        onDestinations={() => { navigate("explore"); setStatus("Explora los destinos disponibles."); window.setTimeout(() => document.getElementById("destinos")?.scrollIntoView(), 100); }}
+        onTripSelect={(id) => { router.push(tripPath(id)); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+        onHelp={() => setHelpOpen(true)}
+        onAccess={() => setAccessOpen(true)}
+      />
       <p className="global-status sr-only" role="status" aria-live="polite">{status}</p>
 
       <main id="main">
@@ -273,6 +253,7 @@ export default function Home() {
         <p>{t("Prototipo académico · Costa Rica · 2026")}</p>
         <div className="footer-links">
           <Link className="footer-link" href="/terminos">{t("Términos y condiciones")}</Link>
+          <Link className="footer-link" href="/privacidad">{t("Política de privacidad")}</Link>
           <button className="footer-link" type="button" onClick={() => setAccessOpen(true)}>{t("Opciones de accesibilidad")}</button>
           <button className="footer-help" type="button" onClick={() => setHelpOpen(true)}>{t("¿Necesitas ayuda?")}</button>
         </div>
@@ -287,7 +268,6 @@ function ExploreView({
   category,
   onCategoryChange,
   onSearchTransport,
-  isTransport,
 }: {
   onSearch: (event: FormEvent<HTMLFormElement>) => void;
   searchInput: React.RefObject<HTMLInputElement | null>;
@@ -304,95 +284,7 @@ function ExploreView({
   onSearchTransport: () => void;
   isTransport: boolean;
 }) {
-  const { t } = usePreferences();
-  const [catalogFilters, setCatalogFilters] = useState({ destination:"", date:"", people:0 });
-
-  return (
-    <>
-      <section className="hero" aria-labelledby="hero-title">
-        <div className="hero-copy">
-          <p className="eyebrow">{t("Viaja a tu ritmo")}</p>
-          <h1 id="hero-title" ref={headingRef} tabIndex={-1}>{t("Costa Rica, más cerca de lo que imaginas. ")}</h1>
-          <p className="hero-lead">{t("Encuentra tours, transporte y experiencias verificadas en un solo lugar. ")}</p>
-          <form
-            className="search-panel"
-            onSubmit={event => {
-              event.preventDefault();
-              const values = new FormData(event.currentTarget);
-              setCatalogFilters({ destination:String(values.get("destination") || ""), date:String(values.get("date") || ""), people:Number(values.get("people") || 1) });
-              document.getElementById("results")?.scrollIntoView({behavior:"smooth"});
-              document.getElementById("results")?.focus({preventScroll:true});
-            }}
-            aria-label={isTransport ? t("Buscar transporte") : t("Buscar experiencias")}
-          >
-            <label>
-              <span>{isTransport ? t("¿De dónde a dónde?") : t("¿A dónde quieres ir?")}</span>
-              <input
-                ref={searchInput}
-                name="destination"
-                defaultValue=""
-                key={isTransport ? "transport-search" : "tour-search"}
-                autoComplete="address-level2"
-                placeholder={isTransport ? t("Nosara, Liberia, San José...") : undefined}
-              />
-              <small>{t("Atajo: presiona /")}</small>
-            </label>
-            <label>
-              <span>{t("Fecha")}</span>
-              <input name="date" type="date" />
-            </label>
-            <label>
-              <span>{t("Personas")}</span>
-              <select name="people" defaultValue="2">
-                <option value="1">{t("1 persona")}</option>
-                <option value="2">{t("2 personas")}</option>
-                <option value="3">{t("3 personas")}</option>
-                <option value="4">{t("4 o más")}</option>
-              </select>
-            </label>
-            <button className="button button-primary search-button" type="submit">{t("Buscar ")}</button>
-          </form>
-          <p className="status-line" role="status" aria-live="polite">{t("Elige un destino, una fecha y el número de personas para consultar disponibilidad. ")}</p>
-        </div>
-        <div className="hero-visual" role="img" aria-label={t("Bosque tropical de Costa Rica")}>
-          <div className="floating-note">
-            <strong>{t("Descubre Costa Rica")}</strong>
-            <span>{t("de proveedores locales")}</span>
-          </div>
-        </div>
-      </section>
-      <section className="section" aria-labelledby="results" id="destinos">
-        <div className="section-heading"><div><p className="eyebrow">{t("Proveedores locales")}</p><h2 id="results" tabIndex={-1}>{t("Experiencias para tu próximo viaje")}</h2></div></div>
-        <div className="filter-row" aria-label={t("Tipo de servicio")}>
-          {[{id:"all",label:t("Todos")},{id:"nature",label:"Excursiones"},{id:"transport",label:t("Transporte")},{id:"budget",label:t("Menos de USD 50")}].map(chip => <button key={chip.id} className={category === chip.id ? "chip chip-active" : "chip"} aria-pressed={category === chip.id} onClick={() => onCategoryChange(chip.id as ExploreCategory)}>{t(chip.label)}</button>)}
-        </div>
-        <button type="button" className="text-link" onClick={() => {setCatalogFilters({destination:"",date:"",people:0});onCategoryChange("all");document.querySelector<HTMLFormElement>(".hero form")?.reset();}}>{t("Limpiar búsqueda")}</button>
-        <TravelerExplorePage embedded filters={{...catalogFilters,type:category === "transport" ? "TRANSPORT" : category === "nature" ? "EXCURSION" : "",budget:category === "budget"}} />
-      </section>
-      <section className="transport-section" aria-labelledby="transport-title">
-        <div>
-          <p className="eyebrow eyebrow-light">{t("Muévete con confianza")}</p>
-          <h2 id="transport-title">{t("Transporte para conectar tu ruta.")}</h2>
-          <p>{t("Compara recorridos, vehículos, precios y contactos antes de salir.")}</p>
-          <button className="button button-light" type="button" onClick={onSearchTransport}>{t("Buscar transporte ")}</button>
-        </div>
-      </section>
-      <section className="trust-strip" aria-label={t("Beneficios de LaRutica")}>
-        <div>
-          <strong>{t("Información clara")}</strong>
-          <span>{t("Precio, duración y cupos visibles.")}</span>
-        </div>
-        <div>
-          <strong>{t("Proveedores verificados")}</strong>
-          <span>{t("Perfiles y servicios revisados.")}</span>
-        </div>
-        <div>
-          <strong>{t("Ayuda cuando la necesites")}</strong>
-          <span>{t("Soporte contextual y pasos sencillos.")}</span>
-        </div>
-      </section>
-    </>
-  );
+  return <LandingExplore searchInput={searchInput} headingRef={headingRef} category={category} onCategoryChange={onCategoryChange} onSearchTransport={onSearchTransport} />;
 }
 
 function DetailView({ onBack, setStatus, headingRef }: { onBack: () => void; setStatus: (value: string) => void; headingRef: React.RefObject<HTMLHeadingElement | null> }) {
@@ -452,19 +344,3 @@ function DashboardShell({ title, subtitle, headingRef, actions, children }: { ti
   const { t } = usePreferences(); return <div className="dashboard"><header className="dashboard-header"><div><p className="eyebrow">{t("LaRutica")}</p><h1 ref={headingRef} tabIndex={-1}>{t(title)}</h1><p>{subtitle}</p></div>{actions}</header>{children}</div>; }
 function Metric({ value, label, note }: { value: string; label: string; note: string }) {
   const { t } = usePreferences(); return <article className="metric-card"><span>{t(label)}</span><strong>{value}</strong><small>{note}</small></article>; }
-
-function DialogBackdrop({ children, onClose }: { children: React.ReactNode; onClose: () => void }) {
-  const ref = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const close = (event: MouseEvent) => { if (event.target === ref.current) onClose(); };
-    window.addEventListener('mousedown', close);
-    return () => window.removeEventListener('mousedown', close);
-  }, [onClose]);
-  return <div ref={ref} className="dialog-backdrop">{children}</div>;
-}
-
-function HelpDialog({ onClose }: { onClose: () => void }) {
-  const { t } = usePreferences(); return <DialogBackdrop onClose={onClose}><section className="dialog" role="dialog" aria-modal="true" aria-labelledby="help-title"><button className="dialog-close" aria-label={t("Cerrar ayuda")} onClick={onClose}>{t("Cerrar")}</button><p className="eyebrow">{t("Ayuda contextual")}</p><h2 id="help-title">{t("¿Qué quieres hacer?")}</h2><div className="help-options"><button><strong>{t("Buscar una experiencia")}</strong><span>{t("Usa destino, fecha y cantidad de personas.")}</span></button><button><strong>{t("Publicar un servicio")}</strong><span>{t("Ingresa y regístrate como Agencia o Transporte.")}</span></button><button><strong>{t("Ingresar a tu cuenta")}</strong><span>{t("Usa el botón Ingresar o crea una en Registrarse.")}</span></button></div><p className="help-note">{t("Consejo: presiona ")}<kbd>{t("Esc")}</kbd>{t(" para cerrar cualquier panel.")}</p></section></DialogBackdrop>; }
-
-function AccessDialog({ largeText, setLargeText, highContrast, setHighContrast, onClose }: { largeText: boolean; setLargeText: (value: boolean) => void; highContrast: boolean; setHighContrast: (value: boolean) => void; onClose: () => void }) {
-  const { t } = usePreferences(); return <DialogBackdrop onClose={onClose}><section className="dialog access-dialog" role="dialog" aria-modal="true" aria-labelledby="access-title"><button className="dialog-close" aria-label={t("Cerrar opciones de accesibilidad")} onClick={onClose}>{t("Cerrar")}</button><p className="eyebrow">{t("Preferencias")}</p><h2 id="access-title">{t("Accesibilidad visual")}</h2><p>{t("Los cambios se aplican inmediatamente a todo el prototipo.")}</p><label className="toggle-row" aria-label={t("Texto más grande")}><span><strong>{t("Texto más grande")}</strong><small>{t("Aumenta el tamaño de lectura.")}</small></span><input type="checkbox" role="switch" checked={largeText} onChange={(event) => setLargeText(event.target.checked)} /></label><label className="toggle-row" aria-label={t("Contraste reforzado")}><span><strong>{t("Contraste reforzado")}</strong><small>{t("Oscurece textos y bordes.")}</small></span><input type="checkbox" role="switch" checked={highContrast} onChange={(event) => setHighContrast(event.target.checked)} /></label><div className="notice"><strong>{t("Navegación por teclado")}</strong><span>{t("Usa Tab para avanzar, Shift + Tab para volver y Enter para activar.")}</span></div></section></DialogBackdrop>; }

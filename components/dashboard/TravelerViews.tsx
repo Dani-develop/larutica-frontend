@@ -2,6 +2,7 @@
 import { usePreferences } from "@/lib/preferences/Preferences";
 
 import Link from "next/link";
+import { Heart } from "lucide-react";
 import { CurrencyNotice } from "@/components/preferences/PreferenceControls";
 import Swal from "sweetalert2";
 import "sweetalert2/dist/sweetalert2.min.css";
@@ -14,6 +15,7 @@ import type { SystemUser } from "@/modules/crm/users/models/User";
 import { MyProfilePage } from "@/modules/crm/users/components/MyProfilePage";
 import type { TravelerPublication } from "@/modules/traveler/types/traveler-publication.types";
 import { tripPath } from "@/modules/landing/lib/travelerRoutes";
+import { matchesQuery } from "@/modules/landing/lib/searchText";
 import {
   listSavedPublications,
   listCatalogPublications,
@@ -47,7 +49,7 @@ function TripHeading({ eyebrow, title, lead }: { eyebrow: string; title: string;
   );
 }
 
-export function TravelerExplorePage({ embedded = false, filters }: { embedded?: boolean; filters?: { destination:string; date:string; people:number; type:string; budget:boolean } } = {}) {
+export function TravelerExplorePage({ embedded = false, discovery = false, filters }: { embedded?: boolean; discovery?: boolean; filters?: { destination:string; date:string; people:number; type:string; budget:boolean } } = {}) {
   const { t } = usePreferences();
   const { user } = useAuth();
   const [retry, setRetry] = useState(0);
@@ -95,17 +97,14 @@ export function TravelerExplorePage({ embedded = false, filters }: { embedded?: 
     return () => { cancelled = true; };
   }, [user?.id, user?.role]);
 
-  const normalizedSearch = (filters?.destination ?? search).trim().toLocaleLowerCase();
+  const searchQuery = filters?.destination ?? search;
   const visiblePublications = publications.filter((publication) =>
     (!providerKey || publication.providerSlug === providerKey)
     && (!filters?.type || publication.serviceType === filters.type)
     && (!filters?.budget || publication.pricePerPerson < 50)
     && (!filters?.date && !filters?.people || publication.departures?.some(d =>
       d.available >= (filters?.people || 1) && (!filters?.date || new Intl.DateTimeFormat('en-CA', {timeZone:'America/Costa_Rica',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(d.startAt)) === filters.date)))
-    && [publication.title, publication.destination, publication.description]
-      .join(" ")
-      .toLocaleLowerCase()
-      .includes(normalizedSearch),
+    && matchesQuery(`${publication.title} ${publication.destination} ${publication.description}`, searchQuery),
   );
   const providerName = providerKey ? visiblePublications[0]?.providerName : undefined;
 
@@ -152,6 +151,7 @@ export function TravelerExplorePage({ embedded = false, filters }: { embedded?: 
             <TravelerTripCard
               key={publication.id}
               publication={publication}
+              compact={discovery}
               saved={savedIds.includes(publication.id)}
               onToggleSaved={user?.role === "Viajero" ? () => void toggleSaved(publication) : undefined}
             />
@@ -364,14 +364,45 @@ export function TravelerReservationsPage() {
 
 function TravelerTripCard({
   publication,
+  compact = false,
   saved = false,
   onToggleSaved,
 }: {
   publication: TravelerPublication;
+  compact?: boolean;
   saved?: boolean;
   onToggleSaved?: () => void;
 }) {
   const { t, money, dateLabel } = usePreferences();
+  const { user } = useAuth();
+  if (compact) {
+    const href = `/experiencias/${publication.id}`;
+    const departure = publication.departures?.find(item => item.available > 0);
+    return (
+      <article className="discovery-trip-card">
+        <div className="discovery-trip-image">
+          <Link href={href} aria-label={publication.title}>
+            {publication.mainImageUrl ? (
+              /* eslint-disable-next-line @next/next/no-img-element */
+              <img src={publication.mainImageUrl} alt="" loading="lazy" decoding="async" />
+            ) : <span className="discovery-trip-placeholder">{t("Sin imagen")}</span>}
+          </Link>
+          {onToggleSaved ? (
+            <button type="button" className="discovery-save" aria-pressed={saved} aria-label={saved ? `${t("Quitar de Guardados")}: ${publication.title}` : `${t("Guardar")}: ${publication.title}`} onClick={onToggleSaved}>
+              <Heart size={20} fill={saved ? "currentColor" : "none"} aria-hidden="true" />
+            </button>
+          ) : !user ? (
+            <Link className="discovery-save" href={`/login?next=${encodeURIComponent(href)}`} aria-label={`${t("Guardar")}: ${publication.title}`}><Heart size={20} aria-hidden="true" /></Link>
+          ) : null}
+        </div>
+        <p className="discovery-trip-location">{publication.destination}</p>
+        <h3><Link href={href}>{publication.title}</Link></h3>
+        <p className="discovery-trip-meta">{t(publication.serviceType === "TRANSPORT" ? "Transporte" : "Excursión")} · {publication.durationMinutes} {t("min")}</p>
+        <p className="discovery-trip-availability">{departure ? `${t("Próxima salida:")} ${dateLabel(departure.startAt)}` : t("Por ahora no hay nuevas fechas disponibles.")}</p>
+        <p className="discovery-trip-price"><strong>{money(publication.pricePerPerson)}</strong> {t("por persona")}</p>
+      </article>
+    );
+  }
   return (
     <article className="experience-card">
       <div className="card-image-wrap">

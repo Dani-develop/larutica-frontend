@@ -1,548 +1,209 @@
 "use client";
+
+import { DashboardBreadcrumb } from "@/components/dashboard/DashboardBreadcrumb";
 import { usePreferences } from "@/lib/preferences/Preferences";
-
-import {
-  ArrowLeft,
-  Building2,
-  CalendarDays,
-  Check,
-  Clock3,
-  ImageIcon,
-  MapPin,
-  RefreshCw,
-  Users,
-  X,
-} from "lucide-react";
-
-import {
-  useRouter,
-} from "next/navigation";
-
-import {
-  useAdminPublication,
-} from "../../hooks/admin/useAdminPublication";
-
-import type {
-  AdminPublicationStatus,
-} from "../../services/admin/admin-publication.service";
+import { Building2, CalendarDays, Check, Clock3, ImageIcon, MapPin, RefreshCw, Users, X } from "lucide-react";
+import { Tabs } from "radix-ui";
+import { useAdminPublication } from "../../hooks/admin/useAdminPublication";
+import type { AdminPublicationStatus } from "../../services/admin/admin-publication.service";
 
 interface AdminPublicationDetailProps {
   publicationId: string;
 }
 
-export default function AdminPublicationDetail({
-  publicationId,
-}: AdminPublicationDetailProps) {
+const tabClassName = "min-h-12 shrink-0 border-b-2 border-transparent px-1 py-3 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary data-[state=active]:border-primary data-[state=active]:text-primary";
+const panelClassName = "py-6 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary";
+
+export default function AdminPublicationDetail({ publicationId }: AdminPublicationDetailProps) {
   const { t, language } = usePreferences();
-  const {
-    publication,
-    loading,
-    reviewing,
-    error,
-    loadPublication,
-    approve,
-    reject,
-  } =
-    useAdminPublication(
-      publicationId,
-    );
+  const { publication, loading, reviewing, error, loadPublication, approve, reject } = useAdminPublication(publicationId);
 
-  if (loading) {
-    return (
-      <LoadingState />
-    );
-  }
+  if (loading) return <LoadingState />;
 
-  if (
-    !publication
-  ) {
+  if (!publication) {
     return (
       <div className="mx-auto w-full max-w-[1180px]">
-        <BackButton />
-
-        <div className="rounded-xl border border-[#DDE2DF] bg-white px-6 py-10 text-center">
-          <ImageIcon
-            size={25}
-            className="mx-auto text-[#87908C]"
-          />
-
-          <p className="mt-3 text-[12px] font-semibold text-[#252B28]">{t("No se pudo cargar la publicación ")}</p>
-
-          {error && (
-            <p className="mt-2 text-[10px] text-red-600">
-              {t(error)}
-            </p>
-          )}
-
-          <button
-            type="button"
-            onClick={() =>
-              void loadPublication()
-            }
-            className="mt-4 inline-flex h-8 items-center gap-1.5 rounded-lg border border-[#D7E1DC] px-3 text-[10px] font-semibold text-[#075E36]"
-          >
-            <RefreshCw
-              size={12}
-            />{t("Reintentar ")}</button>
+        <DashboardBreadcrumb items={[{ label: "Publicaciones", href: "/dashboard/publications" }, { label: "Revisión de publicación" }]} />
+        <div className="py-12 text-center">
+          <ImageIcon size={32} className="mx-auto text-muted-foreground" aria-hidden="true" />
+          <p className="mt-4 font-semibold">{t("No se pudo cargar la publicación")}</p>
+          {error && <p role="alert" className="mt-2 text-sm text-destructive">{t(error)}</p>}
+          <button type="button" onClick={() => void loadPublication()} className="mt-4 inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-primary">
+            <RefreshCw size={16} aria-hidden="true" />{t("Reintentar")}
+          </button>
         </div>
       </div>
     );
   }
 
-  const canReview =
-    publication.status ===
-    "PENDING";
+  const canReview = publication.status === "PENDING";
+
+  async function reviewPublication(status: "APPROVED" | "REJECTED") {
+    if (!publication || reviewing) return;
+    const action = status === "APPROVED" ? "¿Deseas aprobar la publicación" : "¿Deseas rechazar la publicación";
+    if (!window.confirm(`${t(action)} "${publication.title ?? t("Sin título")}"?`)) return;
+    try {
+      await (status === "APPROVED" ? approve() : reject());
+    } catch {
+      // The hook displays the review error and keeps the current publication.
+    }
+  }
 
   return (
-    <div className="mx-auto w-full max-w-[1180px]">
-      <BackButton />
-
-      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <p className="mb-1 text-[10px] font-medium text-[#075E36]">{t("Dashboard / Publicaciones / Detalle ")}</p>
-
-          <h1 className="!m-0 !text-[28px] !font-bold !leading-9 !tracking-[-0.025em] text-[#123A30]">{t("Revisión de publicación ")}</h1>
-
-          <p className="mt-1 text-[11px] leading-5 text-[#66706B]">{t("Revisa la información enviada por la agencia antes de aprobar o rechazar la publicación. ")}</p>
+    <div className="mx-auto w-full max-w-[1180px] text-foreground">
+      <header className="border-b border-border pb-6">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <DashboardBreadcrumb items={[{ label: "Publicaciones", href: "/dashboard/publications" }, { label: "Revisión de publicación" }]} />
+          <StatusBadge status={publication.status} />
         </div>
-
-        <StatusBadge
-          status={
-            publication.status
-          }
-        />
-      </div>
-
-      {error && (
-        <div className="mb-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-[10px] text-red-700">
-          {t(error)}
-        </div>
-      )}
-
-      <section className="overflow-hidden rounded-xl border border-[#DDE2DF] bg-white">
-        <div className="relative h-[240px] bg-[#EEF4EF]">
-          {publication.mainImageUrl ? (
-            <img
-              src={
-                publication.mainImageUrl
-              }
-              alt={
-                publication.title ??
-                "Imagen de publicación"
-              }
-              className="h-full w-full object-cover"
-            />
-          ) : (
-            <div className="flex h-full items-center justify-center text-[#91A69A]">
-              <ImageIcon
-                size={38}
-              />
-            </div>
-          )}
-
-          <div className="absolute left-4 top-4">
-            <StatusBadge
-              status={
-                publication.status
-              }
-            />
-          </div>
-        </div>
-
-        <div className="p-5 sm:p-6">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-            <div className="min-w-0">
-              <p className="text-[10px] font-semibold uppercase tracking-wide text-[#075E36]">
-                {serviceTypeLabel(
-                  publication.serviceType,
-                )}
-              </p>
-
-              <h2 className="mt-1 text-[20px] font-bold text-[#123A30]">
-                {publication.title ||
-                  "Sin título"}
-              </h2>
-
-              {publication.description && (
-                <p className="mt-2 max-w-3xl text-[11px] leading-5 text-[#66706B]">
-                  {
-                    publication.description
-                  }
-                </p>
-              )}
-            </div>
-
-            <div className="rounded-lg bg-[#F5F8F6] px-4 py-3 text-right">
-              <p className="text-[9px] text-[#7A837F]">{t("Precio por persona ")}</p>
-
-              <p className="mt-0.5 text-[18px] font-bold text-[#123A30]">
-                {publication.pricePerPerson !==
-                null
-                  ? `$${publication.pricePerPerson.toFixed(
-                      2,
-                    )}`
-                  : "—"}
-              </p>
-            </div>
-          </div>
-
-          <div className="mt-5 rounded-lg border border-[#E3E7E5] bg-[#FBFCFB] p-4">
-            <div className="flex items-center gap-3">
-              {publication.agency?.logoUrl ? (
-                <img
-                  src={
-                    publication.agency.logoUrl
-                  }
-                  alt=""
-                  className="size-10 rounded-lg object-cover"
-                />
-              ) : (
-                <div className="flex size-10 items-center justify-center rounded-lg bg-[#EAF5ED] text-[#075E36]">
-                  <Building2
-                    size={17}
-                  />
-                </div>
-              )}
-
+        <div className="flex flex-col-reverse gap-6 sm:flex-row sm:items-center sm:justify-between">
+          <div className="min-w-0 flex-1">
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-primary">{t(serviceTypeLabel(publication.serviceType))}</p>
+            <h1 className="!m-0 !max-w-none !text-3xl !font-bold !leading-tight !tracking-tight sm:!text-4xl">{publication.title || t("Sin título")}</h1>
+            <div className="mt-5 flex flex-wrap items-center gap-x-8 gap-y-4">
               <div>
-                <p className="text-[9px] text-[#7A837F]">{t("Agencia responsable ")}</p>
-
-                <p className="text-[11px] font-semibold text-[#252B28]">
-                  {publication.agency?.commercialName ??
-                    publication.agency?.agencyName ??
-                    "Sin agencia"}
-                </p>
-
-                <p className="mt-0.5 text-[9px] text-[#66706B]">{t("Estado de agencia:")}{t(" ")}
-                  {agencyStatusLabel(
-                    publication.agency?.status,
-                  )}
-                </p>
+                <p className="text-xs text-muted-foreground">{t("Precio por persona")}</p>
+                <p className="mt-1 text-2xl font-semibold text-primary">{publication.pricePerPerson !== null ? `$${publication.pricePerPerson.toFixed(2)}` : "—"}</p>
               </div>
+              <dl className="flex flex-wrap gap-x-8 gap-y-4">
+                <InfoItem icon={<MapPin size={16} aria-hidden="true" />} label="Destino" value={publication.destination} />
+                <InfoItem icon={<Clock3 size={16} aria-hidden="true" />} label="Duración" value={publication.durationMinutes !== null ? `${publication.durationMinutes} min` : null} />
+                <InfoItem icon={<Users size={16} aria-hidden="true" />} label="Capacidad" value={publication.defaultCapacity !== null ? `${publication.defaultCapacity} ${t("personas")}` : null} />
+              </dl>
             </div>
           </div>
-
-          <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            <InfoCard
-              icon={
-                <MapPin
-                  size={15}
-                />
-              }
-              label="Destino"
-              value={
-                publication.destination
-              }
-            />
-
-            <InfoCard
-              icon={
-                <Clock3
-                  size={15}
-                />
-              }
-              label="Duración"
-              value={
-                publication.durationMinutes !==
-                null
-                  ? `${publication.durationMinutes} min`
-                  : null
-              }
-            />
-
-            <InfoCard
-              icon={
-                <Users
-                  size={15}
-                />
-              }
-              label="Capacidad"
-              value={
-                publication.defaultCapacity !==
-                null
-                  ? `${publication.defaultCapacity} personas`
-                  : null
-              }
-            />
-
-            <InfoCard
-              icon={
-                <CalendarDays
-                  size={15}
-                />
-              }
-              label="Registro"
-              value={formatDate(
-                publication.createdAt, language,
-              )}
-            />
-          </div>
-
-          <div className="mt-5 grid gap-3 md:grid-cols-2">
-            <TextSection
-              title={t("Qué incluye")}
-              value={
-                publication.included
-              }
-            />
-
-            <TextSection
-              title={t("Qué no incluye")}
-              value={
-                publication.notIncluded
-              }
-            />
-          </div>
-
-          <div className="mt-3">
-            <TextSection
-              title={t("Punto de encuentro")}
-              value={
-                publication.meetingPoint
-              }
-            />
-          </div>
-
-          <div className="mt-5 rounded-lg border border-[#E3E7E5] bg-[#FBFCFB] p-4">
-            <p className="text-[11px] font-semibold text-[#252B28]">{t("Idiomas ")}</p>
-
-            <div className="mt-2 flex flex-wrap gap-1.5">
-              {publication.languages.length >
-              0 ? (
-                publication.languages.map(
-                  (
-                    language,
-                  ) => (
-                    <span
-                      key={
-                        language.id
-                      }
-                      className="rounded-md bg-[#EAF5ED] px-2 py-1 text-[9px] font-medium text-[#075E36]"
-                    >
-                      {
-                        language.name
-                      }
-                    </span>
-                  ),
-                )
-              ) : (
-                <span className="text-[9px] text-[#87908C]">{t("Sin idiomas registrados ")}</span>
-              )}
-            </div>
-          </div>
-
-          <div className="mt-5 rounded-lg border border-[#E3E7E5] bg-[#FBFCFB] p-4">
-            <p className="text-[11px] font-semibold text-[#252B28]">{t("Salidas programadas ")}</p>
-
-            {publication.departures.length >
-            0 ? (
-              <div className="mt-3 space-y-2">
-                {publication.departures.map(
-                  (
-                    departure,
-                  ) => (
-                    <div
-                      key={
-                        departure.id
-                      }
-                      className="flex flex-col gap-2 rounded-lg border border-[#E8ECEA] bg-white px-3 py-2.5 sm:flex-row sm:items-center sm:justify-between"
-                    >
-                      <div>
-                        <p className="text-[10px] font-medium text-[#252B28]">
-                          {formatDateTime(
-                            departure.startAt, language,
-                          )}
-                        </p>
-
-                        {departure.endAt && (
-                          <p className="mt-0.5 text-[9px] text-[#7A837F]">{t("Finaliza:")}{t(" ")}
-                            {formatDateTime(
-                              departure.endAt, language,
-                            )}
-                          </p>
-                        )}
-                      </div>
-
-                      <div className="flex items-center gap-3 text-[9px] text-[#66706B]">
-                        <span>{t("Capacidad:")}{t(" ")}
-                          {
-                            departure.capacity
-                          }
-                        </span>
-
-                        <span className="rounded-full bg-[#EEF4EF] px-2 py-1 font-medium text-[#075E36]">
-                          {departureStatusLabel(
-                            departure.status,
-                          )}
-                        </span>
-                      </div>
-                    </div>
-                  ),
-                )}
-              </div>
+          <div className="h-40 w-full shrink-0 overflow-hidden rounded-lg bg-muted sm:h-44 sm:w-64 lg:w-80">
+            {publication.mainImageUrl ? (
+              <img src={publication.mainImageUrl} alt={publication.title ?? t("Imagen de publicación")} className="h-full w-full object-cover" />
             ) : (
-              <p className="mt-2 text-[9px] text-[#87908C]">{t("No hay salidas programadas. ")}</p>
+              <div className="flex h-full items-center justify-center text-muted-foreground"><ImageIcon size={32} aria-hidden="true" /></div>
             )}
           </div>
         </div>
-      </section>
+      </header>
 
-      {canReview && (
-        <section className="mt-4 rounded-xl border border-[#DDE2DF] bg-white p-4">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <div>
-              <p className="text-[12px] font-semibold text-[#252B28]">{t("Decisión de revisión ")}</p>
+      {error && <p role="alert" className="mt-4 border-l-2 border-destructive pl-3 text-sm text-destructive">{t(error)}</p>}
 
-              <p className="mt-1 text-[10px] leading-4 text-[#66706B]">{t("Verifica que la información sea correcta antes de aprobar o rechazar la publicación. ")}</p>
+      <Tabs.Root defaultValue="overview" className="mt-3">
+        <Tabs.List aria-label={t("Información de la publicación")} className="flex gap-6 overflow-x-auto border-b border-border">
+          <Tabs.Trigger value="overview" className={tabClassName}>{t("Resumen")}</Tabs.Trigger>
+          <Tabs.Trigger value="details" className={tabClassName}>{t("Detalles del servicio")}</Tabs.Trigger>
+          <Tabs.Trigger value="departures" className={tabClassName}>
+            {t("Salidas programadas")}<span className="ml-2 rounded-full bg-muted px-2 py-0.5 text-xs tabular-nums">{publication.departures.length}</span>
+          </Tabs.Trigger>
+        </Tabs.List>
+
+        <Tabs.Content value="overview" className={panelClassName}>
+          <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px]">
+            <TextSection title="Descripción" value={publication.description} />
+            <div className="space-y-6 lg:border-l lg:border-border lg:pl-8">
+              <section aria-labelledby="publication-agency-heading">
+                <h2 id="publication-agency-heading" className="!m-0 !text-sm !font-semibold !leading-6 !tracking-normal">{t("Agencia responsable")}</h2>
+                <div className="mt-3 flex items-center gap-3">
+                  {publication.agency?.logoUrl ? (
+                    <img src={publication.agency.logoUrl} alt="" className="size-10 shrink-0 rounded-md object-cover" />
+                  ) : (
+                    <Building2 size={24} className="shrink-0 text-primary" aria-hidden="true" />
+                  )}
+                  <div className="min-w-0">
+                    <p className="break-words text-sm font-medium">{publication.agency?.commercialName || publication.agency?.agencyName || t("Sin agencia")}</p>
+                    <p className="mt-1 text-sm text-muted-foreground">{t("Estado de agencia:")} {t(agencyStatusLabel(publication.agency?.status))}</p>
+                  </div>
+                </div>
+              </section>
+              <dl className="space-y-5">
+                <InfoItem icon={<CalendarDays size={16} aria-hidden="true" />} label="Registro" value={formatDate(publication.createdAt, language)} />
+                <InfoItem label="Idiomas" value={publication.languages.map(item => item.name).join(", ") || t("Sin idiomas registrados")} />
+              </dl>
             </div>
+          </div>
+        </Tabs.Content>
 
-            <div className="flex gap-2">
-              <button
-                type="button"
-                disabled={
-                  reviewing
-                }
-                onClick={() => {
-                  const confirmed =
-                    window.confirm(
-                      `¿Deseas rechazar la publicación "${publication.title ?? "Sin título"}"?`,
-                    );
+        <Tabs.Content value="details" className={panelClassName}>
+          <div className="mb-6 border-b border-border pb-6">
+            <TextSection title="Punto de encuentro" value={publication.meetingPoint} />
+          </div>
+          <div className="grid gap-8 md:grid-cols-2">
+            <TextSection title="Qué incluye" value={publication.included} />
+            <TextSection title="Qué no incluye" value={publication.notIncluded} />
+          </div>
+        </Tabs.Content>
 
-                  if (
-                    confirmed
-                  ) {
-                    void reject();
-                  }
-                }}
-                className="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg border border-[#E7BDBD] bg-white px-4 text-[10px] font-semibold text-[#A63737] transition hover:bg-[#FFF2F2] disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                <X
-                  size={13}
-                />{t("Rechazar ")}</button>
+        <Tabs.Content value="departures" className={panelClassName}>
+          {publication.departures.length > 0 ? (
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[560px] text-left text-sm">
+                <caption className="sr-only">{t("Salidas programadas")}</caption>
+                <thead className="border-b border-border text-muted-foreground">
+                  <tr>{["Salida", "Finaliza", "Capacidad", "Estado"].map(label => <th key={label} scope="col" className="px-3 pb-3 font-medium first:pl-0 last:pr-0">{t(label)}</th>)}</tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {publication.departures.map(departure => (
+                    <tr key={departure.id}>
+                      <td className="py-4 pr-3 font-medium">{formatDateTime(departure.startAt, language)}</td>
+                      <td className="px-3 py-4 text-muted-foreground">{departure.endAt ? formatDateTime(departure.endAt, language) : "—"}</td>
+                      <td className="px-3 py-4 tabular-nums">{departure.capacity} {t("personas")}</td>
+                      <td className="py-4 pl-3"><span className="inline-flex items-center rounded-full bg-muted px-2.5 py-1 text-xs font-medium">{t(departureStatusLabel(departure.status))}</span></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div className="flex items-start gap-3 py-5">
+              <CalendarDays size={22} className="mt-0.5 shrink-0 text-muted-foreground" aria-hidden="true" />
+              <div>
+                <p className="text-sm font-medium">{t("No hay salidas programadas.")}</p>
+                <p className="mt-1 text-sm text-muted-foreground">{t("La agencia aún no ha registrado fechas para este servicio.")}</p>
+              </div>
+            </div>
+          )}
+        </Tabs.Content>
+      </Tabs.Root>
 
-              <button
-                type="button"
-                disabled={
-                  reviewing
-                }
-                onClick={() => {
-                  const confirmed =
-                    window.confirm(
-                      `¿Deseas aprobar la publicación "${publication.title ?? "Sin título"}"?`,
-                    );
-
-                  if (
-                    confirmed
-                  ) {
-                    void approve();
-                  }
-                }}
-                className="inline-flex h-9 items-center justify-center gap-1.5 rounded-lg bg-[#075E36] px-4 text-[10px] font-semibold text-white transition hover:bg-[#064D2D] disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                <Check
-                  size={13}
-                />
-
-                {t(reviewing
-                  ? "Procesando..."
-                  : "Aprobar")}
+      <div className="border-t border-border py-5">
+        {canReview ? (
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-sm font-semibold">{t("Decisión de revisión")}</p>
+              <p className="mt-1 text-sm text-muted-foreground">{t("Verifica que la información sea correcta antes de aprobar o rechazar la publicación.")}</p>
+            </div>
+            <div className="flex shrink-0 gap-3">
+              <button type="button" disabled={reviewing} onClick={() => void reviewPublication("REJECTED")} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-destructive/30 px-4 text-sm font-semibold text-destructive hover:bg-destructive/5 focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50">
+                <X size={16} aria-hidden="true" />{t("Rechazar")}
+              </button>
+              <button type="button" disabled={reviewing} onClick={() => void reviewPublication("APPROVED")} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50">
+                <Check size={16} aria-hidden="true" />{t(reviewing ? "Procesando..." : "Aprobar")}
               </button>
             </div>
           </div>
-        </section>
-      )}
-
-      {publication.status ===
-        "APPROVED" && (
-        <ResultMessage
-          type="approved"
-          text="Esta publicación ya fue aprobada."
-        />
-      )}
-
-      {publication.status ===
-        "REJECTED" && (
-        <ResultMessage
-          type="rejected"
-          text="Esta publicación fue rechazada. La agencia puede corregirla y volver a enviarla a revisión."
-        />
-      )}
-    </div>
-  );
-}
-
-function BackButton() {
-  const { t } = usePreferences();
-  const router =
-    useRouter();
-
-  return (
-    <button
-      type="button"
-      onClick={() =>
-        router.push(
-          "/dashboard/publications",
-        )
-      }
-      className="mb-3 inline-flex items-center gap-1.5 text-[10px] font-semibold text-[#075E36] hover:underline"
-    >
-      <ArrowLeft
-        size={13}
-      />{t("Volver a publicaciones ")}</button>
-  );
-}
-
-function InfoCard({
-  icon,
-  label,
-  value,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value:
-    | string
-    | null;
-}) {
-  const { t } = usePreferences();
-  return (
-    <div className="rounded-lg border border-[#E3E7E5] bg-[#FBFCFB] p-3.5">
-      <div className="flex items-center gap-2 text-[#075E36]">
-        {icon}
-
-        <p className="text-[9px] font-medium text-[#7A837F]">
-          {t(label)}
-        </p>
+        ) : publication.status === "APPROVED" ? (
+          <p className="flex items-center gap-2 text-sm text-primary"><Check size={16} aria-hidden="true" />{t("Esta publicación ya fue aprobada.")}</p>
+        ) : publication.status === "REJECTED" ? (
+          <p className="flex items-start gap-2 text-sm text-destructive"><X size={16} className="mt-0.5 shrink-0" aria-hidden="true" />{t("Esta publicación fue rechazada. La agencia puede corregirla y volver a enviarla a revisión.")}</p>
+        ) : null}
       </div>
-
-      <p className="mt-2 text-[11px] font-semibold text-[#252B28]">
-        {value ||
-          "Sin información"}
-      </p>
     </div>
   );
 }
 
-function TextSection({
-  title,
-  value,
-}: {
-  title: string;
-  value:
-    | string
-    | null;
-}) {
+function InfoItem({ icon, label, value }: { icon?: React.ReactNode; label: string; value: string | null }) {
   const { t } = usePreferences();
   return (
-    <div className="rounded-lg border border-[#E3E7E5] bg-[#FBFCFB] p-4">
-      <p className="text-[11px] font-semibold text-[#252B28]">
-        {t(title)}
-      </p>
-
-      <p className="mt-2 whitespace-pre-wrap text-[10px] leading-5 text-[#66706B]">
-        {value ||
-          "Sin información"}
-      </p>
+    <div>
+      <dt className="flex items-center gap-2 text-xs text-muted-foreground">{icon}{t(label)}</dt>
+      <dd className="mt-1 text-sm font-medium">{value || t("Sin información")}</dd>
     </div>
+  );
+}
+
+function TextSection({ title, value }: { title: string; value: string | null }) {
+  const { t } = usePreferences();
+  return (
+    <section>
+      <h2 className="!m-0 !text-base !font-semibold !leading-6 !tracking-normal">{t(title)}</h2>
+      <p className="mt-3 whitespace-pre-wrap break-words text-sm leading-7 text-muted-foreground">{value || t("Sin información")}</p>
+    </section>
   );
 }
 
@@ -608,7 +269,7 @@ function StatusBadge({
 
   return (
     <span
-      className={`inline-flex h-7 items-center rounded-full border px-2.5 text-[9px] font-semibold ${current.className}`}
+      className={`inline-flex h-7 items-center rounded-full border px-2.5 text-xs font-semibold ${current.className}`}
     >
       {
         t(current.label)
@@ -754,70 +415,17 @@ function formatDateTime(
   );
 }
 
-function ResultMessage({
-  type,
-  text,
-}: {
-  type:
-    | "approved"
-    | "rejected";
-
-  text: string;
-}) {
-  return (
-    <div
-      className={[
-        "mt-4 rounded-lg border px-4 py-3 text-[10px]",
-
-        type ===
-        "approved"
-          ? "border-[#CBE5D4] bg-[#F1FAF4] text-[#075E36]"
-          : "border-[#F2CACA] bg-[#FFF4F4] text-[#A63737]",
-      ].join(
-        " ",
-      )}
-    >
-      {text}
-    </div>
-  );
-}
-
 function LoadingState() {
+  const { t } = usePreferences();
   return (
-    <div className="mx-auto w-full max-w-[1180px]">
-      <div className="mb-4 h-3 w-32 animate-pulse rounded bg-[#E7ECE9]" />
-
-      <div className="mb-4">
-        <div className="h-7 w-64 animate-pulse rounded bg-[#E3E8E5]" />
-
-        <div className="mt-2 h-3 w-96 max-w-full animate-pulse rounded bg-[#EEF1EF]" />
+    <div className="mx-auto w-full max-w-[1180px] animate-pulse" role="status" aria-label={t("Cargando publicación")}>
+      <div className="mb-6 h-4 w-40 rounded bg-muted" />
+      <div className="flex flex-col gap-6 border-b border-border pb-6 sm:flex-row sm:justify-between">
+        <div className="flex-1 space-y-5"><div className="h-8 w-3/4 rounded bg-muted" /><div className="h-14 w-2/3 rounded bg-muted" /></div>
+        <div className="h-44 w-full rounded-lg bg-muted sm:w-64" />
       </div>
-
-      <div className="overflow-hidden rounded-xl border border-[#DDE2DF] bg-white">
-        <div className="h-[240px] animate-pulse bg-[#EEF4EF]" />
-
-        <div className="space-y-4 p-6">
-          <div className="h-16 w-80 max-w-full animate-pulse rounded bg-[#EEF1EF]" />
-
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {Array.from({
-              length: 4,
-            }).map(
-              (
-                _,
-                index,
-              ) => (
-                <div
-                  key={
-                    index
-                  }
-                  className="h-24 animate-pulse rounded-lg bg-[#F3F5F4]"
-                />
-              ),
-            )}
-          </div>
-        </div>
-      </div>
+      <div className="my-6 h-10 w-full rounded bg-muted" />
+      <div className="h-24 w-2/3 rounded bg-muted" />
     </div>
   );
 }
