@@ -18,4 +18,8 @@ export const dashboardEnglish: Record<string, string> = Object.fromEntries([
 ['¿Deseas aprobar la publicación', 'Do you want to approve the listing'],
 ['¿Deseas rechazar la publicación', 'Do you want to reject the listing'],
 ['Filtra las publicaciones por estado.', 'Filter listings by status.'],
+['Información de la agencia', 'Agency information'],
+['Verificación', 'Verification'],
+['¿Deseas aprobar la agencia', 'Do you want to approve the agency'],
+['¿Deseas rechazar la agencia', 'Do you want to reject the agency'],
 ]);

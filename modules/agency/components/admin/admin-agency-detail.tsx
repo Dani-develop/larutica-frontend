@@ -8,23 +8,15 @@ import {
   Check,
   FileText,
   Globe2,
-  Home,
   Mail,
   MapPin,
   Phone,
   ShieldCheck,
   X,
 } from "lucide-react";
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
+import { Tabs } from "radix-ui";
+import { DashboardBreadcrumb } from "@/components/dashboard/DashboardBreadcrumb";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { useAdminAgency } from "../../hooks/admin/useAdminAgency";
@@ -97,18 +89,11 @@ function InfoRow({
 }) {
   const { t } = usePreferences();
   return (
-    <div className="flex items-start gap-3 py-3">
-      <span className="bg-muted text-muted-foreground mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full">
-        <Icon className="size-3.5" aria-hidden="true" />
-      </span>
-      <div className="min-w-0">
-        <p className="text-muted-foreground !text-xs !font-medium tracking-wide uppercase">
-          {t(label)}
-        </p>
-        <p className="mt-0.5 break-words !text-sm !font-medium">
-          {value?.trim() ? value : "—"}
-        </p>
-      </div>
+    <div>
+      <dt className="flex items-center gap-2 text-xs text-muted-foreground">
+        <Icon className="size-4 shrink-0" aria-hidden="true" />{t(label)}
+      </dt>
+      <dd className="mt-2 break-words text-sm font-medium">{value?.trim() ? value : "—"}</dd>
     </div>
   );
 }
@@ -116,39 +101,27 @@ function InfoRow({
 function TagList({ title, values }: { title: string; values: string[] }) {
   const { t } = usePreferences();
   return (
-    <div>
-      <p className="!m-0 !text-sm !font-semibold">{t(title)}</p>
-      <div className="mt-2.5 flex flex-wrap gap-1.5">
-        {values.length > 0 ? (
-          values.map((value) => (
-            <span
-              key={value}
-              className="bg-muted text-foreground inline-flex rounded-full px-2.5 py-1 !text-xs !font-medium"
-            >
-              {value}
-            </span>
-          ))
-        ) : (
-          <span className="text-muted-foreground !text-xs">{t("Sin información")}</span>
-        )}
-      </div>
-    </div>
+    <section>
+      <h2 className="!m-0 !text-sm !font-semibold !leading-6 !tracking-normal">{t(title)}</h2>
+      <p className="mt-2 text-sm leading-6 text-muted-foreground">{values.length > 0 ? values.join(", ") : t("Sin información")}</p>
+    </section>
   );
 }
 
 function LoadingState() {
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
+    <div className="mx-auto flex w-full max-w-[1180px] flex-col gap-6">
       <Skeleton className="h-4 w-48" />
       <div className="space-y-2">
         <Skeleton className="h-8 w-64" />
         <Skeleton className="h-4 w-80 max-w-full" />
       </div>
-      <Skeleton className="h-44 w-full rounded-xl" />
-      <div className="grid gap-4 md:grid-cols-2">
-        <Skeleton className="h-48 rounded-xl" />
-        <Skeleton className="h-48 rounded-xl" />
+      <div className="flex flex-col gap-6 border-b border-border pb-6 sm:flex-row sm:justify-between">
+        <Skeleton className="h-24 w-full sm:w-1/2" />
+        <Skeleton className="h-44 w-full rounded-lg sm:w-64" />
       </div>
+      <Skeleton className="h-10 w-full" />
+      <Skeleton className="h-24 w-2/3" />
     </div>
   );
 }
@@ -232,41 +205,13 @@ export default function AdminAgencyDetail({
 
   if (!agency) {
     return (
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
-        <Breadcrumb>
-          <BreadcrumbList className="!text-sm">
-            <BreadcrumbItem>
-              <BreadcrumbLink
-                href="/dashboard"
-                className="flex items-center gap-1.5 !text-sm"
-              >
-                <Home className="size-3.5" />{t("Inicio ")}</BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbLink href="/dashboard/agencies" className="!text-sm">{t("Agencias ")}</BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbPage className="!text-sm">{t("Detalle")}</BreadcrumbPage>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
-
+      <div className="mx-auto w-full max-w-[1180px]">
+        <DashboardBreadcrumb items={[{ label: "Agencias", href: "/dashboard/agencies" }, { label: "Detalle" }]} />
         <div className="flex flex-col items-center gap-3 py-16 text-center">
-          <div className="bg-muted flex size-14 items-center justify-center rounded-full">
-            <Building2 className="text-muted-foreground/40 size-7" />
-          </div>
-          <p className="!text-sm !font-medium">{t("No se pudo cargar la agencia")}</p>
-          {error ? (
-            <p className="text-destructive !text-xs">{t(error)}</p>
-          ) : null}
-          <Button
-            type="button"
-            variant="outline"
-            className="!text-sm"
-            onClick={() => void loadAgency()}
-          >{t("Intentar de nuevo ")}</Button>
+          <Building2 className="size-8 text-muted-foreground" aria-hidden="true" />
+          <p className="text-sm font-medium">{t("No se pudo cargar la agencia")}</p>
+          {error ? <p role="alert" className="text-sm text-destructive">{t(error)}</p> : null}
+          <Button type="button" variant="outline" onClick={() => void loadAgency()}>{t("Intentar de nuevo")}</Button>
         </div>
       </div>
     );
@@ -277,264 +222,140 @@ export default function AdminAgencyDetail({
     .filter(Boolean)
     .join(", ");
 
+  async function reviewAgency(status: "APPROVED" | "REJECTED") {
+    if (!agency || reviewing) return;
+    const action = status === "APPROVED" ? "¿Deseas aprobar la agencia" : "¿Deseas rechazar la agencia";
+    if (!window.confirm(`${t(action)} "${agency.commercialName}"?`)) return;
+    try {
+      await (status === "APPROVED" ? approve() : reject());
+    } catch {
+      // The hook displays the error and preserves the agency status.
+    }
+  }
+
+  const tabClassName = "min-h-12 shrink-0 border-b-2 border-transparent px-1 py-3 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary data-[state=active]:border-primary data-[state=active]:text-primary";
+  const panelClassName = "py-6 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary";
+
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
-      <Breadcrumb>
-        <BreadcrumbList className="!text-sm">
-          <BreadcrumbItem>
-            <BreadcrumbLink
-              href="/dashboard"
-              className="flex items-center gap-1.5 !text-sm"
-            >
-              <Home className="size-3.5" />{t("Inicio ")}</BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbLink href="/dashboard/agencies" className="!text-sm">{t("Agencias ")}</BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbPage className="!text-sm">
-              {agency.commercialName}
-            </BreadcrumbPage>
-          </BreadcrumbItem>
-        </BreadcrumbList>
-      </Breadcrumb>
-
-      <div className="flex flex-row items-start justify-between gap-4">
-        <div className="min-w-0">
-          <h1 className="!m-0 !max-w-none !text-2xl !leading-8 !font-semibold !tracking-tight">{t("Detalle de agencia ")}</h1>
-          <p className="text-muted-foreground mt-0.5 !text-sm !leading-5">{t("Revisa la información y el documento de verificación. ")}</p>
+    <div className="mx-auto w-full max-w-[1180px] text-foreground">
+      <header className="border-b border-border pb-6">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <DashboardBreadcrumb items={[{ label: "Agencias", href: "/dashboard/agencies" }, { label: agency.commercialName || agency.agencyName }]} />
+          <StatusBadge status={agency.status} />
         </div>
-      </div>
-
-      {error ? (
-        <p
-          className="border-destructive/20 bg-destructive/5 text-destructive rounded-lg border px-3 py-2 !text-sm"
-          role="alert"
-        >
-          {t(error)}
-        </p>
-      ) : null}
-
-      <section className="bg-card overflow-hidden rounded-xl">
-        <div className="bg-muted relative aspect-[21/9] max-h-56 w-full overflow-hidden sm:aspect-[3/1]">
-          {agency.coverUrl ? (
-            <button
-              type="button"
-              className="group relative size-full cursor-zoom-in"
-              aria-label={t("Ver portada en grande")}
-              onClick={() =>
-                setLightbox({
-                  src: agency.coverUrl!,
-                  alt: `Portada de ${agency.commercialName}`,
-                })
-              }
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={agency.coverUrl}
-                alt=""
-                className="size-full object-cover transition duration-300 group-hover:scale-[1.02]"
-              />
-              <span className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/35 to-transparent px-4 py-3 text-left !text-xs font-medium text-white opacity-0 transition group-hover:opacity-100">{t("Toca para ver en grande ")}</span>
-            </button>
-          ) : (
-            <div className="text-muted-foreground/25 flex size-full items-center justify-center">
-              <Building2 className="size-10" />
-            </div>
-          )}
-        </div>
-
-        <div className="flex flex-col gap-4 p-5 sm:flex-row sm:items-start sm:gap-5 sm:p-6">
-          {agency.logoUrl ? (
-            <button
-              type="button"
-              className="bg-muted ring-background group size-16 shrink-0 cursor-zoom-in overflow-hidden rounded-2xl ring-1 transition hover:ring-primary/30 sm:size-20"
-              aria-label={t("Ver logo en grande")}
-              onClick={() =>
-                setLightbox({
-                  src: agency.logoUrl!,
-                  alt: `Logo de ${agency.commercialName}`,
-                })
-              }
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={agency.logoUrl}
-                alt=""
-                className="size-full object-cover transition duration-300 group-hover:scale-105"
-              />
-            </button>
-          ) : (
-            <div className="bg-muted ring-background flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl ring-1 sm:size-20">
-              <Building2 className="text-muted-foreground size-7" />
-            </div>
-          )}
-
-          <div className="min-w-0 flex-1 space-y-3">
-            <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="flex flex-col-reverse gap-6 sm:flex-row sm:items-center sm:justify-between">
+          <div className="min-w-0 flex-1">
+            <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-primary">{t(businessTypeLabel(agency.businessType))}</p>
+            <div className="flex items-center gap-4">
+              {agency.logoUrl ? (
+                <button type="button" className="size-14 shrink-0 cursor-zoom-in overflow-hidden rounded-lg bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:size-16" aria-label={t("Ver logo en grande")} onClick={() => setLightbox({ src: agency.logoUrl!, alt: agency.commercialName })}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={agency.logoUrl} alt="" className="size-full object-cover" />
+                </button>
+              ) : (
+                <Building2 className="size-10 shrink-0 text-primary" aria-hidden="true" />
+              )}
               <div className="min-w-0">
-                <div className="flex flex-wrap items-center gap-2">
-                  <p className="!m-0 !text-lg !leading-7 !font-semibold !tracking-tight">
-                    {agency.commercialName}
-                  </p>
-                  {agency.status === "APPROVED" ? (
-                    <BadgeCheck
-                      className="text-primary size-5 shrink-0"
-                      aria-label={t("Agencia verificada")}
-                    />
-                  ) : null}
+                <div className="flex items-center gap-2">
+                  <h1 className="!m-0 !max-w-none break-words !text-3xl !font-bold !leading-tight !tracking-tight sm:!text-4xl">{agency.commercialName || agency.agencyName}</h1>
+                  {agency.status === "APPROVED" ? <BadgeCheck className="size-5 shrink-0 text-primary" aria-label={t("Agencia verificada")} /> : null}
                 </div>
-                <p className="text-muted-foreground mt-0.5 !text-sm">
-                  {agency.agencyName}
-                </p>
+                <p className="mt-2 break-words text-sm text-muted-foreground">{agency.agencyName}</p>
               </div>
-              <StatusBadge status={agency.status} />
             </div>
-
-            <div className="text-muted-foreground flex flex-wrap items-center gap-x-2 gap-y-1 !text-sm">
-              <span>{businessTypeLabel(agency.businessType)}</span>
-              {location ? (
-                <>
-                  <span aria-hidden="true">·</span>
-                  <span className="inline-flex items-center gap-1">
-                    <MapPin className="size-3.5 shrink-0" />
-                    {location}
-                  </span>
-                </>
-              ) : null}
-            </div>
-
-            {agency.description ? (
-              <p className="text-muted-foreground max-w-3xl !text-sm !leading-6">
-                {agency.description}
-              </p>
-            ) : null}
-
-            {agency.status === "APPROVED" ? (
-              <p className="text-primary !text-xs !font-medium">{t("Agencia aprobada · puede operar dentro de LaRutica ")}</p>
-            ) : null}
-
-            {agency.status === "REJECTED" ? (
-              <p className="text-destructive !text-xs !font-medium">{t("Agencia rechazada · el propietario puede corregirla y reenviar ")}</p>
-            ) : null}
+            <dl className="mt-5 flex flex-wrap gap-x-8 gap-y-4">
+              <InfoRow icon={MapPin} label="Ubicación" value={location} />
+              <InfoRow icon={FileText} label="Fecha de registro" value={formatDate(agency.createdAt, language)} />
+            </dl>
+          </div>
+          <div className="h-40 w-full shrink-0 overflow-hidden rounded-lg bg-muted sm:h-44 sm:w-64 lg:w-80">
+            {agency.coverUrl ? (
+              <button type="button" className="size-full cursor-zoom-in focus-visible:outline-2 focus-visible:-outline-offset-4 focus-visible:outline-primary" aria-label={t("Ver portada en grande")} onClick={() => setLightbox({ src: agency.coverUrl!, alt: agency.commercialName })}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={agency.coverUrl} alt="" className="size-full object-cover" />
+              </button>
+            ) : (
+              <div className="flex size-full items-center justify-center text-muted-foreground"><Building2 size={32} aria-hidden="true" /></div>
+            )}
           </div>
         </div>
-      </section>
+      </header>
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <section className="bg-card rounded-xl p-5">
-          <h2 className="!m-0 !max-w-none !text-base !leading-6 !font-semibold !tracking-normal">{t("Contacto y ubicación ")}</h2>
-          <div className="mt-2 divide-y">
-            <InfoRow icon={Mail} label="Correo" value={agency.email} />
-            <InfoRow icon={Phone} label="Teléfono" value={agency.phone} />
-            <InfoRow icon={Globe2} label="Sitio web" value={agency.website} />
-            <InfoRow icon={MapPin} label="Ubicación" value={location} />
-            <InfoRow
-              icon={MapPin}
-              label="Dirección exacta"
-              value={agency.exactAddress}
-            />
+      {error ? <p role="alert" className="mt-4 border-l-2 border-destructive pl-3 text-sm text-destructive">{t(error)}</p> : null}
+
+      <Tabs.Root defaultValue="overview" className="mt-3">
+        <Tabs.List aria-label={t("Información de la agencia")} className="flex gap-6 overflow-x-auto border-b border-border">
+          <Tabs.Trigger value="overview" className={tabClassName}>{t("Resumen")}</Tabs.Trigger>
+          <Tabs.Trigger value="contact" className={tabClassName}>{t("Contacto y ubicación")}</Tabs.Trigger>
+          <Tabs.Trigger value="verification" className={tabClassName}>{t("Verificación")}</Tabs.Trigger>
+        </Tabs.List>
+
+        <Tabs.Content value="overview" className={panelClassName}>
+          <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px]">
+            <section>
+              <h2 className="!m-0 !text-base !font-semibold !leading-6 !tracking-normal">{t("Descripción")}</h2>
+              <p className="mt-3 whitespace-pre-wrap break-words text-sm leading-7 text-muted-foreground">{agency.description || t("Sin información")}</p>
+            </section>
+            <div className="space-y-6 lg:border-l lg:border-border lg:pl-8">
+              <TagList title="Categorías" values={agency.categories.map(item => item.name)} />
+              <TagList title="Idiomas" values={agency.languages.map(item => item.name)} />
+            </div>
           </div>
-        </section>
+        </Tabs.Content>
 
-        <section className="bg-card rounded-xl p-5">
-          <h2 className="!m-0 !max-w-none !text-base !leading-6 !font-semibold !tracking-normal">{t("Información de la cuenta ")}</h2>
-          <div className="mt-2 divide-y">
-            <InfoRow
-              icon={Building2}
-              label="Tipo de negocio"
-              value={businessTypeLabel(agency.businessType)}
-            />
-            <InfoRow
-              icon={ShieldCheck}
-              label="Términos"
-              value={
-                agency.acceptedTerms
-                  ? "Términos aceptados"
-                  : "Términos no aceptados"
-              }
-            />
-            <InfoRow
-              icon={FileText}
-              label="Fecha de registro"
-              value={formatDate(agency.createdAt, language)}
-            />
+        <Tabs.Content value="contact" className={panelClassName}>
+          <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px]">
+            <section>
+              <h2 className="!m-0 !text-base !font-semibold !leading-6 !tracking-normal">{t("Contacto")}</h2>
+              <dl className="mt-5 grid gap-6 sm:grid-cols-2">
+                <InfoRow icon={Mail} label="Correo" value={agency.email} />
+                <InfoRow icon={Phone} label="Teléfono" value={agency.phone} />
+                <InfoRow icon={Globe2} label="Sitio web" value={agency.website} />
+              </dl>
+            </section>
+            <section className="lg:border-l lg:border-border lg:pl-8">
+              <h2 className="!m-0 !text-base !font-semibold !leading-6 !tracking-normal">{t("Ubicación")}</h2>
+              <dl className="mt-5 space-y-6">
+                <InfoRow icon={MapPin} label="Ubicación" value={location} />
+                <InfoRow icon={MapPin} label="Dirección exacta" value={agency.exactAddress} />
+              </dl>
+            </section>
           </div>
+        </Tabs.Content>
 
-          <Separator className="my-5" />
+        <Tabs.Content value="verification" className={panelClassName}>
+          <section className="mb-6 border-b border-border pb-6">
+            <h2 className="!m-0 !text-base !font-semibold !leading-6 !tracking-normal">{t("Información de la cuenta")}</h2>
+            <dl className="mt-5 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              <InfoRow icon={Building2} label="Tipo de negocio" value={t(businessTypeLabel(agency.businessType))} />
+              <InfoRow icon={ShieldCheck} label="Términos" value={t(agency.acceptedTerms ? "Términos aceptados" : "Términos no aceptados")} />
+              <InfoRow icon={FileText} label="Fecha de registro" value={formatDate(agency.createdAt, language)} />
+            </dl>
+          </section>
+          <VerificationDocumentViewer agencyId={agency.id} hasDocument={Boolean(agency.verificationDocumentUrl)} documentPath={agency.verificationDocumentUrl} className="rounded-none bg-transparent p-0" />
+        </Tabs.Content>
+      </Tabs.Root>
 
-          <div className="space-y-5">
-            <TagList
-              title={t("Categorías")}
-              values={agency.categories.map((item) => item.name)}
-            />
-            <TagList
-              title={t("Idiomas")}
-              values={agency.languages.map((item) => item.name)}
-            />
+      <div className="border-t border-border py-5">
+        {canReview ? (
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 className="!m-0 !text-sm !font-semibold !leading-6 !tracking-normal">{t("Decisión de revisión")}</h2>
+              <p className="mt-1 text-sm text-muted-foreground">{t("Aprueba la agencia si la información y documentación son correctas, o recházala para que pueda corregirse.")}</p>
+            </div>
+            <div className="flex shrink-0 flex-wrap gap-3">
+              <Button type="button" variant="outline" className="min-h-11 gap-2 text-destructive hover:text-destructive" disabled={reviewing} onClick={() => void reviewAgency("REJECTED")}><X className="size-4" aria-hidden="true" />{t("Rechazar")}</Button>
+              <Button type="button" className="min-h-11 gap-2" disabled={reviewing} onClick={() => void reviewAgency("APPROVED")}><Check className="size-4" aria-hidden="true" />{t(reviewing ? "Procesando…" : "Aprobar")}</Button>
+            </div>
           </div>
-        </section>
+        ) : agency.status === "APPROVED" ? (
+          <p className="flex items-center gap-2 text-sm text-primary"><Check size={16} aria-hidden="true" />{t("Agencia aprobada · puede operar dentro de LaRutica")}</p>
+        ) : agency.status === "REJECTED" ? (
+          <p className="flex items-start gap-2 text-sm text-destructive"><X size={16} className="mt-0.5 shrink-0" aria-hidden="true" />{t("Agencia rechazada · el propietario puede corregirla y reenviar")}</p>
+        ) : null}
       </div>
 
-      <VerificationDocumentViewer
-        agencyId={agency.id}
-        hasDocument={Boolean(agency.verificationDocumentUrl)}
-        documentPath={agency.verificationDocumentUrl}
-      />
-
-      {canReview ? (
-        <section className="bg-card flex flex-col gap-4 rounded-xl p-5 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h2 className="!m-0 !max-w-none !text-base !leading-6 !font-semibold !tracking-normal">{t("Decisión de revisión ")}</h2>
-            <p className="text-muted-foreground mt-1 !text-sm">{t("Aprueba la agencia si la información y documentación son correctas, o recházala para que pueda corregirse. ")}</p>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              className="text-destructive hover:text-destructive gap-2 !text-sm"
-              disabled={reviewing}
-              onClick={() => {
-                if (
-                  window.confirm(
-                    `¿Deseas rechazar la agencia "${agency.commercialName}"?`,
-                  )
-                ) {
-                  void reject();
-                }
-              }}
-            >
-              <X className="size-4" />{t("Rechazar ")}</Button>
-            <Button
-              type="button"
-              className="gap-2 !text-sm"
-              disabled={reviewing}
-              onClick={() => {
-                if (
-                  window.confirm(
-                    `¿Deseas aprobar la agencia "${agency.commercialName}"?`,
-                  )
-                ) {
-                  void approve();
-                }
-              }}
-            >
-              <Check className="size-4" />
-              {t(reviewing ? "Procesando…" : "Aprobar")}
-            </Button>
-          </div>
-        </section>
-      ) : null}
-
-      {lightbox ? (
-        <ImageLightbox
-          src={lightbox.src}
-          alt={lightbox.alt}
-          onClose={() => setLightbox(null)}
-        />
-      ) : null}
+      {lightbox ? <ImageLightbox src={lightbox.src} alt={lightbox.alt} onClose={() => setLightbox(null)} /> : null}
     </div>
   );
 }
