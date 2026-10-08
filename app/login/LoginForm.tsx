@@ -55,7 +55,7 @@ export default function LoginForm() {
   return (
     <AuthShell eyebrow={t("Acceso")} title={t("Iniciar sesión")}>
       <p className="mb-6 -mt-6 text-sm text-muted-foreground">
-        {returnTo === '/dashboard' ? t("Ingresa para acceder a tu cuenta.") : returnTo === '/mis-reservas' ? t("Inicia sesión para consultar tus reservas y la respuesta del proveedor.") : t("Inicia sesión para continuar con tu reserva. Conservaremos la salida y las personas que elegiste.")}
+        {returnTo === '/dashboard' ? t("Ingresa para acceder a tu cuenta.") : returnTo === '/mis-reservas' ? t("Inicia sesión para consultar tus reservas.") : t("Inicia sesión para continuar con tu reserva. Conservaremos la salida y las personas que elegiste.")}
       </p>
 
       <form method="post"

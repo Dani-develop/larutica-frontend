@@ -28,3 +28,4 @@
 .booking-site{min-height:100dvh;display:flex;flex-direction:column}.booking-site>main{flex:1}.booking-site>.booking-header,.booking-site>.booking-footer{flex-shrink:0}
 
 .booking-site.booking-embedded{min-height:0;background:white;width:100%}.booking-embedded .booking-container{width:100%;padding-top:32px}.trip-departure-info{font-size:.9rem;color:#52645b;line-height:1.5}.experience-card .card-footer{flex-wrap:wrap;gap:16px}.experience-card .trip-actions{flex-wrap:wrap}
+.upcoming-reservations .booking-reservation h3{font-size:1.4rem;margin:12px 0;line-height:1.25}.upcoming-reservations .booking-reservation p{margin:0 0 1rem}.upcoming-reservations .booking-reservation dd{margin:0}.upcoming-reservations .booking-reservation{scroll-margin-top:110px;overflow-wrap:anywhere}.upcoming-reservations .booking-actions{align-items:center}

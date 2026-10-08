@@ -8,6 +8,7 @@ import Swal from "sweetalert2";
 import "sweetalert2/dist/sweetalert2.min.css";
 import { useAuth } from "@/modules/auth/context/AuthContext";
 import { ExperienceDetail } from "@/modules/booking/ExperienceDetail";
+import { UpcomingReservationCard } from "@/modules/booking/UpcomingReservationCard";
 
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
@@ -234,11 +235,23 @@ const STATUS_LABEL: Record<ReservationStatus, string> = {
 
 export function TravelerReservationsPage() {
   const { t } = usePreferences();
+  const searchParams = useSearchParams();
+  const selectedReservation = searchParams.get("reserva");
   const [reservationView, setReservationView] = useState<"upcoming" | "past">("upcoming");
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [cancellingReservationId, setCancellingReservationId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (loading || !selectedReservation || reservationView !== "upcoming") return;
+    const card = document.getElementById(`reserva-${selectedReservation}`);
+    if (card) {
+      card.setAttribute("tabindex", "-1");
+      card.focus({ preventScroll: true });
+      card.scrollIntoView({ block: "center", behavior: "instant" });
+    }
+  }, [loading, selectedReservation, reservationView]);
 
   useEffect(() => {
     let cancelled = false;
@@ -326,6 +339,7 @@ export function TravelerReservationsPage() {
       {error ? (
         <p className="notice" role="alert">{t(error)}</p>
       ) : null}
+      {searchParams.get("existente") === "1" && <p className="notice" role="status">{t("Ya tienes una reserva para esta salida. No creamos una segunda reserva.")}</p>}
       <div className="filter-row" role="tablist" aria-label={t("Filtrar reservas")}>
         <button
           type="button"
@@ -342,22 +356,27 @@ export function TravelerReservationsPage() {
           onClick={() => setReservationView("past")}
         >{t("Historial ")}</button>
       </div>
-      <ReservationGroup
-        title={reservationView === "upcoming" ? t("Reservas por venir") : t("Historial de reservas")}
+      {reservationView === "upcoming" ? <section aria-labelledby="upcoming-reservations-title">
+        <h2 id="upcoming-reservations-title" className="subheading">{t("Reservas por venir")}</h2>
+        {visibleReservations.length === 0 ? <p className="empty-state">{t(loading ? "Cargando reservas..." : error ? "El listado no está disponible." : "No tienes reservas por venir.")}</p> :
+          <div className="booking-list upcoming-reservations">{visibleReservations.map(reservation =>
+            <UpcomingReservationCard key={reservation.id} reservation={reservation}
+              onCancel={() => void cancelReservation(reservation)} busy={cancellingReservationId !== null} />
+          )}</div>}
+      </section> : <ReservationGroup
+        title={t("Historial de reservas")}
         emptyLabel={
           loading
             ? t("Cargando reservas...")
             : error
               ? t("El listado no está disponible.")
-              : reservationView === "upcoming"
-                ? t("No tienes reservas por venir.")
-                : t("No tienes reservas en el historial.")
+              : t("No tienes reservas en el historial.")
         }
         reservations={visibleReservations}
         onRate={saveRating}
         onCancel={cancelReservation}
         cancellingReservationId={cancellingReservationId}
-      />
+      />}
     </section>
   );
 }
