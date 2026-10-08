@@ -16,6 +16,13 @@ export const TRIP_MENU = [
 
 export type TripMenuId = (typeof TRIP_MENU)[number]["id"];
 
+export function reservationPath(reservationId?: string, existing = false) {
+  const params = new URLSearchParams({ viaje: "reservas" });
+  if (reservationId) params.set("reserva", reservationId);
+  if (existing) params.set("existente", "1");
+  return `/?${params}`;
+}
+
 export function parseTrip(value: string | null): TripQuery | null {
   if (value && (TRIP_QUERIES as readonly string[]).includes(value)) {
     return value as TripQuery;

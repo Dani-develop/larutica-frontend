@@ -1,0 +1,38 @@
+import { chromium } from 'file:///C:/Users/josed/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright/index.mjs';
+import assert from 'node:assert/strict';
+const browser = await chromium.launch({headless:true,executablePath:'C:/Program Files/Google/Chrome/Application/chrome.exe'});
+try {
+  const page = await browser.newPage();
+  const errors=[]; page.on('pageerror', error=>errors.push(error.message));
+  const base={id:'qa-upcoming',passengerId:'qa',departureId:'departure',numberOfPeople:2,unitPrice:20,total:40,status:'CONFIRMED',createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),departureStartAt:new Date(Date.now()+86400000*10).toISOString(),departureStatus:'ACTIVE',publicationId:'tour',publicationTitle:'Viaje QA',destination:'Zarcero',meetingPoint:'Parque central',agencyName:'Proveedor QA'};
+  let rows=[base,{...base,id:'qa-history',status:'PAST',publicationTitle:'Viaje anterior',rating:4}];let patches=0;
+  await page.route('**/api/**', route=>{
+    const path=new URL(route.request().url()).pathname;
+    if(path==='/api/auth/session') return route.fulfill({json:{data:{user:{id:'qa',role:'Viajero',status:'Activo',name:'QA',email:'qa@example.com'},session:{userId:'qa',expiresAt:new Date(Date.now()+86400000).toISOString(),idleExpiresAt:new Date(Date.now()+3600000).toISOString()}}}});
+    if(route.request().method()==='PATCH') {patches++;rows=rows.map(r=>r.id===base.id?{...r,status:'CANCELLED'}:r);return route.fulfill({json:{data:rows[0]}});}
+    return route.fulfill({json:{data:path==='/api/reservations'?rows:[]}});
+  });
+  await page.goto('http://localhost:3000/?viaje=reservas');
+  const card=page.locator('#reserva-qa-upcoming');await card.waitFor({timeout:10000}).catch(async error=>{console.log((await page.locator('body').innerText()).slice(0,1800));console.log(errors);throw error;});
+  await card.getByText('Parque central',{exact:false}).waitFor();
+  assert.match(await card.textContent(),/40/);
+  await page.getByRole('tab',{name:'Historial'}).click();
+  await page.getByRole('heading',{name:'Viaje anterior',exact:true}).waitFor();
+  assert.equal(await page.locator('.upcoming-reservations').count(),0);
+  await page.getByRole('tab',{name:'Por venir'}).click();
+  assert.equal(await card.getByRole('link',{name:'Ver detalles'}).count(),0);
+  await page.goto('http://localhost:3000/mis-reservas?reserva=qa-upcoming');
+  await page.waitForURL('**/?viaje=reservas&reserva=qa-upcoming');
+  await page.waitForFunction(()=>document.activeElement?.id==='reserva-qa-upcoming');
+  await page.goto('http://localhost:3000/?viaje=reservas');await card.waitFor();
+  await page.setViewportSize({width:390,height:844});
+  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth),'No mobile overflow');
+  await card.getByRole('button',{name:'Cancelar viaje',exact:true}).click();
+  await page.getByRole('button',{name:'Mantener reserva',exact:true}).click();assert.equal(patches,0);
+  await card.getByRole('button',{name:'Cancelar viaje',exact:true}).click();
+  await page.getByRole('button',{name:'Sí, cancelar viaje',exact:true}).click();
+  await page.getByRole('button',{name:'Aceptar',exact:true}).click();assert.equal(patches,1);
+  assert.equal(await card.count(),0);
+  assert.deepEqual(errors,[]);
+  console.log('PASS: upcoming details, history, navigation, mobile, cancellation dismissed/confirmed (mock API only).');
+} finally {await browser.close();}
