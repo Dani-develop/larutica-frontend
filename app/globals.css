@@ -156,6 +156,19 @@ nav .trip-menu-panel button { display:flex; place-items:unset; justify-content:f
 .trip-page-shell .reservation-card>div:first-child { min-width:0; flex:1 1 18rem; }
 .trip-page-shell .reservation-card h3 { margin:.4rem 0; line-height:1.35; }
 .trip-page-shell .reservation-card .trip-actions { width:auto; justify-content:flex-end; }
+.reservation-refresh { margin:0 0 1rem; color:var(--ink-muted); font-size:.95rem; }
+.reservation-history-item { display:flex; flex-direction:column; min-width:0; height:auto; scroll-margin-top:110px; }
+.reservation-history .experience-card { flex:none; height:auto; }
+.reservation-history .card-body { flex:none; }
+.reservation-history .card-image-wrap .empty-state { margin:auto; }
+.reservation-facts { display:grid; gap:.55rem; margin:.35rem 0 .9rem; }
+.reservation-facts div { display:grid; gap:.1rem; }
+.reservation-facts dt { color:var(--ink-muted); font-size:.75rem; font-weight:800; letter-spacing:.04em; text-transform:uppercase; }
+.reservation-facts dd { margin:0; color:var(--ink); font-weight:700; }
+.reservation-history .card-body .notice { width:100%; margin:.2rem 0 0; }
+.reservation-history .card-footer { margin-top:auto; }
+.reservation-history-item .reservation-rating { margin-top:.85rem; flex:none; height:auto; }
+.trip-page-shell .reservation-history .experience-card:last-child { grid-column:auto; }
 .reservation-rating { display:grid; gap:.25rem; flex-basis:100%; color:var(--ink-muted); font-size:.85rem; }
 .rating-stars { display:flex; gap:.2rem; }
 .rating-stars button { width:2.4rem; height:2.4rem; padding:0; border:1px solid var(--line); border-radius:.6rem; background:#fff; color:#a86e00; font-size:1.4rem; line-height:1; cursor:pointer; }
