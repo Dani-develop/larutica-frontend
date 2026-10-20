@@ -24,6 +24,7 @@ export type Reservation = {
   agencyPhone?: string | null
   agencyEmail?: string | null
   meetingPoint?: string | null
+  publicationImageUrl?: string | null
 }
 
 export type CreateReservationPayload = {

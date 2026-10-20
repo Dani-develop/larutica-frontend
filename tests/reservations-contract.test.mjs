@@ -113,13 +113,17 @@ test("el cliente expone el CRUD y Mis reservas deja los datos fijos", async () =
   }
   assert.match(service, /credentials:\s*'include'/);
   assert.match(service, /body\?\.error/);
+  const state = await read("modules/booking/reservationState.ts");
   const reservationsPage = page.slice(
     page.indexOf("export function TravelerReservationsPage"),
     page.indexOf("function TravelerTripCard"),
   );
   assert.match(reservationsPage, /listReservations/);
-  assert.match(reservationsPage, /reservation\.status === "PENDING"/);
-  assert.match(reservationsPage, /reservation\.status === "PAST"/);
+  assert.match(reservationsPage, /isUpcomingReservation/);
+  assert.match(reservationsPage, /setInterval\(refresh, 30000\)/);
+  assert.match(state, /status === 'PENDING'/);
+  assert.match(state, /status === 'PAST'/);
+  assert.match(page, /reservation\.status === "PAST"/);
   assert.match(reservationsPage, /No tienes reservas por venir/);
   assert.match(reservationsPage, /role="alert"/);
   assert.match(reservationsPage, /updateReservation\(reservation\.id, \{ status: "CANCELLED" \}\)/);

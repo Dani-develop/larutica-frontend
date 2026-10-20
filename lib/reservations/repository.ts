@@ -24,6 +24,7 @@ const RESERVATION_SELECT = `
       title,
       destination,
       meeting_point,
+      main_image_url,
       agencies (
         owner_user_id, commercial_name, phone, email
       )
@@ -58,6 +59,7 @@ export type ReservationRecord = {
   agencyPhone?: string | null;
   agencyEmail?: string | null;
   meetingPoint?: string | null;
+  publicationImageUrl?: string | null;
 };
 
 type AgencyEmbed = { owner_user_id: string; commercial_name?: string; phone?: string; email?: string };
@@ -66,6 +68,7 @@ type PublicationEmbed = {
   title: string | null;
   destination: string | null;
   meeting_point?: string;
+  main_image_url?: string | null;
   agencies: AgencyEmbed | AgencyEmbed[] | null;
 };
 type DepartureEmbed = {
@@ -140,6 +143,7 @@ export function toReservationRecord(row: ReservationRow): ReservationRecord {
     agencyPhone: agency?.phone,
     agencyEmail: agency?.email,
     meetingPoint: publication?.meeting_point,
+    publicationImageUrl: publication?.main_image_url ?? null,
   };
 }
 
@@ -167,6 +171,7 @@ export function toPublicReservation(record: ReservationRecord) {
     agencyPhone: record.agencyPhone,
     agencyEmail: record.agencyEmail,
     meetingPoint: record.meetingPoint,
+    publicationImageUrl: record.publicationImageUrl ?? null,
   };
 }
 
