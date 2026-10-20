@@ -8,6 +8,12 @@ import { proxyRemoteApiRequest } from "@/lib/api/remote-proxy";
 
 import { getSupabaseAdminClient } from "@/lib/supabase/admin-client";
 
+import { notifyDepartureCancellations } from "@/lib/mail/notify";
+
+import { applyDepartureCancellation } from "@/lib/reservations/departure-cancel";
+
+import { cancelDepartureReservations } from "@/lib/reservations/repository";
+
 import { requireAppSession } from "@/lib/supabase/session";
 
 type RouteContext = {
@@ -445,6 +451,17 @@ export async function PATCH(
       );
     }
 
+    const cancelledReservations =
+      await applyDepartureCancellation(
+        departure.status,
+        status,
+        () =>
+          cancelDepartureReservations(
+            supabase,
+            departure.id,
+          ),
+      );
+
     const {
       data:
         updatedDeparture,
@@ -497,6 +514,10 @@ export async function PATCH(
         500,
       );
     }
+
+    await notifyDepartureCancellations(
+      cancelledReservations,
+    );
 
     return Response.json(
       {
@@ -601,6 +622,21 @@ export async function DELETE(
       );
     }
 
+    const cancelledReservations =
+      await applyDepartureCancellation(
+        departure.status,
+        "CANCELLED",
+        () =>
+          cancelDepartureReservations(
+            supabase,
+            departure.id,
+          ),
+      );
+
+    await notifyDepartureCancellations(
+      cancelledReservations,
+    );
+
     const {
       data:
         cancelledDeparture,
@@ -609,14 +645,6 @@ export async function DELETE(
     } = await supabase
       .from(
         "publication_departures",
-      )
-      .update({
-        status:
-          "CANCELLED",
-      })
-      .eq(
-        "id",
-        departure.id,
       )
       .select(
         `
@@ -629,6 +657,10 @@ export async function DELETE(
           created_at,
           updated_at
         `,
+      )
+      .eq(
+        "id",
+        departure.id,
       )
       .single();
 
