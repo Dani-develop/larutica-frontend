@@ -12,6 +12,10 @@ import {
   proxyRemoteApiRequest,
 } from "@/lib/api/remote-proxy";
 
+import {
+  notifyPublicationDecision,
+} from "@/lib/mail/notify";
+
 type ReviewStatus =
   | "APPROVED"
   | "REJECTED";
@@ -246,6 +250,48 @@ export async function PATCH(
         new Error(
           "No se pudo actualizar la publicación.",
         )
+      );
+    }
+
+    const {
+      data:
+        agencyContact,
+      error:
+        contactError,
+    } =
+      await admin
+        .from(
+          "agencies",
+        )
+        .select(
+          "email",
+        )
+        .eq(
+          "id",
+          publication.agency_id,
+        )
+        .maybeSingle();
+
+    if (contactError) {
+      console.error(
+        "No se pudo leer el correo de la agencia.",
+        contactError,
+      );
+    } else {
+      await notifyPublicationDecision(
+        {
+          previousStatus:
+            existingPublication.status,
+          status,
+          title:
+            String(
+              publication.title ??
+                "Publicación",
+            ),
+          agencyEmail:
+            agencyContact?.email ??
+            null,
+        },
       );
     }
 

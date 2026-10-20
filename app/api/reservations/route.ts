@@ -1,4 +1,5 @@
 import { ApiError, apiErrorResponse, assertSameOrigin } from "@/lib/api/errors";
+import { notifyReservationCreated } from "@/lib/mail/notify";
 import {
   assertTravelerCanCreate,
   listScope,
@@ -59,14 +60,15 @@ export async function POST(request: Request) {
     const body = await request.json().catch(() => { throw new ApiError("No pudimos leer la solicitud. Revisa los datos e intenta de nuevo.", 400); });
     const input = guardPolicy(() => parseCreateReservationBody(body, appSession.session.userId));
     const admin = getSupabaseAdminClient();
-    const reservation = await createReservationRecord(
+    const created = await createReservationRecord(
       admin,
       appSession.session.userId,
       input.departureId,
       input.numberOfPeople,
     );
+    await notifyReservationCreated(created.record, created.inserted);
     return Response.json(
-      { data: toPublicReservation(reservation) },
+      { data: toPublicReservation(created.record) },
       { status: 201, headers: { "cache-control": "no-store" } },
     );
   } catch (error) {

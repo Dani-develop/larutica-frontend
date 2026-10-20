@@ -134,6 +134,17 @@ test("el cliente expone el CRUD y Mis reservas deja los datos fijos", async () =
   assert.match(landing, /TravelerReservationsPage/);
 });
 
+test("cancelar una salida cierra solo las reservas abiertas y exige service_role", async () => {
+  const sql = await read("supabase/migrations/202610200001_cancel_departure_reservations.sql");
+  assert.match(sql, /function public\.cancel_departure_reservations/i);
+  assert.match(sql, /for update/i);
+  assert.match(sql, /status in \('PENDING', 'CONFIRMED'\)/);
+  assert.match(sql, /v_status = 'CANCELLED'/);
+  assert.doesNotMatch(sql, /set status = 'PAST'/i);
+  assert.match(sql, /revoke all on function public\.cancel_departure_reservations\(uuid\) from public, anon, authenticated/i);
+  assert.match(sql, /grant execute on function public\.cancel_departure_reservations\(uuid\) to service_role/i);
+});
+
 test('solo el trabajador propietario o Admin pueden confirmar antes de la salida', () => {
   const pending = {...own, status:'PENDING', departureStartAt:future};
   assert.throws(() => assertCanConfirm('Viajero','viajero-1',pending), e => e.status === 403);

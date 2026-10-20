@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { ApiError } from "@/lib/api/errors";
+import { reservationWasInserted } from "@/lib/reservations/departure-cancel";
 import {
   canReadReservation,
   listScope,
@@ -246,7 +247,7 @@ export async function createReservationRecord(
   passengerId: string,
   departureId: string,
   numberOfPeople: number,
-): Promise<ReservationRecord> {
+): Promise<{ record: ReservationRecord; inserted: boolean }> {
   // A retry belongs to this passenger, never to another user's reservation.
   const { data: existing, error: existingError } = await admin.from("reservations")
     .select(RESERVATION_SELECT).eq("passenger_id", passengerId).eq("departure_id", departureId)
@@ -258,9 +259,9 @@ export async function createReservationRecord(
       await updateReservationStatus(admin, existing.id, "CONFIRMED", "PENDING");
       const confirmed = await getReservationRecord(admin, existing.id);
       if (!confirmed) throw new ApiError("No se pudo consultar la reserva.", 500);
-      return confirmed;
+      return { record: confirmed, inserted: reservationWasInserted(existing.status) };
     }
-    return toReservationRecord(existing as ReservationRow);
+    return { record: toReservationRecord(existing as ReservationRow), inserted: reservationWasInserted(existing.status) };
   }
   const { data: departure, error: availabilityError } = await admin.from("publication_departures")
     .select("publications!inner(agencies!inner(status))").eq("id", departureId)
@@ -283,9 +284,47 @@ export async function createReservationRecord(
     await updateReservationStatus(admin, record.id, "CONFIRMED", "PENDING");
     const confirmed = await getReservationRecord(admin, record.id);
     if (!confirmed) throw new ApiError("No se pudo consultar la reserva.", 500);
-    return confirmed;
+    return { record: confirmed, inserted: reservationWasInserted(null) };
   }
-  return record;
+  return { record, inserted: reservationWasInserted(null) };
+}
+
+export type CancelledDepartureReservation = {
+  id: string;
+  passengerEmail: string | null;
+  passengerName: string | null;
+  publicationTitle: string;
+  departureStartAt: string;
+  numberOfPeople: number;
+  total: number;
+};
+
+export async function cancelDepartureReservations(
+  admin: SupabaseClient,
+  departureId: string,
+): Promise<CancelledDepartureReservation[]> {
+  const { data, error } = await admin.rpc("cancel_departure_reservations", {
+    p_departure_id: departureId,
+  });
+  if (error) throw error;
+  const rows = (data ?? []) as {
+    id: string;
+    passenger_email: string | null;
+    passenger_name: string | null;
+    publication_title: string | null;
+    departure_start_at: string;
+    number_of_people: number;
+    total: number | string;
+  }[];
+  return rows.map((row) => ({
+    id: row.id,
+    passengerEmail: row.passenger_email,
+    passengerName: row.passenger_name,
+    publicationTitle: row.publication_title ?? "Reserva",
+    departureStartAt: row.departure_start_at,
+    numberOfPeople: row.number_of_people,
+    total: Number(row.total),
+  }));
 }
 
 export async function updateReservationPartySize(

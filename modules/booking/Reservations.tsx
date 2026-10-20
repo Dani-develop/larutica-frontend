@@ -7,6 +7,7 @@ import { useNow } from './useNow';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/modules/auth/context/AuthContext';
 import { listReservations, updateReservation, type Reservation } from '@/modules/transport/reservations/services/reservation.service';
+import { reservationNotice } from './reservationState';
 import { statusLabel } from './types';
 
 export function Reservations({worker = false}: {worker?: boolean}) {
@@ -57,7 +58,7 @@ export function Reservations({worker = false}: {worker?: boolean}) {
       {isWorker && <div className="booking-notice"><strong>{r.passengerName || t("Viajero")}</strong><p>{r.passengerEmail}{r.passengerPhone ? ` · ${r.passengerPhone}` : ''}</p></div>}
       {!isWorker && r.meetingPoint && <p><strong>{t("Punto de encuentro:")}</strong> {r.meetingPoint}</p>}
       {!isWorker && r.agencyName && <p><strong>{t("Proveedor:")}</strong> {r.agencyName}{r.agencyPhone ? ` · ${r.agencyPhone}` : ''}{r.agencyEmail ? ` · ${r.agencyEmail}` : ''}</p>}
-      {r.departureStatus === 'CANCELLED' && <p className="booking-notice">{t("El organizador canceló esta salida. Consulta con él otras fechas o cancela tu reserva antes de la fecha prevista.")}</p>}
+      {r.departureStatus === 'CANCELLED' && <p className="booking-notice">{t(reservationNotice(r, now))}</p>}
       {!future && r.status === 'PENDING' && <p className="booking-notice">{t("Esta salida ya pasó sin confirmación. La solicitud no fue confirmada para viajar.")}</p>}
       {r.status === 'CONFIRMED' && future && (!r.departureStatus || r.departureStatus === 'ACTIVE') && <p className="booking-notice">{isWorker ? t("El viajero tiene su reserva confirmada.") : t("Tu reserva está confirmada. Revisa el punto de encuentro y coordina con el proveedor cualquier detalle del viaje.")}</p>}
       {r.status === 'PENDING' && future && !isWorker && (!r.departureStatus || r.departureStatus === 'ACTIVE') && <p className="booking-notice">{t("El proveedor está por revisar tu solicitud. Todavía no está confirmada.")}</p>}

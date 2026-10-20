@@ -26,6 +26,9 @@ export function reservationStatusText(reservation: Reservation, now: number) {
 }
 
 export function reservationNotice(reservation: Reservation, now: number) {
+  if (reservation.departureStatus === 'CANCELLED' && reservation.status === 'CANCELLED') {
+    return 'El organizador canceló esta fecha y hora. Tu reserva ya está cancelada y sigue en tu historial.';
+  }
   if (reservation.departureStatus === 'CANCELLED') {
     return 'El organizador canceló esta salida. Consulta con él otras fechas o cancela tu reserva antes de la fecha prevista.';
   }
