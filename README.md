@@ -12,6 +12,31 @@ Antes de cambiar una pantalla, consultar [las reglas visuales de LaRutica](docs/
 
 - Node.js `>=22.13.0`
 
+La versión de referencia del equipo es **Node 24**, indicada en `.nvmrc` y `.node-version` para los gestores que leen esos archivos. Instalarla o seleccionarla es un paso local: `git pull` no cambia la versión de Node de la computadora. En Windows, cerrar y volver a abrir la terminal después de actualizar Node; comprobar con `node --version`.
+
+La configuración `.npmrc` bloquea instalaciones con un Node incompatible e incluye los módulos opcionales nativos que necesita la herramienta de compilación. `npm run dev` y `npm run build` comprueban el entorno antes de iniciar.
+
+## Después de clonar o actualizar main
+
+```bash
+git pull --ff-only origin main
+node --version
+npm ci
+npm run runtime:check
+npm run dev
+```
+
+En un clon nuevo, empezar por `node --version`. Si `git pull` informa conflictos, resolverlos antes de continuar. `npm ci` instala exactamente el lockfile compartido y se debe repetir después de actualizar dependencias o cambiar de versión de Node. No borrar `package-lock.json` ni sustituirlo por otro lockfile para solucionar un error local.
+
+- **`vinext` no se reconoce:** faltan dependencias; ejecutar `npm ci`.
+- **`styleText` no existe:** la terminal está usando un Node antiguo; seleccionar Node compatible, volver a abrir la terminal y ejecutar `npm ci`.
+- **`Cannot find native binding`:** con Node compatible, ejecutar `npm ci`; el módulo nativo depende del sistema y arquitectura de cada computadora.
+- **`EBADENGINE`:** la versión de Node no cumple el requisito; corregirla antes de instalar, sin usar `--force`.
+
+## Validación del equipo
+
+`.github/workflows/validate.yml` ejecuta instalación, comprobación del entorno, diseño, TypeScript, compilación y pruebas en Windows y Linux con Node 24 para cada pull request y actualización de main. Se activará cuando este archivo llegue a GitHub y Actions esté habilitado. El propietario puede hacer obligatorias esas comprobaciones en la protección de main; el archivo por sí solo no bloquea merges.
+
 ## Quick Start
 
 No Docker, database setup or shared cloud credentials are required. Development

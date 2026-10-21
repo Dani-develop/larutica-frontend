@@ -6,7 +6,10 @@
     "node": ">=22.13.0"
   },
   "scripts": {
+    "runtime:check": "node scripts/check-runtime.mjs",
+    "predev": "node scripts/check-runtime.mjs",
     "dev": "vinext dev",
+    "prebuild": "node scripts/check-runtime.mjs",
     "build": "vinext build",
     "start": "vinext start",
     "test": "npm run build && node --experimental-strip-types --test tests/rendered-html.test.mjs tests/auth-contract.test.mjs tests/privacy-consent.test.mjs tests/privacy-api.test.mjs tests/remote-proxy.test.mjs tests/reservations-contract.test.mjs tests/booking-return.test.mjs tests/traveler-saved-rating.test.mjs tests/browser-fetch.test.mjs && npm run test:mail",
