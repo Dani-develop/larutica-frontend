@@ -2983,6 +2983,8 @@ kbd { padding:.2rem .35rem; border:1px solid #9aaba4; border-bottom-width:2px; b
 .landing-filter-range input[type="range"]:focus-visible::-moz-range-thumb {
   outline: 2px solid #0d684e;
   outline-offset: 3px;
+
+
 }
 
 /* =========================================================
@@ -3067,3 +3069,18 @@ kbd { padding:.2rem .35rem; border:1px solid #9aaba4; border-bottom-width:2px; b
 @media (max-width: 620px) {
   .landing-filter-panel { width: min(100%, 392px); }
 }
+
+/* Estilos de historial de reservas incorporados de main */
+.reservation-refresh { margin:0 0 1rem; color:var(--ink-muted); font-size:.95rem; }
+.reservation-history-item { display:flex; flex-direction:column; min-width:0; height:auto; scroll-margin-top:110px; }
+.reservation-history .experience-card { flex:none; height:auto; }
+.reservation-history .card-body { flex:none; }
+.reservation-history .card-image-wrap .empty-state { margin:auto; }
+.reservation-facts { display:grid; gap:.55rem; margin:.35rem 0 .9rem; }
+.reservation-facts div { display:grid; gap:.1rem; }
+.reservation-facts dt { color:var(--ink-muted); font-size:.75rem; font-weight:800; letter-spacing:.04em; text-transform:uppercase; }
+.reservation-facts dd { margin:0; color:var(--ink); font-weight:700; }
+.reservation-history .card-body .notice { width:100%; margin:.2rem 0 0; }
+.reservation-history .card-footer { margin-top:auto; }
+.reservation-history-item .reservation-rating { margin-top:.85rem; flex:none; height:auto; }
+.trip-page-shell .reservation-history .experience-card:last-child { grid-column:auto; }

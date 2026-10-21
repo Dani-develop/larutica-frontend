@@ -21,6 +21,9 @@
 # misc
 .DS_Store
 *.pem
+# Public, test-only localhost identity; never used by application SMTP.
+!/tests/mail/fixtures/localhost-cert.pem
+!/tests/mail/fixtures/localhost-key.pem
 
 # debug
 npm-debug.log*

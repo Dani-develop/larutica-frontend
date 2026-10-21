@@ -113,13 +113,17 @@ test("el cliente expone el CRUD y Mis reservas deja los datos fijos", async () =
   }
   assert.match(service, /credentials:\s*'include'/);
   assert.match(service, /body\?\.error/);
+  const state = await read("modules/booking/reservationState.ts");
   const reservationsPage = page.slice(
     page.indexOf("export function TravelerReservationsPage"),
     page.indexOf("function TravelerTripCard"),
   );
   assert.match(reservationsPage, /listReservations/);
-  assert.match(reservationsPage, /reservation\.status === "PENDING"/);
-  assert.match(reservationsPage, /reservation\.status === "PAST"/);
+  assert.match(reservationsPage, /isUpcomingReservation/);
+  assert.match(reservationsPage, /setInterval\(refresh, 30000\)/);
+  assert.match(state, /status === 'PENDING'/);
+  assert.match(state, /status === 'PAST'/);
+  assert.match(page, /reservation\.status === "PAST"/);
   assert.match(reservationsPage, /No tienes reservas por venir/);
   assert.match(reservationsPage, /role="alert"/);
   assert.match(reservationsPage, /updateReservation\(reservation\.id, \{ status: "CANCELLED" \}\)/);
@@ -128,6 +132,17 @@ test("el cliente expone el CRUD y Mis reservas deja los datos fijos", async () =
   assert.doesNotMatch(reservationsPage, /pub-arenal-01/);
   assert.doesNotMatch(routes.slice(routes.indexOf("export const TRIP_MENU"), routes.indexOf("export type TripMenuId")), /perfil|Mi perfil/);
   assert.match(landing, /TravelerReservationsPage/);
+});
+
+test("cancelar una salida cierra solo las reservas abiertas y exige service_role", async () => {
+  const sql = await read("supabase/migrations/202610200001_cancel_departure_reservations.sql");
+  assert.match(sql, /function public\.cancel_departure_reservations/i);
+  assert.match(sql, /for update/i);
+  assert.match(sql, /status in \('PENDING', 'CONFIRMED'\)/);
+  assert.match(sql, /v_status = 'CANCELLED'/);
+  assert.doesNotMatch(sql, /set status = 'PAST'/i);
+  assert.match(sql, /revoke all on function public\.cancel_departure_reservations\(uuid\) from public, anon, authenticated/i);
+  assert.match(sql, /grant execute on function public\.cancel_departure_reservations\(uuid\) to service_role/i);
 });
 
 test('solo el trabajador propietario o Admin pueden confirmar antes de la salida', () => {

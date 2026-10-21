@@ -20,7 +20,13 @@ try {
   await page.getByRole('heading',{name:'Viaje anterior',exact:true}).waitFor();
   assert.equal(await page.locator('.upcoming-reservations').count(),0);
   await page.getByRole('tab',{name:'Por venir'}).click();
-  assert.equal(await card.getByRole('link',{name:'Ver detalles'}).count(),0);
+  assert.equal(await card.getByRole('link',{name:'Ver experiencia'}).count(),1);
+  await page.getByRole('tab',{name:'Historial'}).click();
+  const history=page.locator('#reserva-qa-history');
+  await history.getByText('Parque central',{exact:false}).waitFor();
+  assert.match(await history.textContent(),/40/);
+  assert.equal(await history.getByRole('link',{name:'Ver experiencia'}).count(),1);
+  await page.getByRole('tab',{name:'Por venir'}).click();
   await page.goto('http://localhost:3000/mis-reservas?reserva=qa-upcoming');
   await page.waitForURL('**/?viaje=reservas&reserva=qa-upcoming');
   await page.waitForFunction(()=>document.activeElement?.id==='reserva-qa-upcoming');

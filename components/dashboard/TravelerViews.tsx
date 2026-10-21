@@ -9,17 +9,19 @@ import "sweetalert2/dist/sweetalert2.min.css";
 import { useAuth } from "@/modules/auth/context/AuthContext";
 import { ExperienceDetail } from "@/modules/booking/ExperienceDetail";
 import { UpcomingReservationCard } from "@/modules/booking/UpcomingReservationCard";
-
+import { canTravelerCancel, isUpcomingReservation, reservationNotice, reservationStatusText } from "@/modules/booking/reservationState";
+import { useNow } from "@/modules/booking/useNow";
 import { useEffect, useMemo, useRef, useState } from "react";
+
 import { useSearchParams } from "next/navigation";
 import type { SystemUser } from "@/modules/crm/users/models/User";
 import { MyProfilePage } from "@/modules/crm/users/components/MyProfilePage";
 import type { TravelerPublication } from "@/modules/traveler/types/traveler-publication.types";
-import { tripPath } from "@/modules/landing/lib/travelerRoutes";
 import { matchesQuery } from "@/modules/landing/lib/searchText";
 import {
   listSavedPublications,
   listCatalogPublications,
+  getTravelerPublication,
   listSavedPublicationIds,
   rateReservation,
   setPublicationSaved,
@@ -28,7 +30,6 @@ import {
   listReservations,
   updateReservation,
   type Reservation,
-  type ReservationStatus,
 } from "@/modules/transport/reservations/services/reservation.service";
 
 const reservationAlertClasses = {
@@ -973,56 +974,74 @@ export function TravelerSavedPage() {
   );
 }
 
-const STATUS_LABEL: Record<ReservationStatus, string> = {
-  PENDING: "Por confirmar",
-  CONFIRMED: "Confirmada",
-  PAST: "Pasada",
-  CANCELLED: "Cancelada",
-};
-
 export function TravelerReservationsPage() {
   const { t } = usePreferences();
+  const now = useNow();
   const searchParams = useSearchParams();
   const selectedReservation = searchParams.get("reserva");
   const [reservationView, setReservationView] = useState<"upcoming" | "past">("upcoming");
   const [reservations, setReservations] = useState<Reservation[]>([]);
+  const [publicationImages, setPublicationImages] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [cancellingReservationId, setCancellingReservationId] = useState<string | null>(null);
+  const alignedSelection = useRef<string | null>(null);
+  const focusedSelection = useRef<string | null>(null);
 
   useEffect(() => {
-    if (loading || !selectedReservation || reservationView !== "upcoming") return;
-    const card = document.getElementById(`reserva-${selectedReservation}`);
-    if (card) {
-      card.setAttribute("tabindex", "-1");
-      card.focus({ preventScroll: true });
-      card.scrollIntoView({ block: "center", behavior: "instant" });
+    let active = true;
+    let request = 0;
+    async function load() {
+      const id = ++request;
+      try {
+        const data = await listReservations();
+        if (!active || id !== request) return;
+        setReservations(data);
+        setError(null);
+        const images = await publicationImagesFor(data);
+        if (!active || id !== request) return;
+        setPublicationImages(images);
+      } catch (cause: unknown) {
+        if (!active || id !== request) return;
+        setError(cause instanceof Error ? cause.message : "No se pudieron cargar las reservas.");
+      } finally {
+        if (active && id === request) setLoading(false);
+      }
     }
-  }, [loading, selectedReservation, reservationView]);
-
-  useEffect(() => {
-    let cancelled = false;
-    listReservations()
-      .then((data) => {
-        if (!cancelled) setReservations(data);
-      })
-      .catch((cause: unknown) => {
-        if (!cancelled) {
-          setError(cause instanceof Error ? cause.message : "No se pudieron cargar las reservas.");
-        }
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
+    void load();
+    const refresh = () => { if (!document.hidden) void load(); };
+    const interval = window.setInterval(refresh, 30000);
+    window.addEventListener("focus", refresh);
     return () => {
-      cancelled = true;
+      active = false;
+      window.clearInterval(interval);
+      window.removeEventListener("focus", refresh);
     };
   }, []);
 
+  useEffect(() => {
+    if (loading || !selectedReservation || alignedSelection.current === selectedReservation) return;
+    const selected = reservations.find((reservation) => reservation.id === selectedReservation);
+    if (!selected) return;
+    alignedSelection.current = selectedReservation;
+    const upcoming = isUpcomingReservation(selected, now);
+    if (upcoming !== (reservationView === "upcoming")) setReservationView(upcoming ? "upcoming" : "past");
+  }, [loading, selectedReservation, reservations, now, reservationView]);
+
+  useEffect(() => {
+    if (loading || !selectedReservation || focusedSelection.current === selectedReservation) return;
+    const card = document.getElementById(`reserva-${selectedReservation}`);
+    if (!card) return;
+    focusedSelection.current = selectedReservation;
+    card.setAttribute("tabindex", "-1");
+    card.focus({ preventScroll: true });
+    card.scrollIntoView({ block: "center", behavior: "instant" });
+  }, [loading, selectedReservation, reservationView, reservations]);
+
   const visibleReservations = reservations.filter((reservation) =>
     reservationView === "upcoming"
-      ? reservation.status === "PENDING" || reservation.status === "CONFIRMED"
-      : reservation.status === "PAST" || reservation.status === "CANCELLED",
+      ? isUpcomingReservation(reservation, now)
+      : !isUpcomingReservation(reservation, now),
   );
 
   async function saveRating(reservationId: string, rating: number) {
@@ -1087,6 +1106,7 @@ export function TravelerReservationsPage() {
         <p className="notice" role="alert">{t(error)}</p>
       ) : null}
       {searchParams.get("existente") === "1" && <p className="notice" role="status">{t("Ya tienes una reserva para esta salida. No creamos una segunda reserva.")}</p>}
+      <p className="reservation-refresh">{t("El estado se actualiza solo, aproximadamente cada 30 segundos.")}</p>
       <div className="filter-row" role="tablist" aria-label={t("Filtrar reservas")}>
         <button
           type="button"
@@ -1120,6 +1140,7 @@ export function TravelerReservationsPage() {
               : t("No tienes reservas en el historial.")
         }
         reservations={visibleReservations}
+        publicationImages={publicationImages}
         onRate={saveRating}
         onCancel={cancelReservation}
         cancellingReservationId={cancellingReservationId}
@@ -1281,10 +1302,42 @@ function TravelerTripCard({
   );
 }
 
+async function publicationImagesFor(reservations: Reservation[]) {
+  const images: Record<string, string> = {};
+  for (const reservation of reservations) {
+    if (reservation.publicationId && "publicationImageUrl" in reservation && typeof reservation.publicationImageUrl === "string") images[reservation.publicationId] = reservation.publicationImageUrl;
+  }
+  let catalog: TravelerPublication[] = [];
+  try {
+    catalog = await listCatalogPublications();
+  } catch {
+    catalog = [];
+  }
+  for (const publication of catalog) {
+    if (publication.mainImageUrl) images[publication.id] = publication.mainImageUrl;
+  }
+  const missing = [...new Set(reservations.map((reservation) => reservation.publicationId))].filter((id) => id && !images[id]);
+  await Promise.all(missing.map(async (publicationId) => {
+    try {
+      const publication = await getTravelerPublication(publicationId);
+      if (publication.mainImageUrl) images[publicationId] = publication.mainImageUrl;
+    } catch {
+      try {
+        const response = await fetch(`/api/catalog?id=${encodeURIComponent(publicationId)}`);
+        const body = await response.json() as { data?: { image?: string | null }[] };
+        const image = body.data?.[0]?.image;
+        if (image) images[publicationId] = image;
+      } catch { /* The card keeps the empty image state. */ }
+    }
+  }));
+  return images;
+}
+
 function ReservationGroup({
   title,
   emptyLabel,
   reservations,
+  publicationImages,
   onRate,
   onCancel,
   cancellingReservationId,
@@ -1292,52 +1345,77 @@ function ReservationGroup({
   title: string;
   emptyLabel: string;
   reservations: Reservation[];
+  publicationImages: Record<string, string>;
   onRate: (reservationId: string, rating: number) => Promise<void>;
   onCancel: (reservation: Reservation) => Promise<void>;
   cancellingReservationId: string | null;
 }) {
-  const { t, dateLabel } = usePreferences();
+  const { t, money, dateLabel } = usePreferences();
+  const now = useNow();
   const headingId = title.replaceAll(" ", "-").toLowerCase();
   return (
-    <section aria-labelledby={headingId}>
+    <section className="reservation-history" aria-labelledby={headingId}>
       <h2 id={headingId} className="subheading">{t(title)}</h2>
       {reservations.length === 0 ? (
         <p className="empty-state">{t(emptyLabel)}</p>
-      ) : reservations.map((reservation) => {
-        const people = reservation.numberOfPeople === 1
-          ? t("1 persona")
-          : `${reservation.numberOfPeople} ${t("personas")}`;
-        const place = reservation.destination ?? t("Sin destino");
-        return (
-          <article className="reservation-card" key={reservation.id}>
-            <div>
-              <p>{dateLabel(reservation.departureStartAt)}</p>
-              <h3>{reservation.publicationTitle}</h3>
-              <p>{people} · {place}</p>
-            </div>
-            <div className="trip-actions">
-              <span className="badge" style={{ position: "static" }}>{t(STATUS_LABEL[reservation.status])}</span>
-              {reservation.publicationId ? (
-                <Link className="button button-outline" href={tripPath("detalle", { publicacion: reservation.publicationId })}>{t("Ver detalles ")}</Link>
-              ) : null}
-              {reservation.status === "PENDING" || reservation.status === "CONFIRMED" ? (
-                <button
-                  type="button"
-                  className="button button-danger"
-                  disabled={cancellingReservationId !== null}
-                  aria-busy={cancellingReservationId === reservation.id}
-                  onClick={() => void onCancel(reservation)}
-                >
-                  {cancellingReservationId === reservation.id ? t("Cancelando...") : t("Cancelar viaje")}
-                </button>
-              ) : null}
+      ) : (
+        <div className="card-grid">
+          {reservations.map((reservation) => {
+            const place = reservation.destination ?? t("Sin destino");
+            const notice = reservationNotice(reservation, now);
+            const image = publicationImages[reservation.publicationId] || ("publicationImageUrl" in reservation && typeof reservation.publicationImageUrl === "string" ? reservation.publicationImageUrl : undefined);
+            return (
+              <div className="reservation-history-item" key={reservation.id}>
+              <article className="experience-card" id={`reserva-${reservation.id}`}>
+                <div className="card-image-wrap">
+                  {image ? (
+                    /* eslint-disable-next-line @next/next/no-img-element */
+                    <img src={image} alt={reservation.publicationTitle} loading="lazy" decoding="async" />
+                  ) : (
+                    <p className="empty-state">{t("Sin imagen")}</p>
+                  )}
+                  <span className="badge">{t(reservationStatusText(reservation, now))}</span>
+                </div>
+                <div className="card-body">
+                  <p className="card-place">{place}</p>
+                  <h3>{reservation.publicationTitle}</h3>
+                  <dl className="reservation-facts">
+                    <div><dt>{t("Salida · hora de Costa Rica")}</dt><dd>{dateLabel(reservation.departureStartAt)}</dd></div>
+                    <div><dt>{t("Personas")}</dt><dd>{reservation.numberOfPeople}</dd></div>
+                    <div><dt>{t("Total de la reserva")}</dt><dd>{money(reservation.total)}</dd></div>
+                  </dl>
+                  <CurrencyNotice usd={reservation.total} />
+                  {reservation.meetingPoint ? <p><strong>{t("Punto de encuentro:")}</strong> {reservation.meetingPoint}</p> : null}
+                  {reservation.agencyName ? <p><strong>{t("Proveedor:")}</strong> {reservation.agencyName}{reservation.agencyPhone ? ` · ${reservation.agencyPhone}` : ""}{reservation.agencyEmail ? ` · ${reservation.agencyEmail}` : ""}</p> : null}
+                  {notice ? <p className="notice">{t(notice)}</p> : null}
+                  <div className="card-footer">
+                    <div className="trip-actions">
+                      {reservation.publicationId ? (
+                        <Link className="button button-outline" href={`/experiencias/${reservation.publicationId}`}>{t("Ver experiencia")}</Link>
+                      ) : null}
+                      {canTravelerCancel(reservation, now) ? (
+                        <button
+                          type="button"
+                          className="button button-danger"
+                          disabled={cancellingReservationId !== null}
+                          aria-busy={cancellingReservationId === reservation.id}
+                          onClick={() => void onCancel(reservation)}
+                        >
+                          {cancellingReservationId === reservation.id ? t("Cancelando...") : t("Cancelar viaje")}
+                        </button>
+                      ) : null}
+                    </div>
+                  </div>
+                </div>
+              </article>
               {reservation.status === "PAST" ? (
                 <ReservationRating reservation={reservation} onRate={onRate} />
               ) : null}
-            </div>
-          </article>
-        );
-      })}
+              </div>
+            );
+          })}
+        </div>
+      )}
     </section>
   );
 }
