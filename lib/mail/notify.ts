@@ -4,16 +4,16 @@ import {
   reservationConfirmationMessages,
   type ReservationMailFacts,
 } from "./messages.ts";
-import { deliverMail, type MailMessage } from "./send.ts";
+import { deliverMail, mailFailure, type MailDeliveryResult, type MailMessage } from "./send.ts";
 
-export type MailSender = (message: MailMessage) => Promise<void>;
+export type MailSender = (message: MailMessage) => Promise<void | MailDeliveryResult>;
 
 async function deliverEach(messages: MailMessage[], send: MailSender) {
   for (const message of messages) {
     try {
       await send(message);
     } catch (error) {
-      console.error("No se pudo enviar el correo.", error);
+      mailFailure(error);
     }
   }
 }
@@ -51,5 +51,5 @@ export async function notifyPublicationDecision(
   send: MailSender = deliverMail,
 ) {
   const message = publicationDecisionMessage(input);
-  if (message) await send(message);
+  if (message) await deliverEach([message], send);
 }

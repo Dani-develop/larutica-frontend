@@ -68,7 +68,7 @@ test("un envío configurado recibe host, puerto, remitente y destinatario", asyn
     {
       env: smtpEnv,
       createTransport: (options) => ({
-        sendMail: async (message) => { seen = { options, message }; },
+        sendMail: async (message) => { seen = { options, message }; return { accepted: [message.to], rejected: [], messageId: 'test-message' }; },
       }),
     },
   );
