@@ -425,3 +425,1173 @@ kbd { padding:.2rem .35rem; border:1px solid var(--input); border-bottom-width:2
 .booking-site .booking-brand .booking-wordmark{display:block}.booking-site .preference-trigger{display:inline-flex;min-width:44px}.booking-site .preference-controls{flex-direction:row}@media(max-width:520px){.booking-site .booking-header{display:grid;grid-template-columns:1fr auto;align-items:center;width:100%}.booking-site .booking-header nav{grid-row:2;grid-column:1/-1;justify-content:flex-start;gap:20px}.booking-site .booking-header>.preference-controls{grid-column:2;grid-row:1}}
 .preference-flag{width:24px;height:24px;border-radius:50%;overflow:hidden;flex-shrink:0;border:1px solid #d3ddd6}.preference-option .preference-flag{margin-left:0}
 .preference-options{gap:8px 16px}.preference-option{position:relative;min-width:0;min-height:56px;padding:14px 12px;border-color:transparent;border-radius:var(--radius-field);gap:12px}.preference-option:hover{background:#f1f5f2}.preference-option[data-selected=true]{background:var(--accent);border-color:transparent}.preference-option input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}.preference-option .preference-flag{width:24px;height:24px;min-width:24px;max-width:24px;margin:0}.preference-option>span{min-width:0;overflow-wrap:anywhere}.preference-dialog{width:min(800px,calc(100vw - 32px))}
+
+/* =========================================================
+   Landing - flechas de carrusel para filas de publicaciones
+   Solo controla navegación y desplazamiento.
+   No modifica el diseño interno de las cards.
+   ========================================================= */
+.landing-publication-rows {
+  display: grid;
+  gap: 1.65rem;
+}
+.landing-publication-carousel {
+  position: relative;
+  min-width: 0;
+}
+.landing-publication-row {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: calc((100% - 3rem) / 4);
+  gap: 1rem;
+  overflow-x: auto;
+  overflow-y: visible;
+  scroll-behavior: smooth;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+}
+.landing-publication-row::-webkit-scrollbar {
+  display: none;
+}
+.landing-publication-row > .discovery-trip-card {
+  min-width: 0;
+  scroll-snap-align: start;
+}
+.landing-publication-arrow {
+  position: absolute;
+  top: 42%;
+  z-index: 6;
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  border: 1px solid rgba(23, 53, 45, 0.1);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.96);
+  color: var(--ink);
+  box-shadow: 0 8px 24px rgba(22, 53, 45, 0.12);
+  cursor: pointer;
+  transform: translateY(-50%);
+  transition: transform 160ms ease, box-shadow 160ms ease, background 160ms ease;
+}
+.landing-publication-arrow:hover {
+  background: #fff;
+  box-shadow: 0 10px 28px rgba(22, 53, 45, 0.17);
+}
+.landing-publication-arrow:active {
+  transform: translateY(-50%) scale(0.96);
+}
+.landing-publication-arrow-left {
+  left: -1.9rem;
+}
+.landing-publication-arrow-right {
+  right: -1.9rem;
+}
+@media (max-width: 1050px) {
+  .landing-publication-row {
+    grid-auto-columns: calc((100% - 2rem) / 3);
+  }
+  .landing-publication-arrow-left {
+    left: -1.25rem;
+  }
+  .landing-publication-arrow-right {
+    right: -1.25rem;
+  }
+}
+@media (max-width: 800px) {
+  .landing-publication-row {
+    grid-auto-columns: calc((100% - 1rem) / 2);
+  }
+  .landing-publication-arrow {
+    width: 44px;
+    height: 44px;
+  }
+  .landing-publication-arrow-left {
+    left: -0.7rem;
+  }
+  .landing-publication-arrow-right {
+    right: -0.7rem;
+  }
+}
+@media (max-width: 620px) {
+  .landing-publication-row {
+    grid-auto-columns: 84%;
+  }
+  .landing-publication-arrow {
+    width: 40px;
+    height: 40px;
+  }
+  .landing-publication-arrow-left {
+    left: 0.35rem;
+  }
+  .landing-publication-arrow-right {
+    right: 0.35rem;
+  }
+}
+/* =========================================================
+   Landing - catálogo de experiencias
+   Toolbar, filtros y dos carruseles independientes.
+   No modifica el diseño interno de las cards.
+   ========================================================= */
+.landing-catalog-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 0.75rem 0 1.15rem;
+}
+.landing-catalog-count {
+  margin: 0;
+  color: var(--muted-foreground);
+  font-size: 0.88rem;
+}
+.landing-catalog-toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+.landing-catalog-control {
+  display: inline-flex;
+  min-height: 42px;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.62rem 1rem;
+  border: 1px solid #d3ddd9;
+  border-radius: 999px;
+  background: #fff;
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 2px 10px rgba(23, 53, 45, 0.04);
+  transition: border-color 150ms ease, box-shadow 150ms ease, transform 150ms ease;
+}
+.landing-catalog-control:hover {
+  border-color: #9eb8ae;
+  box-shadow: 0 5px 16px rgba(23, 53, 45, 0.08);
+  transform: translateY(-1px);
+}
+.landing-sort-placeholder {
+  cursor: default;
+}
+.landing-sort-placeholder:hover {
+  transform: none;
+}
+.landing-filter-count {
+  display: inline-grid;
+  min-width: 20px;
+  height: 20px;
+  place-items: center;
+  padding: 0 0.35rem;
+  border-radius: 999px;
+  background: #0b6b50;
+  color: #fff;
+  font-size: 0.66rem;
+  line-height: 1;
+}
+.landing-active-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin: -0.35rem 0 1rem;
+}
+.landing-active-filters button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-height: 30px;
+  padding: 0.35rem 0.65rem;
+  border: 1px solid #cce1d9;
+  border-radius: 999px;
+  background: #f0f8f5;
+  color: #165440;
+  font: inherit;
+  font-size: 0.7rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.landing-active-filters .landing-active-filters-clear {
+  border-color: transparent;
+  background: transparent;
+  color: #5f6d68;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.landing-publication-rows {
+  display: grid;
+  gap: 1.7rem;
+}
+.landing-publication-carousel {
+  position: relative;
+  min-width: 0;
+}
+.landing-publication-row {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: calc((100% - 3rem) / 4);
+  gap: 1rem;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0.15rem 0 0.35rem;
+  scroll-behavior: smooth;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+.landing-publication-row::-webkit-scrollbar {
+  display: none;
+}
+.landing-publication-row > .discovery-trip-card {
+  min-width: 0;
+  scroll-snap-align: start;
+}
+.landing-publication-arrow {
+  position: absolute;
+  top: 39%;
+  z-index: 8;
+  display: grid;
+  width: 48px;
+  height: 48px;
+  place-items: center;
+  padding: 0;
+  border: 1px solid rgba(23, 53, 45, 0.12);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.98);
+  color: var(--ink);
+  box-shadow: 0 8px 25px rgba(23, 53, 45, 0.13);
+  cursor: pointer;
+  transform: translateY(-50%);
+  transition: opacity 150ms ease, box-shadow 150ms ease, transform 150ms ease;
+}
+.landing-publication-arrow:hover:not(:disabled) {
+  box-shadow: 0 10px 30px rgba(23, 53, 45, 0.18);
+}
+.landing-publication-arrow:active:not(:disabled) {
+  transform: translateY(-50%) scale(0.96);
+}
+.landing-publication-arrow:disabled {
+  opacity: 0.42;
+  pointer-events: none;
+  cursor: default;
+  box-shadow: 0 4px 14px rgba(23, 53, 45, 0.08);
+}
+.landing-publication-arrow-left {
+  left: -1.65rem;
+}
+.landing-publication-arrow-right {
+  right: -1.65rem;
+}
+.landing-view-all-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 1.05rem;
+}
+.landing-view-all-link {
+  color: var(--primary);
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-decoration: none;
+  border-bottom: 1px solid #8fb9aa;
+  padding-bottom: 0.12rem;
+}
+.landing-view-all-link:hover {
+  border-color: var(--primary);
+}
+.landing-no-results {
+  display: grid;
+  justify-items: start;
+  gap: 0.75rem;
+}
+.landing-filter-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  display: flex;
+  justify-content: flex-end;
+  background: rgba(11, 30, 25, 0.28);
+  backdrop-filter: blur(2px);
+}
+.landing-filter-panel {
+  display: flex;
+  width: min(440px, 92vw);
+  height: 100%;
+  flex-direction: column;
+  background: #fff;
+  box-shadow: -18px 0 50px rgba(20, 48, 40, 0.16);
+  animation: landing-filter-enter 650ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+@keyframes landing-filter-enter {
+  from { transform: translateX(52px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+.landing-filter-panel-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.45rem 1.45rem 1.15rem;
+  border-bottom: 1px solid #e5ebe8;
+}
+.landing-filter-panel-header h2 {
+  margin: 0.15rem 0 0;
+  color: var(--ink);
+  font-size: 1.45rem;
+  line-height: 1.15;
+}
+.landing-filter-kicker {
+  margin: 0;
+  color: var(--primary);
+  font-size: 0.67rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.landing-filter-close {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  padding: 0;
+  border: 1px solid #dce5e1;
+  border-radius: 999px;
+  background: #fff;
+  color: var(--ink);
+  cursor: pointer;
+}
+.landing-filter-panel-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.25rem 1.45rem 2rem;
+}
+.landing-filter-field,
+.landing-filter-group {
+  display: grid;
+  gap: 0.65rem;
+  margin: 0;
+  padding: 0 0 1.35rem;
+  border: 0;
+}
+.landing-filter-group + .landing-filter-group,
+.landing-filter-field + .landing-filter-group {
+  padding-top: 1.25rem;
+  border-top: 1px solid #edf1ef;
+}
+.landing-filter-field > span,
+.landing-filter-group legend {
+  color: var(--ink);
+  font-size: 0.83rem;
+  font-weight: 800;
+}
+.landing-filter-group > p {
+  margin: -0.3rem 0 0;
+  color: #71807b;
+  font-size: 0.7rem;
+}
+.landing-filter-field input,
+.landing-filter-price-grid input {
+  width: 100%;
+  min-height: 44px;
+  padding: 0.65rem 0.8rem;
+  border: 1px solid #d8e1de;
+  border-radius: 10px;
+  background: #fff;
+  color: var(--ink);
+  font: inherit;
+  outline: none;
+}
+.landing-filter-field input:focus,
+.landing-filter-price-grid input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(13, 104, 78, 0.1);
+}
+.landing-filter-price-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+.landing-filter-price-grid label {
+  display: grid;
+  gap: 0.35rem;
+}
+.landing-filter-price-grid label > span {
+  color: #6b7974;
+  font-size: 0.7rem;
+}
+.landing-filter-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem;
+}
+.landing-filter-options button,
+.landing-filter-availability {
+  display: flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.65rem 0.8rem;
+  border: 1px solid #dbe4e1;
+  border-radius: 10px;
+  background: #fff;
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.76rem;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+}
+.landing-filter-options button.is-selected,
+.landing-filter-availability.is-selected {
+  border-color: #9dccbd;
+  background: #edf8f4;
+  color: var(--primary);
+}
+.landing-filter-panel-footer {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.75rem;
+  padding: 1rem 1.45rem;
+  border-top: 1px solid #e5ebe8;
+  background: rgba(255, 255, 255, 0.98);
+}
+.landing-filter-clear,
+.landing-filter-apply {
+  min-height: 46px;
+  border-radius: 10px;
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+.landing-filter-clear {
+  padding: 0 1rem;
+  border: 1px solid #d8e1de;
+  background: #fff;
+  color: var(--ink);
+}
+.landing-filter-apply {
+  padding: 0 1.2rem;
+  border: 1px solid var(--primary);
+  background: var(--primary);
+  color: #fff;
+}
+@media (max-width: 1050px) {
+  .landing-publication-row {
+    grid-auto-columns: calc((100% - 2rem) / 3);
+  }
+  .landing-publication-arrow-left { left: -1rem; }
+  .landing-publication-arrow-right { right: -1rem; }
+}
+@media (max-width: 800px) {
+  .landing-catalog-toolbar {
+    align-items: flex-start;
+  }
+  .landing-catalog-toolbar-actions {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+  .landing-publication-row {
+    grid-auto-columns: calc((100% - 1rem) / 2);
+  }
+  .landing-publication-arrow {
+    width: 44px;
+    height: 44px;
+  }
+  .landing-publication-arrow-left { left: -0.55rem; }
+  .landing-publication-arrow-right { right: -0.55rem; }
+}
+@media (max-width: 620px) {
+  .landing-catalog-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .landing-catalog-toolbar-actions {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    justify-content: stretch;
+  }
+  .landing-catalog-control {
+    min-width: 0;
+    padding-inline: 0.8rem;
+  }
+  .landing-sort-placeholder {
+    justify-content: space-between;
+  }
+  .landing-publication-row {
+    grid-auto-columns: 84%;
+  }
+  .landing-publication-arrow {
+    width: 40px;
+    height: 40px;
+  }
+  .landing-publication-arrow-left { left: 0.25rem; }
+  .landing-publication-arrow-right { right: 0.25rem; }
+  .landing-filter-panel {
+    width: min(100%, 420px);
+  }
+  .landing-filter-options,
+  .landing-filter-price-grid {
+    grid-template-columns: 1fr;
+  }
+}
+/* =========================================================
+   AJUSTE PUNTUAL — CONTENIDO DE CARDS DE EXPERIENCIAS
+   Solo afecta las cards compactas de la landing.
+   No modifica filtros, carruseles, layout general ni otras secciones.
+   ========================================================= */
+.landing-publication-row .discovery-trip-card {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+}
+/* Zoom suave únicamente sobre la imagen. */
+.landing-publication-row .discovery-trip-image {
+  overflow: hidden;
+}
+.landing-publication-row .discovery-trip-image > a:not(.discovery-save) {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+.landing-publication-row .discovery-trip-image img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 320ms ease;
+  transform-origin: center;
+}
+.landing-publication-row .discovery-trip-card:hover .discovery-trip-image img,
+.landing-publication-row .discovery-trip-card:focus-within .discovery-trip-image img {
+  transform: scale(1.045);
+}
+.landing-publication-row .discovery-trip-content {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  padding-top: 0.7rem;
+}
+.landing-publication-row .discovery-trip-content h3 {
+  margin: 0;
+  color: var(--ink);
+  font-size: 1.06rem;
+  font-weight: 800;
+  line-height: 1.22;
+  letter-spacing: -0.018em;
+}
+.landing-publication-row .discovery-trip-content h3 a {
+  color: inherit;
+  text-decoration: none;
+}
+.landing-publication-row .discovery-trip-location {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.4rem;
+  margin: 0.42rem 0 0;
+  color: var(--ink-muted);
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+.landing-publication-row .discovery-trip-location svg {
+  flex: 0 0 auto;
+  margin-top: 0.05rem;
+  color: var(--green);
+}
+.landing-publication-row .discovery-trip-meta {
+  margin: 0.38rem 0 0;
+  color: var(--ink-muted);
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+.landing-publication-row .discovery-trip-rating {
+  display: flex;
+  align-items: center;
+  gap: 0.28rem;
+  margin: 0.45rem 0 0;
+  color: var(--ink);
+  font-size: 0.78rem;
+  line-height: 1;
+}
+.landing-publication-row .discovery-trip-rating svg {
+  color: #f4bf1b;
+}
+.landing-publication-row .discovery-trip-rating strong {
+  font-size: 0.82rem;
+}
+.landing-publication-row .discovery-trip-rating span {
+  color: var(--ink-muted);
+}
+.landing-publication-row .discovery-trip-price {
+  display: flex;
+  align-items: baseline;
+  gap: 0.35rem;
+  margin: 0.75rem 0 0;
+  padding-top: 0.7rem;
+  border-top: none;
+  color: var(--ink);
+  line-height: 1.2;
+}
+.landing-publication-row .discovery-trip-price strong {
+  color: var(--ink);
+  font-size: 1.08rem;
+  font-weight: 800;
+}
+.landing-publication-row .discovery-trip-price span {
+  color: var(--ink-muted);
+  font-size: 0.76rem;
+}
+@media (prefers-reduced-motion: reduce) {
+  .landing-publication-row .discovery-trip-image img {
+    transition: none;
+  }
+  .landing-publication-row .discovery-trip-card:hover .discovery-trip-image img,
+  .landing-publication-row .discovery-trip-card:focus-within .discovery-trip-image img {
+    transform: none;
+  }
+}
+/* =========================================================
+   AJUSTE PUNTUAL — TIPOGRAFÍA DE CARDS EN LANDING
+   Solo modifica la tipografía interna de las publicaciones.
+   ========================================================= */
+.landing-publication-row .discovery-trip-content {
+  font-family: var(--font-brand);
+}
+.landing-publication-row .discovery-trip-content h3 {
+  font-family: var(--font-brand);
+  font-size: 1.04rem;
+  font-weight: 700;
+  line-height: 1.28;
+  letter-spacing: -0.012em;
+}
+.landing-publication-row .discovery-trip-location,
+.landing-publication-row .discovery-trip-meta,
+.landing-publication-row .discovery-trip-rating,
+.landing-publication-row .discovery-trip-price {
+  font-family: var(--font-brand);
+}
+.landing-publication-row .discovery-trip-location {
+  font-size: 0.78rem;
+  font-weight: 500;
+  line-height: 1.4;
+  letter-spacing: 0;
+}
+.landing-publication-row .discovery-trip-meta {
+  font-size: 0.77rem;
+  font-weight: 500;
+  line-height: 1.4;
+}
+.landing-publication-row .discovery-trip-rating {
+  font-size: 0.78rem;
+  font-weight: 500;
+}
+.landing-publication-row .discovery-trip-rating strong {
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+.landing-publication-row .discovery-trip-price strong {
+  font-size: 1.06rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.landing-publication-row .discovery-trip-price span {
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+/* =========================================================
+   AJUSTE PUNTUAL — CARDS DE PUBLICACIONES EN LA LANDING
+   Tarjeta blanca completa, imagen a sangre y solo esquinas
+   superiores redondeadas. Conserva la información existente.
+   ========================================================= */
+.landing-publication-row > .discovery-trip-card {
+  overflow: hidden;
+  border: 1px solid #e5ebe8;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 5px 18px rgba(23, 53, 45, 0.07);
+}
+.landing-publication-row .discovery-trip-image {
+  border-radius: 0;
+  margin: 0;
+  padding: 0;
+}
+.landing-publication-row .discovery-trip-image > a:not(.discovery-save),
+.landing-publication-row .discovery-trip-image img {
+  border-radius: 0;
+}
+.landing-publication-row .discovery-trip-content {
+  padding: 0.7rem 0.85rem 1rem;
+}
+/* =========================================================
+   AJUSTE PUNTUAL — ELIMINAR FRANJA DETRÁS DE LAS CARDS
+   Solo quita cualquier fondo/franja del carrusel y deja
+   el realce únicamente con una sombra sutil en cada card.
+   No modifica contenido, tipografía ni estructura.
+   ========================================================= */
+.landing-publication-rows,
+.landing-publication-carousel,
+.landing-publication-row {
+  background: transparent;
+}
+.landing-publication-row {
+  padding-bottom: 0;
+}
+.landing-publication-row > .discovery-trip-card {
+  /* Sombra interior: no se extiende detrás ni debajo del carrusel. */
+  box-shadow: inset 0 0 0 1px rgba(23, 53, 45, 0.025);
+}
+.landing-publication-row > .discovery-trip-card:hover,
+.landing-publication-row > .discovery-trip-card:focus-within {
+  box-shadow: inset 0 0 0 1px rgba(23, 53, 45, 0.045);
+}
+/* =========================================================
+   AJUSTE PUNTUAL — PANEL DE FILTROS ESTANDARIZADO
+   Misma tipografía de las cards y rediseño visual inspirado
+   en la referencia aprobada. No altera la lógica de filtros.
+   ========================================================= */
+.landing-catalog-toolbar-spacer {
+  flex: 1 1 auto;
+}
+.landing-filter-panel,
+.landing-filter-panel *,
+.landing-filter-overlay .landing-filter-panel,
+.landing-filter-overlay .landing-filter-panel * {
+  font-family: var(--font-brand);
+}
+.landing-filter-panel {
+  width: min(392px, 94vw);
+  background: #ffffff;
+  box-shadow: -14px 0 42px rgba(23, 53, 45, 0.14);
+}
+.landing-filter-panel-header {
+  align-items: flex-start;
+  padding: 1.15rem 1.2rem 0.95rem;
+}
+.landing-filter-heading-copy {
+  min-width: 0;
+}
+.landing-filter-panel-header h2 {
+  margin: 0;
+  color: var(--ink);
+  font-size: 1.05rem;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+.landing-filter-subtitle {
+  margin: 0.18rem 0 0;
+  color: #94a39c;
+  font-size: 0.68rem;
+  font-weight: 500;
+  line-height: 1.35;
+}
+.landing-filter-close {
+  width: 34px;
+  height: 34px;
+  border-color: #d8e1de;
+  background: #fff;
+}
+.landing-filter-panel-body {
+  padding: 0.95rem 1.2rem 1.5rem;
+}
+.landing-filter-field,
+.landing-filter-group {
+  gap: 0.7rem;
+  padding-bottom: 1.1rem;
+}
+.landing-filter-group + .landing-filter-group,
+.landing-filter-field + .landing-filter-group {
+  padding-top: 1rem;
+}
+.landing-filter-field > span,
+.landing-filter-group legend {
+  color: var(--ink);
+  font-size: 0.8rem;
+  font-weight: 800;
+  line-height: 1.25;
+}
+.landing-filter-field select,
+.landing-filter-field input,
+.landing-filter-price-grid input {
+  width: 100%;
+  min-height: 40px;
+  padding: 0.68rem 0.85rem;
+  border: 1px solid #d7e2dd;
+  border-radius: 10px;
+  background: #fff;
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.83rem;
+  font-weight: 500;
+  outline: none;
+}
+.landing-filter-field select:focus,
+.landing-filter-field input:focus,
+.landing-filter-price-grid input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(13, 104, 78, 0.1);
+}
+.landing-filter-destination select {
+  appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, #54655f 50%), linear-gradient(135deg, #54655f 50%, transparent 50%);
+  background-position: calc(100% - 18px) calc(50% - 2px), calc(100% - 13px) calc(50% - 2px);
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+  padding-right: 2.4rem;
+}
+.landing-filter-group-price {
+  position: relative;
+}
+.landing-filter-group-price legend::after {
+  content: "USD";
+  position: absolute;
+  right: 0;
+  top: 0;
+  color: #93a09a;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+.landing-filter-range-wrap {
+  display: grid;
+  gap: 0.7rem;
+}
+.landing-filter-range {
+  position: relative;
+  min-height: 28px;
+}
+.landing-filter-range-track,
+.landing-filter-range-selected {
+  top: 50%;
+  height: 4px;
+  border-radius: 999px;
+  transform: translateY(-50%);
+}
+.landing-filter-range-track {
+  background: #d7dfdb;
+}
+.landing-filter-range-selected {
+  background: var(--primary);
+}
+.landing-filter-range input[type="range"] {
+  accent-color: var(--primary);
+}
+.landing-filter-range-values {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.8rem;
+  color: var(--ink);
+  font-size: 0.79rem;
+  font-weight: 700;
+}
+.landing-filter-price-grid {
+  grid-template-columns: 1fr 1fr;
+  gap: 0.7rem;
+}
+.landing-filter-price-grid label > span {
+  color: #8d9b95;
+  font-size: 0.68rem;
+  font-weight: 600;
+}
+.landing-filter-options {
+  grid-template-columns: 1fr 1fr;
+  gap: 0.58rem;
+}
+.landing-filter-options button,
+.landing-filter-availability {
+  min-height: 42px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.72rem 0.8rem;
+  border: 1px solid #d8e1de;
+  border-radius: 10px;
+  background: #fff;
+  color: var(--ink);
+  font-size: 0.77rem;
+  font-weight: 600;
+  line-height: 1.25;
+  box-shadow: none;
+}
+.landing-filter-options button span,
+.landing-filter-availability span {
+  min-width: 0;
+}
+.landing-filter-options button.is-selected,
+.landing-filter-availability.is-selected {
+  border-color: #90b9ab;
+  background: #eef5f2;
+  color: var(--ink);
+}
+.landing-filter-options button svg,
+.landing-filter-availability svg {
+  color: var(--primary);
+  flex: 0 0 auto;
+}
+.landing-filter-panel-footer {
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.95rem 1.2rem 1.1rem;
+  border-top: 1px solid #e6ece9;
+  background: #fff;
+}
+.landing-filter-clear {
+  min-height: auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #6c7a75;
+  font-size: 0.74rem;
+  font-weight: 500;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  justify-self: start;
+}
+.landing-filter-apply {
+  min-height: 44px;
+  padding: 0 1rem;
+  border-radius: 10px;
+  border: 1px solid var(--primary);
+  background: var(--primary);
+  color: #fff;
+  font-size: 0.84rem;
+  font-weight: 800;
+  box-shadow: none;
+}
+.landing-filter-apply:hover {
+  background: #0b5b45;
+}
+@media (max-width: 620px) {
+  .landing-filter-panel {
+    width: min(100%, 392px);
+  }
+  .landing-filter-panel-body {
+    padding-inline: 1rem;
+  }
+  .landing-filter-panel-footer {
+    padding-inline: 1rem;
+  }
+}
+/* =========================================================
+   AJUSTE PUNTUAL — TIPOGRAFÍA DEL PANEL DE FILTROS
+   Solo suaviza pesos y detalles tipográficos.
+   No modifica controles, estructura ni diseño de las cards.
+   ========================================================= */
+.landing-filter-panel {
+  font-weight: 400;
+  letter-spacing: -0.008em;
+}
+.landing-filter-panel-header h2 {
+  font-weight: 650;
+  letter-spacing: -0.025em;
+}
+.landing-filter-subtitle {
+  font-weight: 400;
+  letter-spacing: 0;
+}
+.landing-filter-field > span,
+.landing-filter-group legend {
+  font-weight: 600;
+  letter-spacing: -0.012em;
+}
+.landing-filter-field select,
+.landing-filter-field input,
+.landing-filter-price-grid input {
+  font-weight: 400;
+  letter-spacing: 0;
+}
+.landing-filter-price-grid label > span,
+.landing-filter-group-price legend::after {
+  font-weight: 400;
+  letter-spacing: 0;
+}
+.landing-filter-range-values {
+  font-weight: 500;
+  letter-spacing: 0;
+}
+.landing-filter-options button,
+.landing-filter-availability {
+  font-weight: 500;
+  letter-spacing: -0.005em;
+}
+.landing-filter-clear {
+  font-weight: 400;
+}
+.landing-filter-apply {
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+/* =========================================================
+   AJUSTE PUNTUAL — CONTROL DE RANGO DE PRECIO
+   Una única barra con dos controles; los valores se muestran
+   solamente en los campos Mínimo / Máximo ya existentes.
+   ========================================================= */
+.landing-filter-range-wrap {
+  gap: 0.35rem;
+}
+.landing-filter-range {
+  position: relative;
+  height: 30px;
+  min-height: 30px;
+  margin: 0;
+}
+.landing-filter-range-track,
+.landing-filter-range-selected {
+  position: absolute;
+  top: 50%;
+  height: 4px;
+  border-radius: 999px;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+.landing-filter-range-track {
+  left: 0;
+  right: 0;
+  background: #e1e9e5;
+}
+.landing-filter-range-selected {
+  background: var(--primary);
+}
+.landing-filter-range input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 30px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  pointer-events: none;
+  cursor: pointer;
+}
+.landing-filter-range input[type="range"]::-webkit-slider-runnable-track {
+  height: 4px;
+  background: transparent;
+  border: 0;
+}
+.landing-filter-range input[type="range"]::-moz-range-track {
+  height: 4px;
+  background: transparent;
+  border: 0;
+}
+.landing-filter-range input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  margin-top: -6px;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  background: var(--primary);
+  box-shadow: 0 1px 4px rgba(23, 53, 45, 0.18);
+  pointer-events: auto;
+}
+.landing-filter-range input[type="range"]::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  background: var(--primary);
+  box-shadow: 0 1px 4px rgba(23, 53, 45, 0.18);
+  pointer-events: auto;
+}
+.landing-filter-range input[type="range"]:focus-visible {
+  outline: none;
+}
+.landing-filter-range input[type="range"]:focus-visible::-webkit-slider-thumb {
+  outline: 2px solid var(--primary);
+  outline-offset: 3px;
+}
+.landing-filter-range input[type="range"]:focus-visible::-moz-range-thumb {
+  outline: 2px solid var(--primary);
+  outline-offset: 3px;
+}
+/* =========================================================
+   PANEL DE FILTROS — refinamiento accesible y compacto
+   Exclusivo del panel lateral; no afecta publicaciones.
+   ========================================================= */
+.landing-filter-overlay {
+  background: rgba(11, 30, 25, 0.28);
+  backdrop-filter: none;
+}
+.landing-filter-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  max-height: 100dvh;
+  overflow: hidden;
+}
+.landing-filter-panel-header {
+  flex: 0 0 auto;
+  border-bottom: 1px solid #e5ebe8;
+  background: #fff;
+}
+.landing-filter-panel-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-bottom: 1.8rem;
+}
+.landing-filter-panel-footer {
+  flex: 0 0 auto;
+  position: relative;
+  z-index: 1;
+  border-top: 1px solid #e5ebe8;
+  background: #fff;
+}
+.landing-filter-check-options {
+  display: grid;
+  gap: 0;
+  margin-top: 0.15rem;
+}
+.landing-filter-check-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 42px;
+  padding: 0.4rem 0.2rem;
+  cursor: pointer;
+  color: #263f36;
+  font-size: 0.82rem;
+  font-weight: 450;
+  line-height: 1.4;
+}
+.landing-filter-check-row + .landing-filter-check-row {
+  border-top: 1px solid #f0f3f1;
+}
+.landing-filter-check-row input[type="checkbox"] {
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: var(--primary);
+  cursor: pointer;
+}
+.landing-filter-check-row:focus-within {
+  border-radius: 5px;
+  outline: 2px solid rgba(13, 104, 78, 0.5);
+  outline-offset: 0;
+}
+.landing-filter-check-row span { flex: 1; }
+.landing-filter-destination-search { margin-bottom: 0.25rem; }
+.landing-filter-converted-price {
+  margin: 0.2rem 0 0;
+  color: #768780;
+  font-size: 0.72rem;
+  font-weight: 400;
+}
+.landing-filter-apply {
+  min-width: 0;
+}
+@media (max-width: 620px) {
+  .landing-filter-panel { width: min(100%, 392px); }
+}
