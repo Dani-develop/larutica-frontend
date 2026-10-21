@@ -19,7 +19,7 @@ export function CreateVehiclePage() {
           <Link href="/dashboard/agencies" className="hover:underline">{t("Vehículos ")}</Link>
           <span className="text-muted-foreground">{t(" / Nuevo")}</span>
         </p>
-        <h1 className="mt-1 text-xl font-semibold tracking-tight">{t("Nuevo vehículo ")}</h1>
+        <h1 className="mt-1 lr-page-title">{t("Nuevo vehículo ")}</h1>
         <p className="mt-1 text-sm text-muted-foreground">{t("Define tipo, asientos y placa para usarlo en tus rutas. ")}</p>
       </div>
 

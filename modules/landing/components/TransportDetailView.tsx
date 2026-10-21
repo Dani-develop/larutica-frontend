@@ -41,7 +41,7 @@ export function TransportDetailView({
             <span className="badge">{t("Proveedor verificado")}</span>
           </div>
           <p className="eyebrow detail-eyebrow">{route.providerName}</p>
-          <h1 className="detail-title" ref={headingRef} tabIndex={-1}>
+          <h1 className="detail-title lr-page-title" ref={headingRef} tabIndex={-1}>
             {routeTitle(route)}
           </h1>
           <p className="detail-intro">{route.excerpt}</p>

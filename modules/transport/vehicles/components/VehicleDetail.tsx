@@ -24,7 +24,7 @@ export function VehicleDetail({ id }: { id: string }) {
   if (!vehicle) {
     return (
       <div className="mx-auto max-w-3xl space-y-4">
-        <h1 className="text-lg font-semibold">{t("Vehículo no encontrado")}</h1>
+        <h1 className="lr-page-title">{t("Vehículo no encontrado")}</h1>
         <Button asChild variant="outline">
           <Link href="/dashboard/agencies">{t("Volver al listado")}</Link>
         </Button>
@@ -40,7 +40,7 @@ export function VehicleDetail({ id }: { id: string }) {
             <Link href="/dashboard/agencies" className="hover:underline">{t("Vehículos ")}</Link>
             <span className="text-muted-foreground">{t(" / Detalle")}</span>
           </p>
-          <h1 className="mt-1 text-xl font-semibold tracking-tight">
+          <h1 className="mt-1 lr-page-title">
             {vehicle.name}
           </h1>
           <div className="mt-2 flex flex-wrap items-center gap-2">

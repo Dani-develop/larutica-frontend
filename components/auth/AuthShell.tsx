@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { BrandMark } from "@/components/brand/BrandMark";
 import { SITE } from "@/modules/landing/constants/site";
+import { PageHeading } from "@/components/ui/page-heading";
 
 type AuthShellProps = {
   eyebrow: string;
@@ -36,7 +37,7 @@ export function AuthShell({ eyebrow, title, children }: AuthShellProps) {
               <p className="text-sm text-white/75">{SITE.tagline}</p>
             </div>
           </div>
-          <div className="mt-5 h-0.5 w-14 bg-[#d9f5a7]" />
+          <div className="mt-5 h-0.5 w-14 bg-[var(--brand-green)]" />
         </div>
       </div>
 
@@ -58,7 +59,7 @@ export function AuthShell({ eyebrow, title, children }: AuthShellProps) {
         <main id="auth-content" tabIndex={-1} className="flex flex-1 items-center justify-center p-6 sm:p-8">
           <div className="w-full max-w-[400px]">
             <div className="mb-8">
-              <h1 className="text-xl font-semibold tracking-tight">{t(title)}</h1>
+              <PageHeading title={t(title)} />
             </div>
             {children}
           </div>

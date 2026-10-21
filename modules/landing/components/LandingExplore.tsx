@@ -5,6 +5,8 @@ import { ArrowRight, Bus, CalendarDays, Compass, ShieldCheck, SlidersHorizontal,
 import { TravelerExplorePage } from "@/components/dashboard/TravelerViews";
 import { usePreferences } from "@/lib/preferences/Preferences";
 import { LandingSearchBox } from "./LandingSearchBox";
+import { Button } from "@/components/ui/button";
+import { SectionHeading } from "@/components/ui/page-heading";
 import { beachImage as beach, forestImage as forest, mountainsImage as mountains, popularDestinations } from "../lib/landingImages";
 import "../landing.css";
 
@@ -90,15 +92,12 @@ export function LandingExplore({ searchInput, headingRef, category, onCategoryCh
         <div className="discovery-feature-copy">
           <h2 id="discovery-feature-title">{t("Tu próxima aventura empieza aquí.")}</h2>
           <p>{t("Encuentra tours, transporte y experiencias verificadas en un solo lugar.")}</p>
-          <button type="button" className="discovery-dark-button" onClick={showResults}>{t("Explorar experiencias")}<ArrowRight size={18} aria-hidden="true" /></button>
+          <Button type="button" size="lg" onClick={showResults}>{t("Explorar experiencias")}<ArrowRight size={18} aria-hidden="true" /></Button>
         </div>
       </section>
 
       <section className="discovery-section discovery-container" aria-labelledby="interest-title">
-        <div className="discovery-section-heading">
-          <h2 id="interest-title">{t("Encuentra tu forma de viajar")}</h2>
-          <p>{t("Una escapada, una aventura o el camino hacia tu próximo destino.")}</p>
-        </div>
+        <SectionHeading id="interest-title" title={t("Encuentra tu forma de viajar")} description={t("Una escapada, una aventura o el camino hacia tu próximo destino.")} />
         <div className="discovery-image-grid">
           {[
             { label: "Naturaleza", image: forest, category: "nature" as Category },
@@ -116,16 +115,13 @@ export function LandingExplore({ searchInput, headingRef, category, onCategoryCh
       </section>
 
       <section className="discovery-section discovery-container" aria-labelledby="results">
-        <div className="discovery-section-heading discovery-heading-with-action">
-          <div><h2 id="results" tabIndex={-1}>{t("Experiencias para tu próximo viaje")}</h2><p>{t("Descubre lo que ofrecen los proveedores locales.")}</p></div>
-          {isFiltered ? <button type="button" className="discovery-text-button" onClick={() => { setFilters(emptyFilters); setDestination(""); onCategoryChange("all"); formRef.current?.reset(); }}>{t("Limpiar búsqueda")}</button> : null}
-        </div>
+        <SectionHeading id="results" focusable title={t("Experiencias para tu próximo viaje")} description={t("Descubre lo que ofrecen los proveedores locales.")} actions={isFiltered ? <Button type="button" variant="link" onClick={() => { setFilters(emptyFilters); setDestination(""); onCategoryChange("all"); formRef.current?.reset(); }}>{t("Limpiar búsqueda")}</Button> : undefined} />
         <TravelerExplorePage embedded discovery filters={{ ...filters, type: category === "transport" ? "TRANSPORT" : category === "nature" ? "EXCURSION" : "", budget: category === "budget" }} />
       </section>
 
       <section className="discovery-destination-band" id="destinos" aria-labelledby="destination-title">
         <div className="discovery-container">
-          <div className="discovery-section-heading"><h2 id="destination-title">{t("Tu próxima parada está en Costa Rica")}</h2><p>{t("Explora lugares para salir de la rutina.")}</p></div>
+          <SectionHeading id="destination-title" title={t("Tu próxima parada está en Costa Rica")} description={t("Explora lugares para salir de la rutina.")} />
           <div className="discovery-image-grid">
             {popularDestinations.map(item => (
               <button key={item.name} type="button" className="discovery-image-tile discovery-destination-tile" onClick={() => searchDestination(item.name)}>
@@ -142,7 +138,7 @@ export function LandingExplore({ searchInput, headingRef, category, onCategoryCh
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={mountains} alt={t("Paisaje verde entre montañas")} loading="lazy" decoding="async" />
         </div>
-        <div><p className="discovery-kicker">{t("Muévete con confianza")}</p><h2 id="transport-title">{t("Transporte para conectar tu ruta.")}</h2><p>{t("Compara recorridos, vehículos, precios y contactos antes de salir.")}</p><button type="button" className="discovery-dark-button" onClick={onSearchTransport}>{t("Buscar transporte")}<ArrowRight size={18} aria-hidden="true" /></button></div>
+        <div><p className="discovery-kicker">{t("Muévete con confianza")}</p><SectionHeading id="transport-title" title={t("Transporte para conectar tu ruta.")} description={t("Compara recorridos, vehículos, precios y contactos antes de salir.")} /><Button type="button" size="lg" onClick={onSearchTransport}>{t("Buscar transporte")}<ArrowRight size={18} aria-hidden="true" /></Button></div>
       </section>
 
       <section className="discovery-trust discovery-container" aria-label={t("Beneficios de LaRutica")}>

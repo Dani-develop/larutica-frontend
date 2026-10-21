@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { PreferenceControls } from "@/components/preferences/PreferenceControls";
@@ -65,11 +66,11 @@ export function SiteHeader({ exploreActive = false, exploreCurrent = false, trip
         </nav>
         <div className="header-actions">
           <PreferenceControls />
-          <button className="button button-quiet access-button" type="button" onClick={openAccess}>{t("Accesibilidad")}</button>
+          <Button variant="ghost" className="access-button" type="button" onClick={openAccess}>{t("Accesibilidad")}</Button>
           {authLoading ? <span role="status">{t("Cargando cuenta…")}</span> : user ? <>
-            <Link className="button button-outline" href={user.role === "Viajero" ? tripPath("perfil") : "/dashboard"}>{t("Mi cuenta")}</Link>
+            <Button asChild><Link href={user.role === "Viajero" ? tripPath("perfil") : "/dashboard"}>{t("Mi cuenta")}</Link></Button>
             <button className="button button-quiet account-logout" type="button" disabled={signingOut} onClick={logout}>{signingOut ? t("Cerrando sesión…") : t("Cerrar sesión")}</button>
-          </> : <Link className="button button-outline" href="/login">{t("Ingresar")}</Link>}
+          </> : <Button asChild><Link href="/login">{t("Ingresar")}</Link></Button>}
         </div>
       </header>
       {logoutError && <p className="notice" role="alert">{t(logoutError)}</p>}

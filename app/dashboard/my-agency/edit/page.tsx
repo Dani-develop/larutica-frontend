@@ -58,7 +58,7 @@ export default function EditAgencyPage() {
     return (
       <div className="mx-auto w-full max-w-[1180px]">
         <div className="rounded-xl border border-red-200 bg-red-50 p-5">
-          <h1 className="!m-0 !text-lg !font-semibold !tracking-normal text-red-800">{t("No se pudo cargar la agencia ")}</h1>
+          <h1 className="!m-0 text-red-800 lr-page-title">{t("No se pudo cargar la agencia ")}</h1>
 
           <p className="mt-2 text-sm text-red-700">
             {error ??
@@ -136,7 +136,7 @@ export default function EditAgencyPage() {
         />{t("Volver a Mi agencia ")}</button>
 
       <div className="mb-3">
-        <h1 className="!m-0 !max-w-none !text-[26px] !font-bold !leading-8 !tracking-[-0.02em] text-[#0B5433]">{t("Editar agencia ")}</h1>
+        <h1 className="!m-0 !max-w-none lr-page-title">{t("Editar agencia ")}</h1>
 
         <p className="mt-1 text-[12px] leading-5 text-[#66706B]">{t("Actualiza la información de tu negocio. ")}</p>
       </div>
@@ -216,7 +216,7 @@ function BlockedEditState({
           {icon}
         </div>
 
-        <h1 className="!m-0 !mt-4 !text-[21px] !font-semibold !leading-7 !tracking-[-0.015em] text-[#123A30]">
+        <h1 className="!m-0 !mt-4 lr-page-title">
           {t(title)}
         </h1>
 

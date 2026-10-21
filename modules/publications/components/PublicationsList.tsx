@@ -92,14 +92,14 @@ export function PublicationsList() {
         <div>
           <DashboardBreadcrumb className="mb-2" items={[{ label: "Publicaciones" }]} />
 
-          <h1 className="!m-0 !text-[26px] !font-semibold !leading-tight !tracking-tight text-[#123a30]">{t("Publicaciones ")}</h1>
+          <h1 className="!m-0 lr-page-title">{t("Publicaciones ")}</h1>
 
           <p className="mt-2 text-sm text-muted-foreground">{t("Administra las experiencias y servicios publicados por tu agencia. ")}</p>
         </div>
 
         <Button
           asChild
-          className="gap-2 self-start bg-[#0d684e] text-white hover:bg-[#0b5943] sm:self-auto"
+          className="gap-2 self-start bg-[var(--primary)] text-white hover:bg-[var(--brand-forest-hover)] sm:self-auto"
         >
           <Link href="/dashboard/publications/new">
             <Plus size={16} />{t("Nueva publicación ")}</Link>
@@ -117,17 +117,17 @@ export function PublicationsList() {
       {publications.length === 0 ? (
         <div className="flex min-h-[320px] items-center justify-center rounded-2xl border border-black/10 bg-white p-8 shadow-sm">
           <div className="max-w-md text-center">
-            <div className="mx-auto flex size-14 items-center justify-center rounded-2xl bg-[#edf7f3] text-[#0d684e]">
+            <div className="mx-auto flex size-14 items-center justify-center rounded-2xl bg-[var(--accent)] text-[var(--primary)]">
               <Plus size={24} />
             </div>
 
-            <h2 className="!mb-0 !mt-4 !text-base !font-semibold !leading-6 !tracking-normal text-[#123a30]">{t("Aún no tienes publicaciones ")}</h2>
+            <h2 className="!mb-0 !mt-4 !text-base !font-semibold !leading-6 !tracking-normal text-[var(--ink)]">{t("Aún no tienes publicaciones ")}</h2>
 
             <p className="mt-2 text-sm leading-6 text-muted-foreground">{t("Crea tu primera publicación para empezar a ofrecer experiencias o servicios dentro de LaRutica. ")}</p>
 
             <Button
               asChild
-              className="mt-5 bg-[#0d684e] text-white hover:bg-[#0b5943]"
+              className="mt-5 bg-[var(--primary)] text-white hover:bg-[var(--brand-forest-hover)]"
             >
               <Link href="/dashboard/publications/new">
                 <Plus size={16} />{t("Crear publicación ")}</Link>
@@ -169,7 +169,7 @@ export function PublicationsList() {
                 <div className="p-5">
                   <div className="flex items-start justify-between gap-4">
                     <div className="min-w-0">
-                      <p className="text-[11px] font-medium uppercase tracking-wide text-[#0d684e]">
+                      <p className="text-[11px] font-medium uppercase tracking-wide text-[var(--primary)]">
                         {t(publication.serviceType ===
                         "TRANSPORT"
                           ? "Transporte"
@@ -180,14 +180,14 @@ export function PublicationsList() {
                         href={`/dashboard/publications/${publication.id}`}
                         className="mt-1 block"
                       >
-                        <h2 className="!m-0 line-clamp-2 !text-base !font-semibold !leading-6 !tracking-normal text-[#123a30] hover:underline">
+                        <h2 className="!m-0 line-clamp-2 !text-base !font-semibold !leading-6 !tracking-normal text-[var(--ink)] hover:underline">
                           {publication.title ??
                             "Publicación sin título"}
                         </h2>
                       </Link>
                     </div>
 
-                    <span className="shrink-0 text-sm font-semibold text-[#123a30]">
+                    <span className="shrink-0 text-sm font-semibold text-[var(--ink)]">
                       {publication.pricePerPerson !==
                       null
                         ? `$${publication.pricePerPerson.toFixed(

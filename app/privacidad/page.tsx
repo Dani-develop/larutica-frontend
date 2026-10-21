@@ -14,7 +14,7 @@ export default function PrivacyPage() {
       <div className="legal-content">
         <Link className="back-link" href="/">← Volver a LaRutica</Link>
         <p className="eyebrow">LaRutica · Costa Rica</p>
-        <h1 className="detail-title">Política de privacidad</h1>
+        <h1 className="detail-title lr-page-title">Política de privacidad</h1>
         <p className="detail-intro">Última actualización: {PRIVACY_POLICY_UPDATED_AT}. Versión: {PRIVACY_POLICY_VERSION}.</p>
         <PrivacyPolicyContent />
       </div>

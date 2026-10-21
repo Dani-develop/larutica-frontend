@@ -130,7 +130,7 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
   return (
     <SidebarProvider>
       <AppSidebar user={user} />
-      <SidebarInset className="flex flex-col overflow-auto">
+      <SidebarInset className="lr-workspace flex flex-col overflow-auto">
         <DashboardHeader user={user} />
         <main className="flex-1 overflow-auto p-4 pb-20 md:p-6 md:pb-6">
           {children}

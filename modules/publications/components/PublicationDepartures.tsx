@@ -521,7 +521,7 @@ export function PublicationDepartures({
         <section className="overflow-hidden rounded-2xl border border-black/10 bg-white shadow-sm">
           <div className="flex flex-col gap-4 border-b border-black/10 p-5 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h2 className="!m-0 !text-lg !font-semibold !leading-6 !tracking-normal text-[#123a30]">
+              <h2 className="!m-0 !text-lg !font-semibold !leading-6 !tracking-normal text-[var(--ink)]">
                 {t(
                   "Salidas programadas",
                 )}
@@ -546,7 +546,7 @@ export function PublicationDepartures({
                   "rounded-lg px-4 py-2 text-xs font-semibold transition",
                   view ===
                   "upcoming"
-                    ? "bg-[#0d684e] text-white shadow-sm"
+                    ? "bg-[var(--primary)] text-white shadow-sm"
                     : "text-muted-foreground hover:text-foreground",
                 ].join(
                   " ",
@@ -568,7 +568,7 @@ export function PublicationDepartures({
                   "rounded-lg px-4 py-2 text-xs font-semibold transition",
                   view ===
                   "all"
-                    ? "bg-[#0d684e] text-white shadow-sm"
+                    ? "bg-[var(--primary)] text-white shadow-sm"
                     : "text-muted-foreground hover:text-foreground",
                 ].join(
                   " ",
@@ -598,13 +598,13 @@ export function PublicationDepartures({
             0 ? (
             <div className="flex min-h-64 items-center justify-center p-6">
               <div className="max-w-sm text-center">
-                <div className="mx-auto flex size-12 items-center justify-center rounded-2xl bg-[#edf7f3] text-[#0d684e]">
+                <div className="mx-auto flex size-12 items-center justify-center rounded-2xl bg-[var(--accent)] text-[var(--primary)]">
                   <CalendarDays
                     size={22}
                   />
                 </div>
 
-                <h3 className="!mb-0 !mt-4 !text-sm !font-semibold !tracking-normal text-[#123a30]">
+                <h3 className="!mb-0 !mt-4 !text-sm !font-semibold !tracking-normal text-[var(--ink)]">
                   {t(
                     view ===
                       "upcoming"
@@ -680,7 +680,7 @@ export function PublicationDepartures({
                       >
                         {/* Fecha */}
                         <div className="min-w-0">
-                          <p className="truncate text-sm font-semibold text-[#123a30]">
+                          <p className="truncate text-sm font-semibold text-[var(--ink)]">
                             {formatDate(
                               departure.startAt,
                             )}
@@ -714,7 +714,7 @@ export function PublicationDepartures({
                             size={
                               14
                             }
-                            className="shrink-0 text-[#0d684e]"
+                            className="shrink-0 text-[var(--primary)]"
                           />
 
                           <span className="truncate text-xs text-foreground">
@@ -788,10 +788,10 @@ export function PublicationDepartures({
                             }
                             className={[
                               "relative inline-flex h-[22px] w-[38px] shrink-0 items-center rounded-full border transition-all duration-200",
-                              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0d684e]/20",
+                              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)]/20",
                               "disabled:cursor-not-allowed disabled:opacity-40",
                               active
-                                ? "border-[#0d684e] bg-[#0d684e]"
+                                ? "border-[var(--primary)] bg-[var(--primary)]"
                                 : "border-slate-300 bg-slate-200",
                             ].join(
                               " ",
@@ -821,7 +821,7 @@ export function PublicationDepartures({
             <div className="flex items-start gap-2 text-xs leading-5 text-muted-foreground">
               <Info
                 size={15}
-                className="mt-0.5 shrink-0 text-[#0d684e]"
+                className="mt-0.5 shrink-0 text-[var(--primary)]"
               />
 
               <p>
@@ -838,7 +838,7 @@ export function PublicationDepartures({
         ====================================================== */}
         <section className="rounded-2xl border border-black/10 bg-white p-5 shadow-sm">
           <div>
-            <h2 className="!m-0 !text-lg !font-semibold !leading-6 !tracking-normal text-[#123a30]">
+            <h2 className="!m-0 !text-lg !font-semibold !leading-6 !tracking-normal text-[var(--ink)]">
               {t(
                 "Agregar salida",
               )}
@@ -1030,11 +1030,11 @@ export function PublicationDepartures({
               <div className="flex items-start gap-2">
                 <Clock3
                   size={16}
-                  className="mt-0.5 shrink-0 text-[#0d684e]"
+                  className="mt-0.5 shrink-0 text-[var(--primary)]"
                 />
 
                 <div>
-                  <p className="text-xs font-semibold text-[#123a30]">
+                  <p className="text-xs font-semibold text-[var(--ink)]">
                     {t(
                       "Zona horaria: Costa Rica (UTC-6)",
                     )}
@@ -1058,7 +1058,7 @@ export function PublicationDepartures({
               onClick={() =>
                 void handleCreateDeparture()
               }
-              className="w-full gap-2 bg-[#0d684e] text-white hover:bg-[#0b5943]"
+              className="w-full gap-2 bg-[var(--primary)] text-white hover:bg-[var(--brand-forest-hover)]"
             >
               <Plus
                 size={16}
@@ -1081,7 +1081,7 @@ export function PublicationDepartures({
         <div className="flex items-start gap-2 text-xs leading-5 text-muted-foreground">
           <Info
             size={15}
-            className="mt-0.5 shrink-0 text-[#0d684e]"
+            className="mt-0.5 shrink-0 text-[var(--primary)]"
           />
 
           <p>

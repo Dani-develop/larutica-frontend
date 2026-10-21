@@ -31,7 +31,7 @@ export function TransportConfirmView({
       <button className="back-link" type="button" onClick={onBack}>{t("← Volver a explorar ")}</button>
       <div className="form-header">
         <p className="eyebrow">{t("Reserva registrada")}</p>
-        <h1 className="form-title" ref={headingRef} tabIndex={-1}>
+        <h1 className="form-title lr-page-title" ref={headingRef} tabIndex={-1}>
           {t(title)}
         </h1>
         <p>{t("Tu traslado quedó confirmado. El proveedor te contactará con el punto de encuentro. ")}</p>

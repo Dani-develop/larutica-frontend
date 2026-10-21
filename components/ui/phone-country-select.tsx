@@ -142,7 +142,7 @@ export function PhoneCountrySelect({
             value={search}
             onChange={(event) => setSearch(event.target.value)}
             placeholder="Buscar país..."
-            className="h-8"
+            className="h-12"
             autoComplete="off"
           />
           <ul

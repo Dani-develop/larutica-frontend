@@ -12,7 +12,7 @@ export default function TermsPage() {
       <div className="legal-content">
         <Link className="back-link" href="/">← Volver a LaRutica</Link>
         <p className="eyebrow">LaRutica · Costa Rica</p>
-        <h1 className="detail-title">Términos y condiciones</h1>
+        <h1 className="detail-title lr-page-title">Términos y condiciones</h1>
         <p className="detail-intro">
           Estas condiciones describen el uso de LaRutica, una plataforma demostrativa
           para explorar experiencias y servicios turísticos en Costa Rica.

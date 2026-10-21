@@ -153,7 +153,7 @@ export function CreatePublicationPage() {
           ]}
         />
 
-        <h1 className="!m-0 !text-[30px] !font-semibold !leading-tight !tracking-tight text-[#123a30]">
+        <h1 className="!m-0 lr-page-title">
           {t(
             "Nueva publicación",
           )}
@@ -207,7 +207,7 @@ export function CreatePublicationPage() {
                   className={[
                     "relative flex min-h-12 shrink-0 items-center gap-2 px-4 text-sm font-medium transition",
                     active
-                      ? "text-[#0d684e]"
+                      ? "text-[var(--primary)]"
                       : "text-muted-foreground",
                     tab.disabled
                       ? "cursor-not-allowed opacity-50"
@@ -232,7 +232,7 @@ export function CreatePublicationPage() {
                   ) : null}
 
                   {active ? (
-                    <span className="absolute inset-x-0 bottom-0 h-0.5 rounded-full bg-[#0d684e]" />
+                    <span className="absolute inset-x-0 bottom-0 h-0.5 rounded-full bg-[var(--primary)]" />
                   ) : null}
                 </button>
               );
@@ -245,7 +245,7 @@ export function CreatePublicationPage() {
       <div className="mb-5 flex items-start gap-2 rounded-xl border border-[#dcebe5] bg-[#f6fbf9] px-4 py-3 text-xs leading-5 text-[#315c50]">
         <Info
           size={15}
-          className="mt-0.5 shrink-0 text-[#0d684e]"
+          className="mt-0.5 shrink-0 text-[var(--primary)]"
         />
 
         <p>

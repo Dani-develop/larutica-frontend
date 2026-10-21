@@ -171,7 +171,7 @@ export function PublicationDetail({
     return (
       <div className="mx-auto w-full max-w-5xl">
         <div className="rounded-2xl border border-red-200 bg-red-50 p-6">
-          <h1 className="!m-0 !text-lg !font-semibold !tracking-normal text-red-800">{t("No se pudo cargar la publicación ")}</h1>
+          <h1 className="!m-0 text-red-800 lr-page-title">{t("No se pudo cargar la publicación ")}</h1>
 
           <p className="mt-2 text-sm text-red-700">
             {error ??
@@ -212,7 +212,7 @@ export function PublicationDetail({
         <div className="min-w-0">
           <DashboardBreadcrumb className="mb-2" items={[{ label: "Publicaciones", href: "/dashboard/publications" }, { label: "Detalle" }]} />
 
-          <h1 className="!m-0 !text-[26px] !font-semibold !leading-tight !tracking-tight text-[#123a30]">
+          <h1 className="!m-0 lr-page-title">
             {publication.title ??
               "Publicación sin título"}
           </h1>
@@ -297,7 +297,7 @@ export function PublicationDetail({
 
       {/* Descripción */}
       <section className="mt-5 rounded-2xl border border-black/10 bg-white p-5 shadow-sm">
-        <h2 className="!m-0 !text-sm !font-semibold !leading-5 !tracking-normal text-[#123a30]">{t("Descripción ")}</h2>
+        <h2 className="!m-0 !text-sm !font-semibold !leading-5 !tracking-normal text-[var(--ink)]">{t("Descripción ")}</h2>
 
         <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-muted-foreground">
           {publication.description ??
@@ -307,7 +307,7 @@ export function PublicationDetail({
 
       {/* Información principal */}
       <section className="mt-5 rounded-2xl border border-black/10 bg-white p-5 shadow-sm">
-        <h2 className="!m-0 !text-sm !font-semibold !leading-5 !tracking-normal text-[#123a30]">{t("Información del servicio ")}</h2>
+        <h2 className="!m-0 !text-sm !font-semibold !leading-5 !tracking-normal text-[var(--ink)]">{t("Información del servicio ")}</h2>
 
         <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <InfoItem
@@ -375,10 +375,10 @@ export function PublicationDetail({
         <div className="flex items-center gap-2">
           <Languages
             size={16}
-            className="text-[#0d684e]"
+            className="text-[var(--primary)]"
           />
 
-          <h2 className="!m-0 !text-sm !font-semibold !leading-5 !tracking-normal text-[#123a30]">{t("Idiomas ")}</h2>
+          <h2 className="!m-0 !text-sm !font-semibold !leading-5 !tracking-normal text-[var(--ink)]">{t("Idiomas ")}</h2>
         </div>
 
         <div className="mt-3 flex flex-wrap gap-2">
@@ -391,7 +391,7 @@ export function PublicationDetail({
                   key={
                     language.id
                   }
-                  className="rounded-lg bg-[#edf7f3] px-3 py-1.5 text-xs font-medium text-[#0d684e]"
+                  className="rounded-lg bg-[var(--accent)] px-3 py-1.5 text-xs font-medium text-[var(--primary)]"
                 >
                   {language.name}
                 </span>
@@ -406,7 +406,7 @@ export function PublicationDetail({
       {/* Incluye / no incluye */}
       <section className="mt-5 grid gap-4 md:grid-cols-2">
         <div className="rounded-2xl border border-black/10 bg-white p-5 shadow-sm">
-          <h2 className="!m-0 !text-sm !font-semibold !leading-5 !tracking-normal text-[#123a30]">{t("Qué incluye ")}</h2>
+          <h2 className="!m-0 !text-sm !font-semibold !leading-5 !tracking-normal text-[var(--ink)]">{t("Qué incluye ")}</h2>
 
           <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-muted-foreground">
             {publication.included ??
@@ -415,7 +415,7 @@ export function PublicationDetail({
         </div>
 
         <div className="rounded-2xl border border-black/10 bg-white p-5 shadow-sm">
-          <h2 className="!m-0 !text-sm !font-semibold !leading-5 !tracking-normal text-[#123a30]">{t("Qué no incluye ")}</h2>
+          <h2 className="!m-0 !text-sm !font-semibold !leading-5 !tracking-normal text-[var(--ink)]">{t("Qué no incluye ")}</h2>
 
           <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-muted-foreground">
             {publication.notIncluded ??
@@ -429,10 +429,10 @@ export function PublicationDetail({
         <div className="flex items-center gap-2">
           <MapPin
             size={16}
-            className="text-[#0d684e]"
+            className="text-[var(--primary)]"
           />
 
-          <h2 className="!m-0 !text-sm !font-semibold !leading-5 !tracking-normal text-[#123a30]">{t("Punto de encuentro ")}</h2>
+          <h2 className="!m-0 !text-sm !font-semibold !leading-5 !tracking-normal text-[var(--ink)]">{t("Punto de encuentro ")}</h2>
         </div>
 
         <p className="mt-3 text-sm leading-6 text-muted-foreground">
@@ -456,7 +456,7 @@ function InfoItem({
   const { t } = usePreferences();
   return (
     <div className="rounded-xl bg-muted/30 p-3">
-      <div className="flex items-center gap-2 text-[#0d684e]">
+      <div className="flex items-center gap-2 text-[var(--primary)]">
         {icon}
 
         <span className="text-[11px] font-medium uppercase tracking-wide">

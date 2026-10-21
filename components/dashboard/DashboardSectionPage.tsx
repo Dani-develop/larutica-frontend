@@ -1,6 +1,7 @@
 "use client";
 import { usePreferences } from "@/lib/preferences/Preferences";
 import Link from "next/link";
+import { PageHeading } from "@/components/ui/page-heading";
 import {
   Card,
   CardContent,
@@ -21,14 +22,10 @@ export function DashboardSectionPage({
   const { t } = usePreferences();
   return (
     <div className="mx-auto max-w-7xl space-y-4">
-      <div>
-        <p className="text-sm font-medium text-primary">
+      <PageHeading title={t(title)} description={t(description)} eyebrow={<p className="mb-2 text-sm font-medium text-primary">
           <Link href="/dashboard" className="hover:underline">{t("Dashboard ")}</Link>
           <span className="text-muted-foreground"> / {t(title)}</span>
-        </p>
-        <h1 className="mt-1 text-xl font-semibold tracking-tight">{t(title)}</h1>
-        <p className="mt-1 text-sm text-muted-foreground">{t(description)}</p>
-      </div>
+        </p>} />
       <Card className="shadow-xs">
         <CardHeader>
           <CardTitle>{t("En construcción")}</CardTitle>

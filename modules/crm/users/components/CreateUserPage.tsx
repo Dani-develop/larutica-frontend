@@ -34,7 +34,7 @@ export function CreateUserPage() {
           <Link href="/dashboard/users" className="hover:underline">{t("Usuarios ")}</Link>
           <span className="text-muted-foreground">{t(" / Nuevo")}</span>
         </p>
-        <h1 className="mt-1 text-xl font-semibold tracking-tight">{t("Nuevo usuario ")}</h1>
+        <h1 className="mt-1 lr-page-title">{t("Nuevo usuario ")}</h1>
         <p className="mt-1 text-sm text-muted-foreground">{t("Crea una cuenta real en Supabase Auth y su perfil asociado. ")}</p>
       </div>
 

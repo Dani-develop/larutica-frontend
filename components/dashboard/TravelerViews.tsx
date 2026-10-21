@@ -3,6 +3,7 @@ import { usePreferences } from "@/lib/preferences/Preferences";
 
 import Link from "next/link";
 import { Heart } from "lucide-react";
+import { PageHeading } from "@/components/ui/page-heading";
 import { CurrencyNotice } from "@/components/preferences/PreferenceControls";
 import Swal from "sweetalert2";
 import "sweetalert2/dist/sweetalert2.min.css";
@@ -43,11 +44,7 @@ const reservationAlertClasses = {
 function TripHeading({ eyebrow, title, lead }: { eyebrow: string; title: string; lead: string }) {
   const { t } = usePreferences();
   return (
-    <div className="trip-page-heading">
-      <p className="eyebrow">{t(eyebrow)}</p>
-      <h1 className="detail-title">{t(title)}</h1>
-      <p className="detail-intro">{t(lead)}</p>
-    </div>
+    <PageHeading className="trip-page-heading" eyebrow={<p className="eyebrow">{t(eyebrow)}</p>} title={t(title)} description={t(lead)} />
   );
 }
 

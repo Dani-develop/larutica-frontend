@@ -11,6 +11,7 @@
     "start": "vinext start",
     "test": "npm run build && node --experimental-strip-types --test tests/rendered-html.test.mjs tests/auth-contract.test.mjs tests/privacy-consent.test.mjs tests/privacy-api.test.mjs tests/remote-proxy.test.mjs tests/reservations-contract.test.mjs tests/booking-return.test.mjs tests/traveler-saved-rating.test.mjs tests/browser-fetch.test.mjs && npm run test:mail",
     "test:mail": "node --experimental-strip-types --test tests/trip-email.test.mjs tests/mail/transport.test.mjs tests/mail/cli.test.mjs tests/mail/relay.test.mjs && node --import ./tests/mail/register.mjs --test tests/mail/flows.test.mjs tests/mail/diagnostic.test.mjs",
+    "design:check": "node scripts/check-design.mjs",
     "mail:check": "node --experimental-strip-types --env-file-if-exists=.env.local scripts/mail-check.mjs",
     "test:booking:integration": "node --env-file-if-exists=.env.local --test tests/booking.integration.mjs",
     "test:auth:cloud": "node --env-file-if-exists=.env.local --test tests/supabase-auth.integration.mjs",

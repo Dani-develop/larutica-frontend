@@ -19,7 +19,7 @@ export function CreateRoutePage() {
           <Link href="/dashboard/publications" className="hover:underline">{t("Rutas ")}</Link>
           <span className="text-muted-foreground">{t(" / Nueva")}</span>
         </p>
-        <h1 className="mt-1 text-xl font-semibold tracking-tight">{t("Nueva ruta")}</h1>
+        <h1 className="mt-1 lr-page-title">{t("Nueva ruta")}</h1>
         <p className="mt-1 text-sm text-muted-foreground">{t("Define origen, destino y el costo por persona del traslado. ")}</p>
       </div>
 

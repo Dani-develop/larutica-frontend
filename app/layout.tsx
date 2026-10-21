@@ -1,26 +1,8 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Poppins } from "next/font/google";
 import "./globals.css";
 import "@/modules/booking/booking.css";
+import "./design-system.css";
 import { Providers } from "./providers";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
-// Tripadvisor's brand guidelines name Poppins as the fallback for its proprietary Trip Sans.
-const poppins = Poppins({
-  variable: "--font-trip",
-  subsets: ["latin"],
-  weight: ["400", "500", "700", "800"],
-  display: "swap",
-});
 
 export const metadata: Metadata = {
   title: "LaRutica | Explora Costa Rica",
@@ -42,8 +24,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es">
+      <head><link rel="preload" href="/fonts/poppins-400-latin.woff2" as="font" type="font/woff2" crossOrigin="anonymous" /></head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${poppins.variable} antialiased`}
+        className="antialiased"
       >
         <Providers>{children}</Providers>
       </body>

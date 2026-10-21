@@ -356,7 +356,7 @@ export function PublicationForm({
           <div className="absolute left-4 right-4 top-3.5 h-px bg-slate-200" />
 
           <div
-            className="absolute left-4 top-3.5 h-px bg-[#0d684e] transition-all duration-300"
+            className="absolute left-4 top-3.5 h-px bg-[var(--primary)] transition-all duration-300"
             style={{
               width:
                 activeStep === 1
@@ -415,9 +415,9 @@ export function PublicationForm({
                       className={[
                         "z-10 flex size-7 items-center justify-center rounded-full border text-[10px] font-semibold transition",
                         current
-                          ? "border-[#0d684e] bg-[#0d684e] text-white shadow-sm"
+                          ? "border-[var(--primary)] bg-[var(--primary)] text-white shadow-sm"
                           : completed
-                            ? "border-[#0d684e] bg-white text-[#0d684e]"
+                            ? "border-[var(--primary)] bg-white text-[var(--primary)]"
                             : "border-slate-200 bg-white text-slate-400",
                       ].join(
                         " ",
@@ -439,7 +439,7 @@ export function PublicationForm({
                         "max-w-full truncate text-[10px] font-medium",
                         current ||
                         completed
-                          ? "text-[#123a30]"
+                          ? "text-[var(--ink)]"
                           : "text-muted-foreground",
                       ].join(
                         " ",
@@ -854,7 +854,7 @@ export function PublicationForm({
 
             <div className="mt-4 rounded-xl border border-[#dcebe5] bg-[#f4faf7] px-3.5 py-2.5">
               <div className="flex items-start gap-3">
-                <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-white text-[#0d684e] shadow-sm">
+                <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-white text-[var(--primary)] shadow-sm">
                   <Users
                     size={
                       16
@@ -863,7 +863,7 @@ export function PublicationForm({
                 </div>
 
                 <div>
-                  <p className="text-xs font-semibold text-[#123a30]">
+                  <p className="text-xs font-semibold text-[var(--ink)]">
                     {t(
                       "La capacidad puede variar por salida",
                     )}
@@ -944,7 +944,7 @@ export function PublicationForm({
                         className={[
                           "inline-flex h-10 items-center gap-2 rounded-xl border px-3.5 text-xs font-medium transition",
                           selected
-                            ? "border-[#0d684e] bg-[#edf7f3] text-[#0d684e] shadow-sm"
+                            ? "border-[var(--primary)] bg-[var(--accent)] text-[var(--primary)] shadow-sm"
                             : "border-black/10 bg-white text-foreground hover:border-black/20 hover:bg-muted/30",
                         ].join(
                           " ",
@@ -1195,11 +1195,11 @@ export function PublicationForm({
                 size={
                   18
                 }
-                className="text-[#0d684e]"
+                className="text-[var(--primary)]"
               />
 
               <div>
-                <h3 className="!m-0 !text-sm !font-semibold !tracking-normal text-[#123a30]">
+                <h3 className="!m-0 !text-sm !font-semibold !tracking-normal text-[var(--ink)]">
                   {t(
                     "Revisa la información",
                   )}
@@ -1405,7 +1405,7 @@ export function PublicationForm({
                     "SUBMIT",
                   )
                 }
-                className="bg-[#0d684e] text-white hover:bg-[#0b5943]"
+                className="bg-[var(--primary)] text-white hover:bg-[var(--brand-forest-hover)]"
               >
                 {submitting
                   ? t(
@@ -1655,7 +1655,7 @@ function StepHeading({
 
   return (
     <div>
-      <h2 className="!m-0 !text-lg !font-semibold !leading-6 !tracking-normal text-[#123a30]">
+      <h2 className="!m-0 !text-lg !font-semibold !leading-6 !tracking-normal text-[var(--ink)]">
         {t(
           title,
         )}
@@ -1732,7 +1732,7 @@ function StepActions({
         onClick={
           onContinue
         }
-        className="gap-2 bg-[#0d684e] text-white hover:bg-[#0b5943]"
+        className="gap-2 bg-[var(--primary)] text-white hover:bg-[var(--brand-forest-hover)]"
       >
         {t(
           "Continuar",
@@ -1770,7 +1770,7 @@ function ReviewItem({
             )}
           </p>
 
-          <p className="mt-1 break-words text-sm font-medium text-[#123a30]">
+          <p className="mt-1 break-words text-sm font-medium text-[var(--ink)]">
             {t(
               value,
             )}
@@ -1782,7 +1782,7 @@ function ReviewItem({
           onClick={
             onEdit
           }
-          className="shrink-0 text-[11px] font-semibold text-[#0d684e] transition hover:underline"
+          className="shrink-0 text-[11px] font-semibold text-[var(--primary)] transition hover:underline"
         >
           {t(
             "Editar",
@@ -1805,7 +1805,7 @@ function SectionHeader({
 
   return (
     <div>
-      <h2 className="!m-0 !text-sm !font-semibold !leading-5 !tracking-normal text-[#123a30]">
+      <h2 className="!m-0 !text-sm !font-semibold !leading-5 !tracking-normal text-[var(--ink)]">
         {t(
           title,
         )}
@@ -1879,7 +1879,7 @@ function ServiceTypeButton({
       className={[
         "flex items-center gap-3 rounded-xl border px-3.5 py-3 text-left transition",
         active
-          ? "border-[#0d684e] bg-[#edf7f3] shadow-sm"
+          ? "border-[var(--primary)] bg-[var(--accent)] shadow-sm"
           : "border-black/10 bg-white hover:border-black/20 hover:bg-muted/30",
       ].join(
         " ",
@@ -1889,7 +1889,7 @@ function ServiceTypeButton({
         className={[
           "flex size-8 shrink-0 items-center justify-center rounded-lg",
           active
-            ? "bg-[#0d684e] text-white"
+            ? "bg-[var(--primary)] text-white"
             : "bg-muted text-muted-foreground",
         ].join(
           " ",
@@ -1903,7 +1903,7 @@ function ServiceTypeButton({
           className={[
             "text-sm font-semibold",
             active
-              ? "text-[#0d684e]"
+              ? "text-[var(--primary)]"
               : "text-foreground",
           ].join(
             " ",

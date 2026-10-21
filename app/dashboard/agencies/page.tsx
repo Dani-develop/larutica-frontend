@@ -221,7 +221,7 @@ export default function AdminAgenciesPage() {
 
       <div className="flex flex-row items-start justify-between gap-4">
         <div>
-          <h1 className="!m-0 !max-w-none !text-2xl !leading-8 !font-semibold !tracking-tight">{t("Gestión de Agencias ")}</h1>
+          <h1 className="!m-0 !max-w-none lr-page-title">{t("Gestión de Agencias ")}</h1>
           <p className="text-muted-foreground mt-0.5 !text-sm !leading-5">
             {loading
               ? "Revisa y administra las agencias registradas"

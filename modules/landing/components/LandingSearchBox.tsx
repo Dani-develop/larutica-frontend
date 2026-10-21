@@ -3,6 +3,7 @@
 import { useId, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Clock, Search, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { usePreferences } from "@/lib/preferences/Preferences";
 import { listCatalogPublications } from "@/modules/traveler/services/traveler.service";
 import type { TravelerPublication } from "@/modules/traveler/types/traveler-publication.types";
@@ -251,7 +252,7 @@ export function LandingSearchBox({ value, onChange, inputRef, category, onSearch
           placeholder={t("Destinos, excursiones y experiencias...")}
         />
         {value ? <button type="button" className="discovery-search-clear" aria-label={t("Borrar texto")} onClick={() => { onChange(""); setActiveIndex(-1); inputRef.current?.focus(); }}><X size={18} aria-hidden="true" /></button> : null}
-        <button type="submit">{t("Buscar")}</button>
+        <Button type="submit" variant="secondary" size="lg" className="lr-brand-accent">{t("Buscar")}</Button>
       </div>
       <p className="sr-only" role="status" aria-live="polite">{statusText}</p>
       {expanded ? <div className="discovery-suggestions">

@@ -23,7 +23,7 @@ export function VehiclesList() {
     <div className="mx-auto max-w-7xl space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight">{t("Mis vehículos")}</h1>
+          <h1 className="lr-page-title">{t("Mis vehículos")}</h1>
           <p className="mt-1 text-sm text-muted-foreground">{t("Registra la flota y elige el vehículo al publicar una ruta. ")}</p>
         </div>
         <Button asChild className="gap-2 self-start sm:self-auto">

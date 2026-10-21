@@ -72,7 +72,7 @@ export default function Page() {
     <div className="mx-auto max-w-7xl space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight text-primary">{t("Panel de Control ")}</h1>
+          <h1 className="text-primary lr-page-title">{t("Panel de Control ")}</h1>
           <p className="mt-1 text-sm text-muted-foreground">{t("Resumen operativo y accesos clave para LaRutica. ")}</p>
         </div>
         <div className="flex flex-wrap gap-2 self-start sm:self-auto">

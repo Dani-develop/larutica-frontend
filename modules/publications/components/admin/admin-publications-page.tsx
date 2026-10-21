@@ -107,7 +107,7 @@ export default function AdminPublicationsPage() {
       <div className="mb-5">
         <DashboardBreadcrumb className="mb-2" items={[{ label: "Publicaciones" }]} />
 
-        <h1 className="!m-0 !text-[30px] !font-bold !leading-9 !tracking-[-0.025em] text-[#123A30]">{t("Publicaciones ")}</h1>
+        <h1 className="!m-0 lr-page-title">{t("Publicaciones ")}</h1>
 
         <p className="mt-1 text-[11px] leading-5 text-[#66706B]">{t("Revisa y administra las publicaciones enviadas por las agencias. ")}</p>
       </div>

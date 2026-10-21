@@ -1,0 +1,52 @@
+/* Shared component contracts. Page CSS owns layout, never a second UI theme. */
+@layer base {
+  body { font-family: var(--font-brand); font-size: var(--type-body); line-height: var(--leading-body); }
+  h1, h2, h3, h4 { font-weight: 700; line-height: var(--leading-heading); letter-spacing: var(--tracking-heading); }
+  h1 { font-size: var(--type-page); }
+  h2 { font-size: var(--type-section); }
+  h3 { font-size: var(--type-card); }
+  button, input, select, textarea { font: inherit; }
+}
+
+.lr-page-heading { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: start; gap: var(--space-4); }
+.lr-page-heading-copy { min-width: 0; }
+.lr-page-title { margin: 0; max-width: none; color: var(--ink); font-size: var(--type-page); font-weight: 700; line-height: var(--leading-heading); letter-spacing: var(--tracking-heading); text-wrap: balance; }
+.lr-page-description { max-width: 65ch; margin: var(--space-2) 0 0; color: var(--ink-muted); font-size: var(--type-body); line-height: var(--leading-body); }
+.lr-section-heading { display: flex; align-items: end; justify-content: space-between; gap: var(--space-4); margin-bottom: var(--space-6); }
+.lr-section-title { margin: 0; color: var(--ink); font-size: var(--type-section); font-weight: 700; line-height: var(--leading-heading); letter-spacing: var(--tracking-heading); text-wrap: balance; }
+.lr-section-description { margin: var(--space-2) 0 0; color: var(--ink-muted); font-size: var(--type-body); line-height: var(--leading-body); }
+.lr-page-actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); }
+
+/* The native button classes remain an adapter for existing public forms. */
+.button { display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2); min-height: var(--control-height); border-radius: var(--radius-pill); padding: .625rem 1.25rem; font-size: var(--type-small); font-weight: 600; line-height: 1.4; text-decoration: none; transition: background-color var(--transition-ui), border-color var(--transition-ui), color var(--transition-ui), box-shadow var(--transition-ui); }
+.button:hover { transform: none; }
+.button:disabled { cursor: not-allowed; opacity: .5; }
+.button-primary { background: var(--primary); color: var(--primary-foreground); box-shadow: none; }
+.button-primary:hover:not(:disabled) { background: var(--brand-forest-hover); }
+.button-outline { color: var(--ink); background: var(--surface); border-color: var(--input); }
+.button-outline:hover:not(:disabled), .button-quiet:hover:not(:disabled) { background: var(--surface-muted); }
+.button-small, .button-light { background: var(--accent); color: var(--accent-foreground); }
+.button-danger { background: var(--danger); color: var(--surface); }
+.button-danger:hover:not(:disabled) { background: var(--danger-hover); }
+.button:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
+.lr-brand-accent { background: var(--brand-green); color: var(--brand-forest); }
+.lr-brand-accent:hover:not(:disabled) { background: var(--brand-green-hover); }
+
+[data-slot="button"] { border-radius: var(--radius-pill); font-size: var(--type-small); font-weight: 600; min-height: var(--control-height); }
+[data-slot="button"][data-size="lg"], [data-slot="button"][data-size="icon-lg"] { min-height: var(--control-height-lg); }
+[data-slot="button"][data-size="sm"], [data-slot="button"][data-size="icon-sm"] { min-height: 2.5rem; }
+[data-slot="button"][data-size="xs"], [data-slot="button"][data-size="icon-xs"] { min-height: 2rem; font-size: var(--type-caption); }
+[data-slot="button"][data-variant="destructive"] { color: var(--destructive-foreground); }
+
+/* Opt-in scopes prevent landing rules from changing admin/auth navigation. */
+.larutica-auth h1 { font-size: var(--type-page); font-weight: 700; line-height: var(--leading-heading); letter-spacing: var(--tracking-heading); }
+.lr-workspace h1 { color: var(--ink); font-size: var(--type-page); font-weight: 700; line-height: var(--leading-heading); letter-spacing: var(--tracking-heading); }
+.lr-workspace { font-family: var(--font-brand); }
+.lr-workspace [data-slot="card"] { border-radius: var(--radius-card); }
+.lr-workspace [data-slot="card-title"] { font-weight: 600; }
+[data-slot="card-title"] { font-size: var(--type-card); line-height: var(--leading-heading); }
+.modal-card, .preference-dialog, .larutica-swal-popup { border-radius: var(--radius-dialog); }
+.modal-card h2, .preference-dialog h2 { font-size: var(--type-card); line-height: var(--leading-heading); }
+
+.high-contrast { --foreground: #001a13; --muted-foreground: #243a34; --brand-forest: #001a13; --brand-forest-hover: #003c2c; --text-muted: #243a34; --stroke: #667c74; --stroke-control: #667c74; }
+@media (max-width: 640px) { .lr-section-heading { align-items: start; flex-direction: column; } .lr-page-actions { width: 100%; } }

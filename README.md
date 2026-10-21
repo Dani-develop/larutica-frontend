@@ -4,6 +4,10 @@ A clean full-stack starter running on
 [vinext](https://github.com/cloudflare/vinext), with optional Cloudflare D1 and
 Drizzle support.
 
+## Sistema de diseño
+
+Antes de cambiar una pantalla, consultar [las reglas visuales de LaRutica](docs/sistema-diseno.md). La tipografía es Poppins autohospedada; colores, escala y formas se definen en app/design-tokens.css y los componentes reutilizables están en components/ui. Ejecutar `npm run design:check` para comprobar las reglas básicas.
+
 ## Prerequisites
 
 - Node.js `>=22.13.0`

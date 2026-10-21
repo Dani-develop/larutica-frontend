@@ -257,7 +257,7 @@ export default function AdminAgencyDetail({
               )}
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
-                  <h1 className="!m-0 !max-w-none break-words !text-3xl !font-bold !leading-tight !tracking-tight sm:!text-4xl">{agency.commercialName || agency.agencyName}</h1>
+                  <h1 className="!m-0 !max-w-none break-words sm:!text-4xl lr-page-title">{agency.commercialName || agency.agencyName}</h1>
                   {agency.status === "APPROVED" ? <BadgeCheck className="size-5 shrink-0 text-primary" aria-label={t("Agencia verificada")} /> : null}
                 </div>
                 <p className="mt-2 break-words text-sm text-muted-foreground">{agency.agencyName}</p>

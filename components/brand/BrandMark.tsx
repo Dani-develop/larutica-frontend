@@ -25,7 +25,7 @@ export function BrandMark({ className, variant = "badge" }: BrandMarkProps) {
   return (
     <span
       className={cn(
-        "flex aspect-square shrink-0 items-center justify-center rounded-lg bg-[#0d684e]",
+        "flex aspect-square shrink-0 items-center justify-center rounded-lg bg-[var(--primary)]",
         className,
       )}
     >

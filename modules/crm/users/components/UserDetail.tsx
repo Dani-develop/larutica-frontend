@@ -50,7 +50,7 @@ export function UserDetail({ id }: { id: string }) {
   if (!user) {
     return (
       <div className="mx-auto max-w-3xl space-y-4">
-        <h1 className="text-lg font-semibold">{t("Usuario no encontrado")}</h1>
+        <h1 className="lr-page-title">{t("Usuario no encontrado")}</h1>
         <Button asChild variant="outline">
           <Link href="/dashboard/users">{t("Volver al listado")}</Link>
         </Button>
@@ -66,7 +66,7 @@ export function UserDetail({ id }: { id: string }) {
             <Link href="/dashboard/users" className="hover:underline">{t("Usuarios ")}</Link>
             <span className="text-muted-foreground">{t(" / Detalle")}</span>
           </p>
-          <h1 className="mt-1 text-xl font-semibold tracking-tight">
+          <h1 className="mt-1 lr-page-title">
             {user.name}
           </h1>
           <div className="mt-2 flex flex-wrap items-center gap-2">

@@ -540,7 +540,7 @@ function PageHeader({
       <div>
         <DashboardBreadcrumb className="mb-2" items={[{ label: "Mi agencia" }]} />
 
-        <h1 className="!m-0 !max-w-none !text-[30px] !font-bold !leading-9 !tracking-[-0.025em] text-[#123A30]">
+        <h1 className="!m-0 !max-w-none lr-page-title">
           {t(title)}
         </h1>
 

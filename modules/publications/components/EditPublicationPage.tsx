@@ -283,7 +283,7 @@ export function EditPublicationPage({
     return (
       <div className="mx-auto w-full max-w-7xl">
         <div className="rounded-2xl border border-red-200 bg-red-50 p-6">
-          <h1 className="!m-0 !text-lg !font-semibold !tracking-normal text-red-800">
+          <h1 className="!m-0 text-red-800 lr-page-title">
             {t(
               "No se pudo cargar la publicación",
             )}
@@ -336,7 +336,7 @@ export function EditPublicationPage({
         </Button>
 
         <div className="rounded-2xl border border-amber-200 bg-amber-50 p-6">
-          <h1 className="!m-0 !text-lg !font-semibold !tracking-normal text-amber-900">
+          <h1 className="!m-0 text-amber-900 lr-page-title">
             {t(
               "Publicación inactiva",
             )}
@@ -463,7 +463,7 @@ export function EditPublicationPage({
             ]}
           />
 
-          <h1 className="!m-0 !text-[30px] !font-semibold !leading-tight !tracking-tight text-[#123a30]">
+          <h1 className="!m-0 lr-page-title">
             {t(
               "Gestionar publicación",
             )}
@@ -523,7 +523,7 @@ export function EditPublicationPage({
                   className={[
                     "relative flex min-h-12 shrink-0 items-center gap-2 px-4 text-sm font-medium transition",
                     active
-                      ? "text-[#0d684e]"
+                      ? "text-[var(--primary)]"
                       : "text-muted-foreground hover:text-foreground",
                   ].join(
                     " ",
@@ -538,7 +538,7 @@ export function EditPublicationPage({
                   </span>
 
                   {active ? (
-                    <span className="absolute inset-x-0 bottom-0 h-0.5 rounded-full bg-[#0d684e]" />
+                    <span className="absolute inset-x-0 bottom-0 h-0.5 rounded-full bg-[var(--primary)]" />
                   ) : null}
                 </button>
               );
@@ -579,7 +579,7 @@ export function EditPublicationPage({
       "images" ? (
         <section className="rounded-2xl border border-black/10 bg-white p-5 shadow-sm">
           <div>
-            <h2 className="!m-0 !text-base !font-semibold !leading-6 !tracking-normal text-[#123a30]">
+            <h2 className="!m-0 !text-base !font-semibold !leading-6 !tracking-normal text-[var(--ink)]">
               {t(
                 "Imagen principal",
               )}

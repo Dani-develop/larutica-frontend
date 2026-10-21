@@ -28,7 +28,7 @@ export function RouteDetail({ id }: { id: string }) {
   if (!route) {
     return (
       <div className="mx-auto max-w-3xl space-y-4">
-        <h1 className="text-lg font-semibold">{t("Ruta no encontrada")}</h1>
+        <h1 className="lr-page-title">{t("Ruta no encontrada")}</h1>
         <Button asChild variant="outline">
           <Link href="/dashboard/publications">{t("Volver al listado")}</Link>
         </Button>
@@ -44,7 +44,7 @@ export function RouteDetail({ id }: { id: string }) {
             <Link href="/dashboard/publications" className="hover:underline">{t("Rutas ")}</Link>
             <span className="text-muted-foreground">{t(" / Detalle")}</span>
           </p>
-          <h1 className="mt-1 text-xl font-semibold tracking-tight">
+          <h1 className="mt-1 lr-page-title">
             {routeTitle(route)}
           </h1>
           <div className="mt-2 flex flex-wrap items-center gap-2">

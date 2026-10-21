@@ -59,7 +59,7 @@ export default function AdminPublicationDetail({ publicationId }: AdminPublicati
         <div className="flex flex-col-reverse gap-6 sm:flex-row sm:items-center sm:justify-between">
           <div className="min-w-0 flex-1">
             <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-primary">{t(serviceTypeLabel(publication.serviceType))}</p>
-            <h1 className="!m-0 !max-w-none !text-3xl !font-bold !leading-tight !tracking-tight sm:!text-4xl">{publication.title || t("Sin título")}</h1>
+            <h1 className="!m-0 !max-w-none sm:!text-4xl lr-page-title">{publication.title || t("Sin título")}</h1>
             <div className="mt-5 flex flex-wrap items-center gap-x-8 gap-y-4">
               <div>
                 <p className="text-xs text-muted-foreground">{t("Precio por persona")}</p>
