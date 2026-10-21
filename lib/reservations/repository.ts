@@ -1,5 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { ApiError } from "@/lib/api/errors";
+import { derivePaymentStatus, type ReservationPaymentStatus } from "@/lib/payments/status";
+import { refundReservationPaymentSafely } from "@/lib/payments/repository";
 import { reservationWasInserted } from "@/lib/reservations/departure-cancel";
 import {
   canReadReservation,
@@ -33,6 +35,9 @@ const RESERVATION_SELECT = `
   ),
   reservation_ratings (
     rating
+  ),
+  reservation_payments (
+    status
   )
 `;
 
@@ -49,6 +54,7 @@ export type ReservationRecord = {
   departureStartAt: string;
   departureStatus: string;
   rating: number | null;
+  paymentStatus: ReservationPaymentStatus;
   publicationId: string;
   publicationTitle: string;
   destination: string | null;
@@ -89,6 +95,7 @@ type ReservationRow = {
   profiles?: { full_name: string; email: string; phone: string | null } | { full_name: string; email: string; phone: string | null }[] | null;
   publication_departures: DepartureEmbed | DepartureEmbed[] | null;
   reservation_ratings: { rating: number } | { rating: number }[] | null;
+  reservation_payments?: { status: string }[] | null;
 };
 
 function one<T>(value: T | T[] | null | undefined): T | null {
@@ -129,6 +136,7 @@ export function toReservationRecord(row: ReservationRow): ReservationRecord {
     total: Math.round(unitPrice * numberOfPeople * 100) / 100,
     status: row.status,
     rating: one(row.reservation_ratings)?.rating ?? null,
+    paymentStatus: derivePaymentStatus(row.reservation_payments),
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     departureStartAt: departure?.start_at ?? "",
@@ -158,6 +166,7 @@ export function toPublicReservation(record: ReservationRecord) {
     total: record.total,
     status: record.status,
     rating: record.rating,
+    paymentStatus: record.paymentStatus,
     createdAt: record.createdAt,
     updatedAt: record.updatedAt,
     departureStartAt: record.departureStartAt,
@@ -316,6 +325,8 @@ export async function cancelDepartureReservations(
     number_of_people: number;
     total: number | string;
   }[];
+  // La salida cancelada libera a los viajeros: lo cobrado se devuelve completo.
+  await Promise.all(rows.map((row) => refundReservationPaymentSafely(admin, row.id)));
   return rows.map((row) => ({
     id: row.id,
     passengerEmail: row.passenger_email,

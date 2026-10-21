@@ -10,7 +10,7 @@ import "sweetalert2/dist/sweetalert2.min.css";
 import { useAuth } from "@/modules/auth/context/AuthContext";
 import { ExperienceDetail } from "@/modules/booking/ExperienceDetail";
 import { UpcomingReservationCard } from "@/modules/booking/UpcomingReservationCard";
-import { canTravelerCancel, isUpcomingReservation, reservationNotice, reservationStatusText } from "@/modules/booking/reservationState";
+import { canTravelerCancel, isUpcomingReservation, paymentNotice, reservationNotice, reservationStatusText } from "@/modules/booking/reservationState";
 import { useNow } from "@/modules/booking/useNow";
 import { useEffect, useMemo, useRef, useState } from "react";
 
@@ -1125,7 +1125,10 @@ export function TravelerReservationsPage() {
         {visibleReservations.length === 0 ? <p className="empty-state">{t(loading ? "Cargando reservas..." : error ? "El listado no está disponible." : "No tienes reservas por venir.")}</p> :
           <div className="booking-list upcoming-reservations">{visibleReservations.map(reservation =>
             <UpcomingReservationCard key={reservation.id} reservation={reservation}
-              onCancel={() => void cancelReservation(reservation)} busy={cancellingReservationId !== null} />
+              onCancel={() => void cancelReservation(reservation)} busy={cancellingReservationId !== null}
+              onPaid={() => setReservations((current) => current.map((item) =>
+                item.id === reservation.id ? { ...item, paymentStatus: "PAID" } : item,
+              ))} />
           )}</div>}
       </section> : <ReservationGroup
         title={t("Historial de reservas")}
@@ -1385,6 +1388,7 @@ function ReservationGroup({
                   {reservation.meetingPoint ? <p><strong>{t("Punto de encuentro:")}</strong> {reservation.meetingPoint}</p> : null}
                   {reservation.agencyName ? <p><strong>{t("Proveedor:")}</strong> {reservation.agencyName}{reservation.agencyPhone ? ` · ${reservation.agencyPhone}` : ""}{reservation.agencyEmail ? ` · ${reservation.agencyEmail}` : ""}</p> : null}
                   {notice ? <p className="notice">{t(notice)}</p> : null}
+                  {paymentNotice(reservation, now) ? <p className="notice">{t(paymentNotice(reservation, now))}</p> : null}
                   <div className="card-footer">
                     <div className="trip-actions">
                       {reservation.publicationId ? (

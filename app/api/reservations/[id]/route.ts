@@ -1,5 +1,6 @@
 import { ApiError, apiErrorResponse, assertSameOrigin } from "@/lib/api/errors";
 import { proxyRemoteApiRequest } from "@/lib/api/remote-proxy";
+import { refundReservationPaymentSafely } from "@/lib/payments/repository";
 import {
   assertCanCancel,
   assertCanChangePartySize,
@@ -73,6 +74,9 @@ export async function PATCH(request: Request, context: RouteContext) {
 
     if (patch.numberOfPeople !== undefined) {
       guardPolicy(() => assertCanChangePartySize(role, userId, reservation));
+      if (reservation.paymentStatus === "PAID") {
+        throw new ApiError("Esta reserva ya está pagada. Cancela y reserva de nuevo para cambiar el número de personas.", 409);
+      }
     }
 
     // Validate the whole request before making any change.
@@ -88,6 +92,7 @@ export async function PATCH(request: Request, context: RouteContext) {
     if (patch.status === "CANCELLED") {
       guardPolicy(() => assertCanCancel(role, userId, reservation));
       await updateReservationStatus(admin, id, "CANCELLED", reservation.status);
+      await refundReservationPaymentSafely(admin, id);
     }
 
     const updated = await getReservationRecord(admin, id);
@@ -114,6 +119,9 @@ export async function DELETE(request: Request, context: RouteContext) {
     const { id } = await context.params;
     const admin = getSupabaseAdminClient();
     const { error } = await admin.from("reservations").delete().eq("id", id);
+    if (error?.code === "23503") {
+      throw new ApiError("Esta reserva tiene pagos registrados y no se puede borrar.", 409);
+    }
     if (error) throw error;
     return Response.json({ data: null }, { headers: { "cache-control": "no-store" } });
   } catch (error) {

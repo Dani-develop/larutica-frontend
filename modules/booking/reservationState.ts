@@ -1,3 +1,4 @@
+import { canPayReservation } from '../../lib/payments/status.ts';
 import type { Reservation } from '@/modules/transport/reservations/services/reservation.service';
 
 export function departureHasStarted(startAt: string, now: number) {
@@ -43,5 +44,26 @@ export function reservationNotice(reservation: Reservation, now: number) {
   }
   if (reservation.status === 'PAST') return 'Este viaje ya se realizó. Puedes dejar tu calificación.';
   if (reservation.status === 'CANCELLED') return 'Esta reserva está cancelada y sigue en tu historial.';
+  return '';
+}
+
+export function reservationCanBePaid(reservation: Reservation, now: number) {
+  return canPayReservation({ ...reservation, paymentStatus: reservation.paymentStatus ?? 'UNPAID' }, now);
+}
+
+/** Etiqueta corta del cobro; null cuando no hay nada que decir (por ejemplo, reserva gratuita o vencida). */
+export function paymentStatusText(reservation: Reservation, now: number) {
+  if (reservation.paymentStatus === 'PAID') return reservation.status === 'CANCELLED' ? 'Reembolso en proceso' : 'Pagada';
+  if (reservation.paymentStatus === 'REFUNDED') return 'Reembolsada';
+  return reservationCanBePaid(reservation, now) ? 'Pago pendiente' : null;
+}
+
+export function paymentNotice(reservation: Reservation, now: number) {
+  if (reservation.paymentStatus === 'PAID' && reservation.status === 'CANCELLED') {
+    return 'Esta reserva pagada se canceló. Estamos devolviendo tu dinero; si no lo ves en tu tarjeta en unos días, escríbenos.';
+  }
+  if (reservation.paymentStatus === 'REFUNDED') return 'El pago de esta reserva fue devuelto a tu tarjeta.';
+  if (reservation.paymentStatus === 'PAID') return 'Pago recibido. Gracias.';
+  if (reservationCanBePaid(reservation, now)) return 'Tu reserva está pendiente de pago.';
   return '';
 }

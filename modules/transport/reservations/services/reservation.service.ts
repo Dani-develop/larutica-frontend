@@ -14,6 +14,7 @@ export type Reservation = {
   departureStartAt: string
   departureStatus?: string
   rating?: number | null
+  paymentStatus?: 'UNPAID' | 'PAID' | 'REFUNDED'
   publicationId: string
   publicationTitle: string
   destination: string | null

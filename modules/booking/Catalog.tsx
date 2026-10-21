@@ -228,7 +228,7 @@ export function Catalog() {
           <h2>{t("De la idea al viaje, paso a paso")}</h2>
           <div className="booking-grid">
             <div><b>{t("01 · Elige tu plan")}</b><p>{t("Revisa los detalles, la fecha y el cupo antes de reservar.")}</p></div>
-            <div><b>{t("02 · Confirma tu reserva")}</b><p>{t("Inicia sesión y revisa el total. Aquí no se realiza ningún cobro.")}</p></div>
+            <div><b>{t("02 · Confirma tu reserva")}</b><p>{t("Inicia sesión, revisa el total y paga con tarjeta al reservar.")}</p></div>
             <div><b>{t("03 · Consulta tu viaje")}</b><p>{t("Encuentra la fecha, el punto de encuentro y los datos del proveedor en Mis reservas.")}</p></div>
           </div>
         </section>

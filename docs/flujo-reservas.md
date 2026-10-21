@@ -12,7 +12,7 @@
    permite volver a reservar.
 5. El servidor vuelve a validar proveedor y la función SQL bloquea la salida,
    comprueba fecha/cupo y copia el precio desde la publicación. La solicitud
-   queda PENDING; no se cobra automáticamente.
+   queda PENDING; el cobro es un paso aparte (ver Pagos con OnvoPAY).
 6. Mis reservas muestra únicamente las reservas personales de cualquier rol.
    El trabajador ve sus solicitudes; Admin puede ver todas. La vista inicial
    del panel muestra pendientes vigentes de más antiguas a más recientes.
@@ -33,3 +33,33 @@ La comprobación de API y formulario cubre reintentos normales; la protección
 atómica contra envíos simultáneos requiere aplicar esta migración.
 
 Pruebas aisladas realizadas: ver qa-reservas-2026-10-05.md. Sin publicación.
+
+## Pagos con OnvoPAY
+
+1. Tras crear la reserva, el viajero ve el formulario de OnvoPAY (también desde
+   Mis reservas con "Pagar ahora"). Si elige "Pagar después", la reserva sigue
+   viva con "Pago pendiente".
+2. `POST /api/reservations/[id]/payment` crea la intención de pago. El monto se
+   calcula en el servidor (precio copiado × personas, USD); el navegador no lo
+   envía. Un intento abierto con el mismo monto se reutiliza.
+3. Al terminar el formulario, el navegador llama a
+   `POST /api/reservations/[id]/payment/confirm`; el servidor consulta a Onvo y
+   solo entonces marca el cobro. El webhook
+   `POST /api/payments/onvopay/webhook` (encabezado `x-webhook-secret`) hace lo
+   mismo de forma asíncrona y también verifica el cobro en Onvo.
+4. Cancelar una reserva pagada (viajero, proveedor, administrador o
+   cancelación de la salida) pide a Onvo el reembolso completo. Si el reembolso
+   falla, la cancelación se mantiene, el cobro sigue "paid" y la reserva muestra
+   "Reembolso en proceso"; se resuelve a mano en el panel de Onvo. Un cobro que
+   llega después de cancelar se devuelve de inmediato.
+5. Una reserva pagada no admite cambiar el número de personas.
+
+Variables (solo servidor): `ONVO_TEST_API_KEY`, `ONVO_PUBLISHABLE_KEY`,
+`ONVO_WEBHOOK_SECRET`. Están en `.env.local` para desarrollo; en el alojamiento
+hay que configurarlas como secretos. Las claves actuales son de prueba.
+
+## Aplicación pendiente en Supabase (pagos)
+
+Ejecutar supabase/migrations/202610210001_reservation_payments.sql **antes** de
+publicar este código: las consultas de reservas incluyen la tabla
+reservation_payments y fallan si no existe.

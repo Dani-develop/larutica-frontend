@@ -1,0 +1,8 @@
+.onvo-pay{display:grid;gap:16px;margin-top:20px}
+.onvo-pay-form{border:1px solid var(--border);border-radius:var(--radius-card);background:white;padding:16px;min-height:200px}
+.onvo-pay-form iframe{width:100%!important;min-height:420px;border:0!important;border-radius:var(--radius-field)}
+.onvo-pay-loading{display:flex;align-items:center;justify-content:center;gap:12px;padding:48px 0;color:var(--ink-muted)}
+.onvo-pay-spinner{width:20px;height:20px;border-radius:50%;border:2px solid var(--border);border-top-color:var(--primary);animation:onvo-pay-spin 1s linear infinite}
+.onvo-pay-secure{display:flex;align-items:center;gap:6px;font-size:.875rem;color:var(--ink-muted);margin:0!important}
+@keyframes onvo-pay-spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.onvo-pay-spinner{animation:none}}

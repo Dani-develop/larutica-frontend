@@ -30,8 +30,10 @@ export async function createDatabase() {
     'supabase/migrations/202610050001_reservation_retries.sql',
     'docs/sql/reservations-auto-confirm.sql',
     'supabase/migrations/202610200001_cancel_departure_reservations.sql',
+    'supabase/migrations/202610210001_reservation_payments.sql',
   ]) await db.exec(await readFile(new URL('../../' + file, import.meta.url), 'utf8'));
 
+  const encode = value => value && typeof value === 'object' && !(value instanceof Date) ? JSON.stringify(value) : value;
   const path = (row, key) => key.split('.').reduce((value, field) => value?.[field], row);
   class Query {
     constructor(table) { this.table = table; this.filters = []; this.orders = []; this.offset = 0; this.end = Infinity; }
@@ -43,13 +45,20 @@ export async function createDatabase() {
     range(start, end) { this.offset = start; this.end = end + 1; return this; }
     limit(end) { this.end = end; return this; }
     update(values) { this.values = values; return this; }
+    insert(values) { this.inserted = values; return this; }
     maybeSingle() { this.singleRow = true; return this; }
     single() { this.singleRow = true; return this; }
     then(resolve, reject) { return this.run().then(resolve, reject); }
     async run() {
       try {
+        if (this.inserted) {
+          const keys = Object.keys(this.inserted);
+          const result = await db.query(`insert into public.${this.table}(${keys.join(',')}) values(${keys.map((_, i) => `$${i + 1}`).join(',')}) returning *`,
+            Object.values(this.inserted).map(encode));
+          return { data: result.rows, error: null };
+        }
         const tables = {};
-        for (const table of ['profiles', 'agencies', 'publications', 'publication_departures', 'reservations']) {
+        for (const table of ['profiles', 'agencies', 'publications', 'publication_departures', 'reservations', 'reservation_payments']) {
           tables[table] = (await db.query(`select * from public.${table}`)).rows;
         }
         const publication = row => row ? { ...row, agencies: tables.agencies.find(a => a.id === row.agency_id) } : null;
@@ -58,6 +67,7 @@ export async function createDatabase() {
           profiles: tables.profiles.find(p => p.id === row.passenger_id),
           publication_departures: departure(tables.publication_departures.find(d => d.id === row.departure_id)),
           reservation_ratings: [],
+          reservation_payments: tables.reservation_payments.filter(payment => payment.reservation_id === row.id),
         } : this.table === 'publication_departures' ? departure(row) : this.table === 'publications' ? publication(row) : row;
         let rows = tables[this.table].map(embed).filter(row => this.filters.every(filter => filter(row)));
         rows.sort((a, b) => { for (const [key, asc] of this.orders) {
@@ -71,7 +81,7 @@ export async function createDatabase() {
           const keys = Object.keys(this.values);
           for (const row of rows) {
             await db.query(`update public.${this.table} set ${keys.map((key, i) => `${key}=$${i + 1}`).join(',')} where id=$${keys.length + 1}`,
-              [...Object.values(this.values), row.id]);
+              [...Object.values(this.values).map(encode), row.id]);
             Object.assign(row, this.values);
           }
         }
