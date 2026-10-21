@@ -31,6 +31,7 @@ export async function createDatabase() {
     'docs/sql/reservations-auto-confirm.sql',
     'supabase/migrations/202610200001_cancel_departure_reservations.sql',
     'supabase/migrations/202610210001_reservation_payments.sql',
+    'supabase/migrations/202610210002_agency_settlements.sql',
   ]) await db.exec(await readFile(new URL('../../' + file, import.meta.url), 'utf8'));
 
   const encode = value => value && typeof value === 'object' && !(value instanceof Date) ? JSON.stringify(value) : value;
@@ -55,10 +56,10 @@ export async function createDatabase() {
           const keys = Object.keys(this.inserted);
           const result = await db.query(`insert into public.${this.table}(${keys.join(',')}) values(${keys.map((_, i) => `$${i + 1}`).join(',')}) returning *`,
             Object.values(this.inserted).map(encode));
-          return { data: result.rows, error: null };
+          return { data: this.singleRow ? result.rows[0] ?? null : result.rows, error: null };
         }
         const tables = {};
-        for (const table of ['profiles', 'agencies', 'publications', 'publication_departures', 'reservations', 'reservation_payments']) {
+        for (const table of ['profiles', 'agencies', 'publications', 'publication_departures', 'reservations', 'reservation_payments', 'agency_settlements']) {
           tables[table] = (await db.query(`select * from public.${table}`)).rows;
         }
         const publication = row => row ? { ...row, agencies: tables.agencies.find(a => a.id === row.agency_id) } : null;
@@ -68,6 +69,9 @@ export async function createDatabase() {
           publication_departures: departure(tables.publication_departures.find(d => d.id === row.departure_id)),
           reservation_ratings: [],
           reservation_payments: tables.reservation_payments.filter(payment => payment.reservation_id === row.id),
+        } : this.table === 'agency_settlements' ? { ...row,
+          agencies: tables.agencies.find(a => a.id === row.agency_id),
+          profiles: tables.profiles.find(p => p.id === row.created_by),
         } : this.table === 'publication_departures' ? departure(row) : this.table === 'publications' ? publication(row) : row;
         let rows = tables[this.table].map(embed).filter(row => this.filters.every(filter => filter(row)));
         rows.sort((a, b) => { for (const [key, asc] of this.orders) {
@@ -104,6 +108,13 @@ export async function createDatabase() {
         }
         if (name === 'cancel_departure_reservations') {
           return { data: (await db.query('select * from public.cancel_departure_reservations($1)', [args.p_departure_id])).rows, error: null };
+        }
+        if (name === 'admin_payment_rows') {
+          return { data: (await db.query('select * from public.admin_payment_rows($1,$2,$3,$4,$5,$6)',
+            [args.p_agency_id, args.p_status, args.p_from, args.p_to, args.p_limit, args.p_offset])).rows, error: null };
+        }
+        if (name === 'admin_agency_balances') {
+          return { data: (await db.query('select * from public.admin_agency_balances()')).rows, error: null };
         }
         throw new Error(`Unexpected RPC ${name}`);
       } catch (error) { return { data: null, error }; }

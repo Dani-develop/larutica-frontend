@@ -63,3 +63,32 @@ hay que configurarlas como secretos. Las claves actuales son de prueba.
 Ejecutar supabase/migrations/202610210001_reservation_payments.sql **antes** de
 publicar este código: las consultas de reservas incluyen la tabla
 reservation_payments y fallan si no existe.
+
+## Pagos y liquidaciones a agencias (administrador)
+
+Pantalla: Dashboard → Administración → **Pagos** (`/dashboard/payments`, solo Admin).
+
+- **Saldo por agencia.** Corresponde = Σ (cobrado − reembolsado) × (1 − comisión).
+  Saldo = corresponde + ajustes − pagos entregados. Solo cuentan cobros `paid` o
+  `refunded`; los intentos pendientes o fallidos no mueven dinero.
+- **Comisión.** Porcentaje por agencia (`agencies.commission_rate`, 0 por defecto).
+  Se congela en cada pago al crearlo (`reservation_payments.commission_rate`):
+  cambiar la tasa solo afecta cobros futuros.
+- **Detalle de pagos.** Viajero, experiencia, agencia, monto y reembolso, con
+  filtros por agencia, estado y fechas (hora de Costa Rica) y exportación CSV.
+- **Libro de liquidaciones** (`agency_settlements`, solo se agregan filas):
+  *Pago* (dinero entregado a la agencia, no puede superar el saldo) y *Ajuste*
+  (positivo o negativo, con motivo obligatorio). Un error se corrige con un
+  ajuste; no hay borrado.
+- Los pagos a la agencia se hacen fuera de la app (SINPE, transferencia…); la
+  pantalla solo los registra.
+
+API (todas exigen rol Admin): `GET /api/admin/payments`,
+`GET /api/admin/payments/balances`, `GET|POST /api/admin/settlements`,
+`PATCH /api/admin/agencies/[id]/commission`.
+
+### Aplicación pendiente en Supabase (liquidaciones)
+
+Ejecutar supabase/migrations/202610210002_agency_settlements.sql después de
+202610210001_reservation_payments.sql.
+

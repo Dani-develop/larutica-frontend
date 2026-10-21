@@ -11,6 +11,7 @@ import {
   Megaphone,
   Route,
   UserRound,
+  Wallet,
   Users,
   type LucideIcon,
 } from "lucide-react";
@@ -186,6 +187,12 @@ export const navGroups: NavGroup[] = [
         href: "/dashboard/destinations",
         label: "Destinos",
         icon: MapPin,
+        roles: ["Admin"],
+      },
+      {
+        href: "/dashboard/payments",
+        label: "Pagos",
+        icon: Wallet,
         roles: ["Admin"],
       },
     ],

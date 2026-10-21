@@ -1,5 +1,5 @@
 -- LaRutica: pagos de reservas con OnvoPAY.
--- El monto sale de la reserva (precio copiado × personas). El cliente no escribe esta tabla.
+-- El monto sale de la reserva (precio copiado x personas). El cliente no escribe esta tabla.
 
 create table public.reservation_payments (
   id uuid primary key default gen_random_uuid(),
