@@ -21,12 +21,14 @@ export async function GET(request: Request) {
     if (error) throw error;
     const now = Date.now();
     const rows = (data ?? []).filter(p => p.price_per_person !== null);
+    const detail = id && rows.length ? await admin.from('publications').select('journey').eq('id',id).eq('status','APPROVED').maybeSingle() : {data:null,error:null};
+    if (detail.error) throw detail.error;
     const departures = rows.flatMap(p => p.publication_departures).filter(d => d.status === 'ACTIVE' && Date.parse(d.start_at) > now);
     const used = await usedDepartureSeats(admin, departures.map(d => d.id));
     return Response.json({ data: rows.map(p => ({
       id: p.id, title: p.title, description: p.description, destination: p.destination,
       serviceType: p.service_type, price: Number(p.price_per_person), duration: p.duration_minutes,
-      image: p.main_image_url, included: p.included, notIncluded: p.not_included, meetingPoint: p.meeting_point,
+      image: p.main_image_url, included: p.included, notIncluded: p.not_included, meetingPoint: p.meeting_point, journey: id ? detail.data?.journey ?? null : undefined,
       agency: (Array.isArray(p.agencies) ? p.agencies[0] : p.agencies)?.commercial_name ?? 'Proveedor local',
       departures: p.publication_departures.filter(d => d.status === 'ACTIVE' && Date.parse(d.start_at) > now)
         .map(d => ({ id: d.id, startAt: d.start_at, available: Math.max(0, d.capacity - (used.get(d.id) ?? 0)) }))

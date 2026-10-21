@@ -1,3 +1,4 @@
+import type { Journey } from "@/modules/journeys/types";
 export type TravelerPublication = {
   id: string;
 
@@ -17,6 +18,7 @@ export type TravelerPublication = {
 
   notIncluded: string;
 
+  journey?: Journey | null;
   meetingPoint: string;
 
   defaultCapacity: number;

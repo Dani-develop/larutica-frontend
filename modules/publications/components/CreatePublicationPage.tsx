@@ -16,6 +16,9 @@ import {
 
 import { Button } from "@/components/ui/button";
 
+import { useDashboardRole } from "@/components/dashboard/dashboard-role-context";
+import { useMemo } from "react";
+
 import { PublicationForm } from "./PublicationForm";
 
 import { usePublications } from "../hooks/usePublications";
@@ -33,6 +36,8 @@ type PublicationTab =
 export function CreatePublicationPage() {
   const { t } = usePreferences();
   const router = useRouter();
+  const { role } = useDashboardRole();
+  const initialValue = useMemo(() => ({ ...emptyPublicationInput, serviceType: role === "Transporte" ? "TRANSPORT" as const : "" as const }), [role]);
 
   const {
     create,
@@ -258,7 +263,7 @@ export function CreatePublicationPage() {
       {/* Formulario */}
       <PublicationForm
         initialValue={
-          emptyPublicationInput
+          initialValue
         }
         draftLabel="Guardar y continuar"
         submitLabel="Enviar a revisión"

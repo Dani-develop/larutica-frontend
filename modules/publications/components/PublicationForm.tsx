@@ -25,6 +25,9 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { JourneyEditor } from "@/modules/journeys/JourneyEditor";
+import { journeyReady } from "@/modules/journeys/types";
+
 import { Textarea } from "@/components/ui/textarea";
 
 import type {
@@ -33,6 +36,7 @@ import type {
 
 type PublicationFormProps = {
   initialValue: CreatePublicationInput;
+  allowLegacyJourney?: boolean;
 
   onSubmit: (
     value: CreatePublicationInput,
@@ -49,7 +53,8 @@ type FormStep =
   | 1
   | 2
   | 3
-  | 4;
+  | 4
+  | 5;
 
 const LANGUAGES = [
   {
@@ -77,22 +82,23 @@ const STEPS: {
     description:
       "Define el tipo de servicio y la información principal de la publicación.",
   },
+  { id: 2, title: "Define el trayecto", shortTitle: "Trayecto", description: "Selecciona y confirma el recorrido en el mapa." },
   {
-    id: 2,
+    id: 3,
     title: "Detalles del servicio",
     shortTitle: "Servicio",
     description:
       "Configura el precio, la duración y la capacidad predeterminada.",
   },
   {
-    id: 3,
+    id: 4,
     title: "Experiencia e idiomas",
     shortTitle: "Experiencia",
     description:
-      "Indica los idiomas, lo que incluye la experiencia y el punto de encuentro.",
+      "Indica los idiomas y lo que incluye la experiencia.",
   },
   {
-    id: 4,
+    id: 5,
     title: "Imagen y revisión",
     shortTitle: "Revisión",
     description:
@@ -102,6 +108,7 @@ const STEPS: {
 
 export function PublicationForm({
   initialValue,
+  allowLegacyJourney = false,
   onSubmit,
   onCancel,
   draftLabel = "Guardar borrador",
@@ -217,6 +224,7 @@ export function PublicationForm({
       validateStep(
         activeStep,
         value,
+        allowLegacyJourney,
       );
 
     if (validationError) {
@@ -230,7 +238,7 @@ export function PublicationForm({
     }
 
     if (
-      activeStep < 4
+      activeStep < 5
     ) {
       goToStep(
         (activeStep +
@@ -263,6 +271,7 @@ export function PublicationForm({
       const validationError =
         validateForSubmit(
           value,
+          allowLegacyJourney,
         );
 
       if (validationError) {
@@ -341,7 +350,7 @@ export function PublicationForm({
   }
 
   const progress =
-    activeStep * 25;
+    activeStep * 20;
 
   return (
     <div
@@ -358,18 +367,11 @@ export function PublicationForm({
           <div
             className="absolute left-4 top-3.5 h-px bg-[var(--primary)] transition-all duration-300"
             style={{
-              width:
-                activeStep === 1
-                  ? "0%"
-                  : activeStep === 2
-                    ? "31%"
-                    : activeStep === 3
-                      ? "64%"
-                      : "calc(100% - 2rem)",
+              width: `calc(${(activeStep - 1) * 25}% - ${(activeStep - 1) / 4 * 2}rem)`,
             }}
           />
 
-          <div className="relative grid grid-cols-4">
+          <div className="relative grid grid-cols-5">
             {STEPS.map(
               (
                 step,
@@ -618,40 +620,7 @@ export function PublicationForm({
                 </p>
               </FormField>
 
-              <FormField
-                label="Destino"
-                required
-              >
-                <div className="relative">
-                  <MapPin
-                    size={
-                      15
-                    }
-                    className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                  />
 
-                  <Input
-                    value={
-                      value.destination ??
-                      ""
-                    }
-                    onChange={(
-                      event,
-                    ) =>
-                      patch(
-                        "destination",
-                        event
-                          .target
-                          .value,
-                      )
-                    }
-                    placeholder={t(
-                      "Ej. La Fortuna, Alajuela",
-                    )}
-                    className="pl-9"
-                  />
-                </div>
-              </FormField>
             </div>
           </section>
 
@@ -675,12 +644,21 @@ export function PublicationForm({
         </div>
       ) : null}
 
+      {activeStep === 2 ? <div className="space-y-4">
+        <JourneyEditor value={value.journey} allowLegacy={allowLegacyJourney} isExcursion={value.serviceType === "EXCURSION"}
+          meetingPoint={value.meetingPoint ?? ""} onMeetingPointChange={text => patch("meetingPoint", text)}
+          onChange={journey => setValue(previous => ({...previous, journey,
+            destination: journey?.points.at(-1)?.name ?? previous.destination}))}/>
+        <StepActions submitting={submitting} showBack onBack={goBack} onCancel={onCancel} onContinue={goNext}/>
+        <Button type="button" variant="ghost" disabled={submitting} onClick={()=>handleSubmit("DRAFT")}>Guardar trayecto como borrador</Button>
+      </div> : null}
+
       {/* =====================================================
           PASO 2
           Precio + duración + capacidad
       ====================================================== */}
       {activeStep ===
-      2 ? (
+      3 ? (
         <div className="space-y-4">
           <section className="rounded-2xl border border-black/10 bg-white p-4 shadow-sm sm:p-5">
             <StepHeading
@@ -902,7 +880,7 @@ export function PublicationForm({
           Idiomas + experiencia
       ====================================================== */}
       {activeStep ===
-      3 ? (
+      4 ? (
         <div className="space-y-4">
           <section className="rounded-2xl border border-black/10 bg-white p-4 shadow-sm sm:p-5">
             <StepHeading
@@ -1043,42 +1021,7 @@ export function PublicationForm({
               </FormField>
             </div>
 
-            <div className="mt-4">
-              <FormField
-                label="Punto de encuentro"
-                required
-              >
-                <div className="relative">
-                  <MapPin
-                    size={
-                      15
-                    }
-                    className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                  />
 
-                  <Input
-                    value={
-                      value.meetingPoint ??
-                      ""
-                    }
-                    onChange={(
-                      event,
-                    ) =>
-                      patch(
-                        "meetingPoint",
-                        event
-                          .target
-                          .value,
-                      )
-                    }
-                    placeholder={t(
-                      "Ej. Parque Central de La Fortuna",
-                    )}
-                    className="pl-9"
-                  />
-                </div>
-              </FormField>
-            </div>
           </section>
 
           <StepActions
@@ -1104,7 +1047,7 @@ export function PublicationForm({
           Imagen + revisión
       ====================================================== */}
       {activeStep ===
-      4 ? (
+      5 ? (
         <div className="space-y-4">
           <section className="rounded-2xl border border-black/10 bg-white p-4 shadow-sm sm:p-5">
             <StepHeading
@@ -1423,204 +1366,44 @@ export function PublicationForm({
   );
 }
 
-function validateStep(
-  step: FormStep,
-  value: CreatePublicationInput,
-): string | null {
-  if (
-    step === 1
-  ) {
-    if (
-      !value.serviceType
-    ) {
-      return "Selecciona el tipo de servicio.";
-    }
-
-    if (
-      !value.title?.trim()
-    ) {
-      return "Ingresa el nombre de la publicación.";
-    }
-
-    if (
-      !value.description?.trim()
-    ) {
-      return "Ingresa una descripción.";
-    }
-
-    if (
-      !value.destination?.trim()
-    ) {
-      return "Ingresa el destino.";
-    }
+function validateStep(step: FormStep, value: CreatePublicationInput, allowLegacy = false): string | null {
+  if (step === 1) {
+    if (!value.serviceType) return "Selecciona el tipo de servicio.";
+    if (!value.title?.trim()) return "Ingresa el nombre de la publicación.";
+    if (!value.description?.trim()) return "Ingresa una descripción.";
   }
-
-  if (
-    step === 2
-  ) {
-    if (
-      value.pricePerPerson ===
-        null ||
-      value.pricePerPerson ===
-        undefined ||
-      value.pricePerPerson <=
-        0
-    ) {
-      return "Ingresa un precio por persona válido.";
-    }
-
-    if (
-      value.durationMinutes ===
-        null ||
-      value.durationMinutes ===
-        undefined ||
-      value.durationMinutes <=
-        0
-    ) {
-      return "Ingresa una duración válida.";
-    }
-
-    if (
-      value.defaultCapacity ===
-        null ||
-      value.defaultCapacity ===
-        undefined ||
-      value.defaultCapacity <=
-        0
-    ) {
-      return "Ingresa una capacidad predeterminada válida.";
-    }
+  if (step === 2) {
+    if (!(allowLegacy && !value.journey) && !journeyReady(value.journey)) return "Define y confirma el trayecto.";
+    if (!value.destination?.trim()) return "Selecciona la llegada del trayecto.";
+    if (!value.meetingPoint?.trim()) return "Ingresa las indicaciones del punto de encuentro.";
   }
-
-  if (
-    step === 3
-  ) {
-    if (
-      !value.languageIds ||
-      value.languageIds.length ===
-        0
-    ) {
-      return "Selecciona al menos un idioma.";
-    }
-
-    if (
-      !value.included?.trim()
-    ) {
-      return "Indica qué incluye el servicio.";
-    }
-
-    if (
-      !value.notIncluded?.trim()
-    ) {
-      return "Indica qué no incluye el servicio.";
-    }
-
-    if (
-      !value.meetingPoint?.trim()
-    ) {
-      return "Ingresa el punto de encuentro.";
-    }
+  if (step === 3) {
+    if (!value.pricePerPerson || value.pricePerPerson <= 0) return "Ingresa un precio por persona válido.";
+    if (!value.durationMinutes || value.durationMinutes <= 0) return "Ingresa una duración válida.";
+    if (!value.defaultCapacity || value.defaultCapacity <= 0) return "Ingresa una capacidad predeterminada válida.";
   }
-
-  if (
-    step === 4 &&
-    !value.mainImageUrl?.trim()
-  ) {
-    return "Ingresa una imagen principal.";
+  if (step === 4) {
+    if (!value.languageIds?.length) return "Selecciona al menos un idioma.";
+    if (!value.included?.trim()) return "Indica qué incluye el servicio.";
+    if (!value.notIncluded?.trim()) return "Indica qué no incluye el servicio.";
   }
-
+  if (step === 5 && !value.mainImageUrl?.trim()) return "Ingresa una imagen principal.";
   return null;
 }
-
-function validateForSubmit(
-  value: CreatePublicationInput,
-): string | null {
-  return (
-    validateStep(
-      1,
-      value,
-    ) ??
-    validateStep(
-      2,
-      value,
-    ) ??
-    validateStep(
-      3,
-      value,
-    ) ??
-    validateStep(
-      4,
-      value,
-    )
-  );
+function validateForSubmit(value: CreatePublicationInput, allowLegacy = false): string | null {
+  for (const step of [1,2,3,4,5] as FormStep[]) {
+    const error = validateStep(step, value, allowLegacy);
+    if (error) return error;
+  }
+  return null;
 }
-
-function getStepForValidationError(
-  message: string,
-): FormStep {
-  const firstStepErrors =
-    [
-      "tipo de servicio",
-      "nombre de la publicación",
-      "descripción",
-      "destino",
-    ];
-
-  if (
-    firstStepErrors.some(
-      (text) =>
-        message
-          .toLowerCase()
-          .includes(
-            text,
-          ),
-    )
-  ) {
-    return 1;
-  }
-
-  const secondStepErrors =
-    [
-      "precio",
-      "duración",
-      "capacidad",
-    ];
-
-  if (
-    secondStepErrors.some(
-      (text) =>
-        message
-          .toLowerCase()
-          .includes(
-            text,
-          ),
-    )
-  ) {
-    return 2;
-  }
-
-  const thirdStepErrors =
-    [
-      "idioma",
-      "incluye",
-      "no incluye",
-      "punto de encuentro",
-    ];
-
-  if (
-    thirdStepErrors.some(
-      (text) =>
-        message
-          .toLowerCase()
-          .includes(
-            text,
-          ),
-    )
-  ) {
-    return 3;
-  }
-
-  return 4;
+function getStepForValidationError(message: string): FormStep {
+  const lower = message.toLowerCase();
+  if (["trayecto", "punto de encuentro"].some(s => lower.includes(s))) return 2;
+  if (["precio", "duración", "capacidad"].some(s => lower.includes(s))) return 3;
+  if (["idioma", "incluye"].some(s => lower.includes(s))) return 4;
+  if (lower.includes("imagen")) return 5;
+  return 1;
 }
 
 function getLanguageNames(

@@ -205,6 +205,7 @@ export function EditPublicationPage({
         }
 
         return {
+          journey: publication.journey ?? null,
           serviceType:
             publication.serviceType ??
             "",
@@ -550,6 +551,7 @@ export function EditPublicationPage({
       {activeTab ===
       "general" ? (
         <PublicationForm
+          allowLegacyJourney={publication.journeyRequired === false}
           initialValue={
             initialValue
           }

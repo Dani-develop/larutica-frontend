@@ -1,3 +1,6 @@
+import type { Journey } from "@/modules/journeys/types";
+import { parseJourney } from "@/lib/maps/validation";
+import { verifyJourney } from "@/lib/maps/provider";
 import {
   ApiError,
   apiErrorResponse,
@@ -36,6 +39,7 @@ type UpdatePublicationPayload = {
   included?: string;
   notIncluded?: string;
 
+  journey?: Journey | null;
   meetingPoint?: string;
 
   mainImageUrl?: string;
@@ -48,6 +52,8 @@ type UpdatePublicationPayload = {
 };
 
 type PublicationRow = {
+  journey: Journey | null;
+  journey_required: boolean;
   id: string;
   agency_id: string;
 
@@ -599,6 +605,8 @@ async function requireOwnedPublication(
         duration_minutes,
         included,
         not_included,
+        journey,
+        journey_required,
         meeting_point,
         main_image_url,
         default_capacity,
@@ -895,6 +903,8 @@ export async function GET(
           notIncluded:
             publication.not_included,
 
+          journey: publication.journey,
+          journeyRequired: publication.journey_required,
           meetingPoint:
             publication.meeting_point,
 
@@ -996,6 +1006,11 @@ export async function PATCH(
       "SUBMIT"
         ? "SUBMIT"
         : "DRAFT";
+
+    const journeyProvided = hasOwn(payload, "journey");
+    const nextJourney = parseJourney(journeyProvided ? payload.journey : publication.journey,
+      action === "SUBMIT" && (publication.journey_required || !!publication.journey));
+    await verifyJourney(nextJourney, publication.journey);
 
     const currentLanguageIds =
       await getPublicationLanguageIds(
@@ -1206,6 +1221,11 @@ export async function PATCH(
       unknown
     > = {};
 
+    if (journeyProvided) {
+      updateData.journey = nextJourney;
+      if (nextJourney?.confirmedAt) updateData.journey_required = true;
+    }
+
     if (
       hasOwn(
         payload,
@@ -1354,6 +1374,8 @@ export async function PATCH(
           duration_minutes,
           included,
           not_included,
+          journey,
+          journey_required,
           meeting_point,
           main_image_url,
           default_capacity,
@@ -1494,6 +1516,8 @@ export async function PATCH(
           notIncluded:
             updatedPublication.not_included,
 
+          journey: updatedPublication.journey,
+          journeyRequired: updatedPublication.journey_required,
           meetingPoint:
             updatedPublication.meeting_point,
 

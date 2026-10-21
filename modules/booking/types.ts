@@ -1,8 +1,10 @@
+import type { Journey } from "@/modules/journeys/types";
 export type Departure = { id: string; startAt: string; available: number };
 export type Experience = {
   id: string; title: string; description: string; destination: string;
   serviceType: string; price: number; duration: number; image: string;
   included: string; notIncluded: string; meetingPoint: string;
+  journey?: Journey | null;
   agency: string; departures: Departure[];
 };
 export const money = (n: number) => new Intl.NumberFormat('es-CR', { style: 'currency', currency: 'USD', currencyDisplay: 'code', maximumFractionDigits: 2 }).format(n);

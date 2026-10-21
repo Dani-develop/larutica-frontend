@@ -1,4 +1,5 @@
 "use client";
+import { JourneyView } from "@/modules/journeys/JourneyView";
 
 import { DashboardBreadcrumb } from "@/components/dashboard/DashboardBreadcrumb";
 import { usePreferences } from "@/lib/preferences/Preferences";
@@ -121,7 +122,7 @@ export default function AdminPublicationDetail({ publicationId }: AdminPublicati
 
         <Tabs.Content value="details" className={panelClassName}>
           <div className="mb-6 border-b border-border pb-6">
-            <TextSection title="Punto de encuentro" value={publication.meetingPoint} />
+            <h2 className="lr-section-title">Trayecto</h2><JourneyView journey={publication.journey} meetingPoint={publication.meetingPoint}/>
           </div>
           <div className="grid gap-8 md:grid-cols-2">
             <TextSection title="Qué incluye" value={publication.included} />

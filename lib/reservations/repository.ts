@@ -1,3 +1,4 @@
+import type { Journey } from "@/modules/journeys/types";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { ApiError } from "@/lib/api/errors";
 import { derivePaymentStatus, type ReservationPaymentStatus } from "@/lib/payments/status";
@@ -11,6 +12,9 @@ import {
 
 const RESERVATION_SELECT = `
   id,
+  journey_snapshot,
+  meeting_point_snapshot,
+  journey_snapshot_captured,
   passenger_id,
   departure_id,
   number_of_people,
@@ -65,6 +69,7 @@ export type ReservationRecord = {
   agencyName?: string;
   agencyPhone?: string | null;
   agencyEmail?: string | null;
+  journey?: Journey | null;
   meetingPoint?: string | null;
   publicationImageUrl?: string | null;
 };
@@ -84,6 +89,9 @@ type DepartureEmbed = {
   publications: PublicationEmbed | PublicationEmbed[] | null;
 };
 type ReservationRow = {
+  journey_snapshot?: Journey | null;
+  meeting_point_snapshot?: string | null;
+  journey_snapshot_captured?: boolean;
   id: string;
   passenger_id: string;
   departure_id: string;
@@ -151,7 +159,8 @@ export function toReservationRecord(row: ReservationRow): ReservationRecord {
     agencyName: agency?.commercial_name,
     agencyPhone: agency?.phone,
     agencyEmail: agency?.email,
-    meetingPoint: publication?.meeting_point,
+    journey: row.journey_snapshot ?? null,
+    meetingPoint: row.journey_snapshot_captured ? row.meeting_point_snapshot : publication?.meeting_point,
     publicationImageUrl: publication?.main_image_url ?? null,
   };
 }
@@ -180,6 +189,7 @@ export function toPublicReservation(record: ReservationRecord) {
     agencyName: record.agencyName,
     agencyPhone: record.agencyPhone,
     agencyEmail: record.agencyEmail,
+    journey: record.journey ?? null,
     meetingPoint: record.meetingPoint,
     publicationImageUrl: record.publicationImageUrl ?? null,
   };

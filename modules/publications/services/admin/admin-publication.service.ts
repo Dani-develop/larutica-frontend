@@ -1,3 +1,4 @@
+import type { Journey } from "@/modules/journeys/types";
 import { apiFetch } from "@/lib/api/browser-fetch";
 export type AdminPublicationStatus =
   | "DRAFT"
@@ -53,6 +54,7 @@ export interface AdminPublication {
 
   included: string | null;
   notIncluded: string | null;
+  journey?: Journey | null;
   meetingPoint: string | null;
 
   mainImageUrl: string | null;
@@ -127,6 +129,7 @@ interface RawPublication {
 
   included: string | null;
   not_included: string | null;
+  journey?: Journey | null;
   meeting_point: string | null;
 
   main_image_url: string | null;
@@ -288,6 +291,7 @@ function normalizePublication(
     notIncluded:
       raw.not_included,
 
+    journey: raw.journey,
     meetingPoint:
       raw.meeting_point,
 

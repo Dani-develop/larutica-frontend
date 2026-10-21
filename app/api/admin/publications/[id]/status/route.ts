@@ -1,3 +1,4 @@
+import { journeyReady, type Journey } from "@/modules/journeys/types";
 import {
   AdminApiError,
   adminErrorResponse,
@@ -140,7 +141,7 @@ export async function PATCH(
           "publications",
         )
         .select(
-          "id,status,agency_id",
+          "id,status,agency_id,journey,journey_required",
         )
         .eq(
           "id",
@@ -161,6 +162,10 @@ export async function PATCH(
         "La publicación no existe.",
         404,
       );
+    }
+
+    if (status === "APPROVED" && existingPublication.journey_required && !journeyReady(existingPublication.journey as Journey | null)) {
+      throw new AdminApiError("El publicador debe definir y confirmar el trayecto antes de aprobar la actividad.", 409);
     }
 
     if (

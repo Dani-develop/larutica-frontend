@@ -1,0 +1,36 @@
+name: Validar trayectos
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: trayectos-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  maps:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npx --no-install playwright install --with-deps chromium
+      - run: npm run test:maps
+      - run: npm run test:maps:e2e
+      - run: npm run test:maps:runtime
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: trayectos-playwright
+          path: |
+            playwright-report/maps
+            test-results
+          retention-days: 7

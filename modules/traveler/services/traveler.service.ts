@@ -75,7 +75,7 @@ export async function listCatalogPublications(): Promise<TravelerPublication[]> 
   const result = await parseResponse<ApiResponse<import('@/modules/booking/types').Experience[]>>(response);
   return result.data.map(p => ({ id:p.id, title:p.title, description:p.description, destination:p.destination,
     mainImageUrl:p.image, pricePerPerson:p.price, durationMinutes:p.duration, included:p.included,
-    notIncluded:p.notIncluded, meetingPoint:p.meetingPoint, defaultCapacity:0, languages:[],
+    notIncluded:p.notIncluded, meetingPoint:p.meetingPoint, journey:p.journey, defaultCapacity:0, languages:[],
     serviceType:p.serviceType as TravelerPublication['serviceType'], departures:p.departures,
     providerName:p.agency, providerSlug:p.agency.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'') }));
 }

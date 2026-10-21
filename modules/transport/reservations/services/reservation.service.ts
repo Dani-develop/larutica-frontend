@@ -1,3 +1,4 @@
+import type { Journey } from "@/modules/journeys/types";
 import { apiFetch } from "@/lib/api/browser-fetch";
 export type ReservationStatus = 'PENDING' | 'CONFIRMED' | 'PAST' | 'CANCELLED'
 
@@ -24,6 +25,7 @@ export type Reservation = {
   agencyName?: string
   agencyPhone?: string | null
   agencyEmail?: string | null
+  journey?: Journey | null
   meetingPoint?: string | null
   publicationImageUrl?: string | null
 }

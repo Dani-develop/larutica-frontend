@@ -12,6 +12,7 @@ import { PublicShell } from './PublicShell';
 import { SiteHeader } from '@/modules/landing/components/SiteHeader';
 import { type Experience } from './types';
 import './experience-detail.css';
+import { JourneyView } from '@/modules/journeys/JourneyView';
 import { reservationPath } from '@/modules/landing/lib/travelerRoutes';
 import { ReservationPayment } from '@/modules/payments/components/ReservationPayment';
 
@@ -66,6 +67,8 @@ export function ExperienceDetail({ id, embedded = false }: { id: string; embedde
   const [busy,setBusy] = useState(false), [created,setCreated] = useState<Reservation|null>(null), [reload,setReload] = useState(0);
   const [paymentState,setPaymentState] = useState<'pending'|'paid'|'deferred'>('pending');
   const submitting = useRef(false);
+  const panelRef = useRef<HTMLElement|null>(null);
+  useEffect(() => {if (panelRef.current) panelRef.current.scrollTop = 0;},[step]);
   const restoredParams = useRef('');
   useEffect(() => {
     const refresh = () => {if (!document.hidden) setReload(n => n+1);};
@@ -133,8 +136,8 @@ export function ExperienceDetail({ id, embedded = false }: { id: string; embedde
     : loading && !item ? <ExperienceDetailSkeleton /> : !item ? <div className="booking-empty" role="alert"><h1>{t("No pudimos abrir esta experiencia")}</h1><p>{t(error)}</p><Button onClick={() => setReload(n => n+1)}>{t("Volver a intentar")}</Button></div> : <>
     <div className="booking-detail-heading"><h1>{item.title}</h1>
       <ul className="booking-detail-meta"><li><MapPin size={16} aria-hidden="true"/>{item.destination}</li>{item.duration ? <li><Clock size={16} aria-hidden="true"/>{durationLabel(item.duration)}</li> : null}<li><Building2 size={16} aria-hidden="true"/>{t("Organizado por ")}<strong>{item.agency}</strong></li></ul></div>
-    <div className="booking-detail-grid"><div className="booking-prose"><img className="booking-detail-photo" src={item.image || '/playa.jpg'} alt={item.title}/><section><h2>{t("Sobre esta experiencia")}</h2><p>{item.description}</p></section><section><h2>{t("Qué incluye")}</h2><p>{item.included || t("Consulta los detalles con el proveedor.")}</p><h2>{t("Qué no incluye")}</h2><p>{item.notIncluded || t("El proveedor no ha indicado exclusiones.")}</p></section><section><h2>{t("Punto de encuentro")}</h2><p>{item.meetingPoint}</p><p>{t("Las horas se muestran en la zona horaria de Costa Rica.")}</p></section><section><h2>{t("Antes de reservar")}</h2><p>{t("Tu reserva queda confirmada al completar este paso. Puedes consultar sus detalles y cancelar desde Mis reservas antes de la salida. Al reservar podrás pagar con tarjeta, de forma segura, con OnvoPAY.")}</p></section></div>
-    <aside className="booking-panel" aria-label={t("Solicitar reserva")}><p className="booking-price-from"><span>{t("Desde")}</span><strong>{money(item.price)}</strong><span>{t("por persona")}</span></p><CurrencyNotice usd={item.price*(people || 0)}/><ol className="booking-steps"><li aria-current={step === 'choose' ? 'step' : undefined}>{t("1. Elige tu salida")}</li><li aria-current={step === 'review' ? 'step' : undefined}>{t("2. Revisa y envía")}</li></ol><h2>{step === 'choose' ? t("Haz espacio para tu próximo viaje") : t("Revisa tu solicitud")}</h2>
+    <div className="booking-detail-grid"><div className="booking-prose"><img className="booking-detail-photo" src={item.image || '/playa.jpg'} alt={item.title}/><section><h2>{t("Sobre esta experiencia")}</h2><p>{item.description}</p></section><section><h2>{t("Qué incluye")}</h2><p>{item.included || t("Consulta los detalles con el proveedor.")}</p><h2>{t("Qué no incluye")}</h2><p>{item.notIncluded || t("El proveedor no ha indicado exclusiones.")}</p></section><section><h2>{t("Trayecto")}</h2><JourneyView journey={item.journey} meetingPoint={item.meetingPoint}/><p>{t("Las horas se muestran en la zona horaria de Costa Rica.")}</p></section><section><h2>{t("Antes de reservar")}</h2><p>{t("Tu reserva queda confirmada al completar este paso. Puedes consultar sus detalles y cancelar desde Mis reservas antes de la salida. Al reservar podrás pagar con tarjeta, de forma segura, con OnvoPAY.")}</p></section></div>
+    <aside ref={panelRef} className="booking-panel" aria-label={t("Solicitar reserva")}><p className="booking-price-from"><span>{t("Desde")}</span><strong>{money(item.price)}</strong><span>{t("por persona")}</span></p><CurrencyNotice usd={item.price*(people || 0)}/><ol className="booking-steps"><li aria-current={step === 'choose' ? 'step' : undefined}>{t("1. Elige tu salida")}</li><li aria-current={step === 'review' ? 'step' : undefined}>{t("2. Revisa y envía")}</li></ol><h2>{step === 'choose' ? t("Haz espacio para tu próximo viaje") : t("Revisa tu solicitud")}</h2>
     <p id="booking-block-reason" className={blockedReason ? 'booking-notice' : 'sr-only'} role="status">{t(blockedReason) || t("Puedes continuar con tu solicitud.")}</p>
     {existingReservation && <Button asChild variant="outline" className="w-full mb-4"><Link href={reservationPath(existingReservation.id)}>{t("Ver mi reserva")}</Link></Button>}
     {!item.departures.length && <div className="booking-actions mb-4"><Button asChild variant="outline"><Link href={embedded ? "/" : "/#experiencias"}>{t("Explorar otras experiencias")}</Link></Button><Button variant="outline" onClick={() => setReload(n => n+1)}>{t("Consultar fechas de nuevo")}</Button></div>}

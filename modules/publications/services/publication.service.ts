@@ -1,3 +1,12 @@
+async function ensureJourneyBackend(input: CreatePublicationInput) {
+  if (!input.journey) return;
+  const response = await apiFetch("/api/publications/journey-status", {cache:"no-store"});
+  const body = await response.json().catch(() => null) as {data?:{journeys?:number}} | null;
+  if (!response.ok || body?.data?.journeys !== 1) {
+    throw new Error("El servicio de trayectos tiene una actualización pendiente. No se guardaron tus cambios; conserva el formulario e intenta más tarde.");
+  }
+}
+
 import { apiFetch } from "@/lib/api/browser-fetch";
 import type {
   ApiErrorResponse,
@@ -100,6 +109,7 @@ export async function getPublicationById(
 export async function createPublication(
   input: CreatePublicationInput,
 ): Promise<Publication> {
+  await ensureJourneyBackend(input);
   const response =
     await apiFetch(
       "/api/publications",
@@ -134,6 +144,7 @@ export async function updatePublication(
   id: string,
   input: UpdatePublicationInput,
 ): Promise<Publication> {
+  await ensureJourneyBackend(input);
   const response =
     await apiFetch(
       `/api/publications/${id}`,

@@ -19,7 +19,7 @@
 .booking-site.booking-detail-page .booking-prose h2 { font-size:var(--type-section); font-weight:700; margin-bottom:10px; }
 .booking-site.booking-detail-page .booking-prose p { color:var(--text-secondary); font-size:16px; line-height:1.6; }
 
-.booking-site.booking-detail-page .booking-panel { top:112px; padding:24px; border:1px solid var(--detail-line); border-radius:var(--radius-card); box-shadow:0 4px 24px #002c1614; }
+.booking-site.booking-detail-page .booking-panel { --booking-panel-offset:112px; position:sticky; top:var(--booking-panel-offset); align-self:start; max-height:calc(100dvh - var(--booking-panel-offset) - 16px); overflow-y:auto; overscroll-behavior-y:contain; scrollbar-gutter:stable; scroll-padding-block:24px; padding:24px; border:1px solid var(--detail-line); border-radius:var(--radius-card); box-shadow:0 4px 24px #002c1614; }
 .booking-site.booking-detail-page .booking-panel h2 { font-size:var(--type-card); font-weight:700; margin-bottom:16px; }
 .booking-price-from { display:flex; flex-wrap:wrap; align-items:baseline; gap:4px 8px; margin:0 0 16px !important; padding-bottom:16px; border-bottom:1px solid var(--detail-line); color:var(--detail-muted); font-size:14px; }
 .booking-price-from strong { color:var(--detail-ink); font-size:28px; font-weight:800; letter-spacing:-.02em; }
@@ -40,13 +40,17 @@
 .detail-skeleton .skeleton-photo { width:100%; aspect-ratio:16/9; border-radius:var(--radius-card); }
 .detail-skeleton .skeleton-field { width:100%; height:48px; margin-top:8px; border-radius:var(--radius-field); }
 .detail-skeleton .skeleton-button { width:100%; height:48px; margin-top:28px; border-radius:var(--radius-pill); }
-.detail-skeleton .booking-panel { position:static; }
+.detail-skeleton .booking-panel { position:static; max-height:none; overflow:visible; }
 @keyframes detail-shimmer { from { background-position:100% 0; } to { background-position:-100% 0; } }
 @media (prefers-reduced-motion:reduce) { .detail-skeleton .skeleton-block { animation:none; } }
 
+@media (min-width:801px) and (max-width:1100px) {
+  .booking-site.booking-detail-page .booking-panel { --booking-panel-offset:156px; }
+}
+
 @media (max-width:800px) {
   .booking-site.booking-detail-page .booking-detail-grid { grid-template-columns:1fr; gap:28px; }
-  .booking-site.booking-detail-page .booking-panel { position:static; }
+  .booking-site.booking-detail-page .booking-panel { position:static; max-height:none; overflow:visible; }
 }
 @media (max-width:520px) {
   .booking-site.booking-detail-page .booking-container { padding:20px 16px 48px; }

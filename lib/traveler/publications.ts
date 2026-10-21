@@ -1,3 +1,4 @@
+import type { Journey } from "@/modules/journeys/types";
 import { publicationDepartures } from "./availability";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { ApiError } from "@/lib/api/errors";
@@ -13,6 +14,7 @@ type PublicationRow = {
   duration_minutes: number | null;
   included: string | null;
   not_included: string | null;
+  journey?: Journey | null;
   meeting_point: string | null;
   main_image_url: string | null;
   default_capacity: number | null;
@@ -116,6 +118,7 @@ export async function listTravelerPublications(
       included: row.included,
       notIncluded: row.not_included,
       meetingPoint: row.meeting_point,
+      journey: row.journey,
       defaultCapacity: row.default_capacity,
       languages: languagesByPublication.get(row.id) ?? [],
       serviceType: row.service_type as TravelerPublication["serviceType"],

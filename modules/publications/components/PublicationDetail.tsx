@@ -1,4 +1,5 @@
 "use client";
+import { JourneyView } from "@/modules/journeys/JourneyView";
 import { DashboardBreadcrumb } from "@/components/dashboard/DashboardBreadcrumb";
 import { usePreferences } from "@/lib/preferences/Preferences";
 
@@ -424,8 +425,9 @@ export function PublicationDetail({
         </div>
       </section>
 
+      {publication.journey ? <section className="mt-5"><h2 className="lr-section-title">Trayecto</h2><JourneyView journey={publication.journey} meetingPoint={publication.meetingPoint}/></section> : null}
       {/* Punto de encuentro */}
-      <section className="mt-5 rounded-2xl border border-black/10 bg-white p-5 shadow-sm">
+      {!publication.journey ? <section className="mt-5 rounded-2xl border border-black/10 bg-white p-5 shadow-sm">
         <div className="flex items-center gap-2">
           <MapPin
             size={16}
@@ -439,7 +441,7 @@ export function PublicationDetail({
           {publication.meetingPoint ??
             "Sin definir."}
         </p>
-      </section>
+      </section> : null}
     </div>
   );
 }

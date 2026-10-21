@@ -1,3 +1,4 @@
+import type { Journey } from "@/modules/journeys/types";
 export type PublicationServiceType =
   | "EXCURSION"
   | "TRANSPORT";
@@ -42,6 +43,9 @@ export type Publication = {
   included: string | null;
 
   notIncluded: string | null;
+
+  journey?: Journey | null;
+  journeyRequired?: boolean;
 
   meetingPoint: string | null;
 
@@ -94,6 +98,8 @@ export type CreatePublicationInput = {
   included?: string;
 
   notIncluded?: string;
+
+  journey?: Journey | null;
 
   meetingPoint?: string;
 

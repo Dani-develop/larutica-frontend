@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
+import { JourneyView } from '@/modules/journeys/JourneyView';
 import { usePreferences } from '@/lib/preferences/Preferences';
 import { CurrencyNotice } from '@/components/preferences/PreferenceControls';
 import type { Reservation } from '@/modules/transport/reservations/services/reservation.service';
@@ -14,6 +15,7 @@ export function UpcomingReservationCard({ reservation: r, onCancel, onPaid, busy
   reservation: Reservation; onCancel: () => void; onPaid: () => void; busy: boolean;
 }) {
   const { t, money, dateLabel } = usePreferences();
+  const [showJourney, setShowJourney] = useState(false);
   const now = useNow();
   const notice = reservationNotice(r, now);
   const payment = paymentStatusText(r, now);
@@ -32,7 +34,8 @@ export function UpcomingReservationCard({ reservation: r, onCancel, onPaid, busy
       {payment ? <div><dt>{t('Pago')}</dt><dd>{t(payment)}</dd></div> : null}
     </dl>
     <CurrencyNotice usd={r.total} />
-    {r.meetingPoint && <p><strong>{t('Punto de encuentro:')}</strong> {r.meetingPoint}</p>}
+    {r.journey ? <details className="mt-4" onToggle={event => setShowJourney(event.currentTarget.open)}><summary className="cursor-pointer font-semibold">{t('Trayecto de tu reserva')}</summary>{showJourney && <div className="mt-3"><JourneyView journey={r.journey} meetingPoint={r.meetingPoint}/></div>}</details>
+      : r.meetingPoint && <p><strong>{t('Punto de encuentro:')}</strong> {r.meetingPoint}</p>}
     {r.agencyName && <p><strong>{t('Proveedor:')}</strong> {r.agencyName}{r.agencyPhone ? ` · ${r.agencyPhone}` : ''}{r.agencyEmail ? ` · ${r.agencyEmail}` : ''}</p>}
     {notice ? <p className="booking-notice">{t(notice)}</p> : null}
     {payNotice ? <p className="booking-notice">{t(payNotice)}</p> : null}

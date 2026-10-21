@@ -10,6 +10,7 @@ import { getSupabaseAdminClient } from "@/lib/supabase/admin-client";
 import { requireAppSession } from "@/lib/supabase/session";
 
 type PublicationRow = {
+  journey_required: boolean;
   id: string;
   agency_id: string;
 
@@ -182,6 +183,7 @@ export async function GET(
           duration_minutes,
           included,
           not_included,
+          journey_required,
           meeting_point,
           main_image_url,
           default_capacity,
@@ -252,6 +254,7 @@ export async function GET(
             id:
               publication.id,
 
+            journeyRequired: publication.journey_required,
             agencyId:
               publication.agency_id,
 

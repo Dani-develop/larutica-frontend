@@ -10,9 +10,6 @@ import {
 
 import AdminPublicationsPage from "@/modules/publications/components/admin/admin-publications-page";
 
-import {
-  RoutesList,
-} from "@/modules/transport/routes/components/RoutesList";
 
 export default function Page() {
   const {
@@ -20,14 +17,6 @@ export default function Page() {
   } =
     useDashboardRole();
 
-  if (
-    role ===
-    "Transporte"
-  ) {
-    return (
-      <RoutesList />
-    );
-  }
 
   if (
     role ===

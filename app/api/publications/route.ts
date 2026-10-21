@@ -1,3 +1,6 @@
+import type { Journey } from "@/modules/journeys/types";
+import { parseJourney } from "@/lib/maps/validation";
+import { verifyJourney } from "@/lib/maps/provider";
 import {
   ApiError,
   apiErrorResponse,
@@ -32,6 +35,7 @@ type CreatePublicationPayload = {
   included?: string;
   notIncluded?: string;
 
+  journey?: Journey | null;
   meetingPoint?: string;
 
   mainImageUrl?: string;
@@ -408,6 +412,9 @@ export async function POST(
         ? "SUBMIT"
         : "DRAFT";
 
+    const journey = parseJourney(payload.journey, action === "SUBMIT");
+    await verifyJourney(journey);
+
     if (action === "SUBMIT") {
       validateSubmit(payload);
     } else {
@@ -630,6 +637,8 @@ export async function POST(
         not_included:
           notIncluded,
 
+        journey,
+        journey_required: true,
         meeting_point:
           meetingPoint,
 
@@ -654,6 +663,8 @@ export async function POST(
           duration_minutes,
           included,
           not_included,
+          journey,
+          journey_required,
           meeting_point,
           main_image_url,
           default_capacity,
@@ -742,6 +753,8 @@ export async function POST(
       {
         data: {
           ...publication,
+          journey: publication.journey,
+          journeyRequired: publication.journey_required,
 
           languageIds,
         },
