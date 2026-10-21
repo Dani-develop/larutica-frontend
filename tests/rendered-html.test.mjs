@@ -13,7 +13,6 @@ async function render(pathname) {
 }
 for (const [pathname, expected] of [
   ["/", "Encuentra tours"],
-  ["/mis-reservas", "Validando tu sesión"],
   ["/experiencias/00000000-0000-4000-8000-000000000001", "Consultando disponibilidad"],
   ["/login", "Iniciar sesión"],
   ["/register", "Crear cuenta"],
@@ -29,5 +28,20 @@ for (const [pathname, expected] of [
     assert.equal(response.status, 200);
     assert.match(response.headers.get("content-type") ?? "", /^text\/html\b/i);
     assert.match(await response.text(), new RegExp(expected, "i"));
+  });
+}
+
+for (const [query, expected] of [
+  ['', '/?viaje=reservas'],
+  ['?reserva=reserva-123', '/?viaje=reservas&reserva=reserva-123'],
+  ['?reserva=reserva-123&existente=1', '/?viaje=reservas&reserva=reserva-123&existente=1'],
+  ['?existente=0&next=https%3A%2F%2Fexample.com', '/?viaje=reservas'],
+  ['?reserva=primera&reserva=segunda&existente=1&existente=0', '/?viaje=reservas&reserva=primera&existente=1'],
+  ['?reserva=a%26existente%3D1', '/?viaje=reservas&reserva=a%26existente%3D1'],
+]) {
+  test(`redirige el enlace antiguo de reservas ${query || 'sin parámetros'}`, async () => {
+    const response = await render(`/mis-reservas${query}`);
+    assert.equal(response.status, 307);
+    assert.equal(response.headers.get('location'), expected);
   });
 }
