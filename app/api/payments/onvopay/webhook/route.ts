@@ -1,9 +1,13 @@
 import { isValidWebhookSecret } from "@/lib/payments/onvo";
+import { proxyRemoteApiRequest } from "@/lib/api/remote-proxy";
 import { handleOnvoWebhook } from "@/lib/payments/repository";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin-client";
 
 // OnvoPAY llama a esta ruta directamente: no hay sesión ni origen del navegador, solo el secreto compartido.
 export async function POST(request: Request) {
+  const remote = await proxyRemoteApiRequest(request);
+  if (remote) return remote;
+
   if (!isValidWebhookSecret(request.headers.get("x-webhook-secret"))) {
     return Response.json({ error: "El webhook de OnvoPAY no es válido." }, { status: 401 });
   }

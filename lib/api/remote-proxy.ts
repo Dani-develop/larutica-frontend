@@ -1,5 +1,20 @@
-function remoteApiOrigin(): string | null {
-  if (process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY) {
+function isSharedServiceRequest(request: Request, url: URL): boolean {
+  if (/^\/api\/(?:maps|payments)(?:\/|$)/.test(url.pathname)
+    || /^\/api\/reservations\/[^/]+\/payment(?:\/|$)/.test(url.pathname)
+    || /^\/api\/admin\/(?:payments|settlements)(?:\/|$)/.test(url.pathname)
+    || url.pathname === "/api/publications/journey-status") return true;
+  // The server that calculates a route also verifies its signature on save.
+  if ((request.method === "POST" && url.pathname === "/api/publications")
+    || (["PATCH", "PUT"].includes(request.method) && /^\/api\/publications\/[^/]+$/.test(url.pathname))) return true;
+  // These existing mutations can issue Onvo refunds. Keep the cancellation
+  // and its refund together on the shared backend, without changing its rules.
+  return ["PATCH", "DELETE"].includes(request.method)
+    && (/^\/api\/reservations\/[^/]+$/.test(url.pathname)
+      || /^\/api\/publications\/[^/]+\/departures\/[^/]+$/.test(url.pathname));
+}
+
+function remoteApiOrigin(sharedService: boolean): string | null {
+  if (!sharedService && (process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY)) {
     return null;
   }
   const configured = process.env.LARUTICA_REMOTE_API_ORIGIN?.trim();
@@ -22,11 +37,15 @@ function upstreamCookies(headers: Headers): string[] {
 }
 
 export async function proxyRemoteApiRequest(request: Request): Promise<Response | null> {
-  const remoteOrigin = remoteApiOrigin();
+  const localUrl = new URL(request.url);
+  const sharedService = isSharedServiceRequest(request, localUrl);
+  const remoteOrigin = remoteApiOrigin(sharedService);
   if (!remoteOrigin) return null;
 
-  const localUrl = new URL(request.url);
   if (localUrl.origin === remoteOrigin) {
+    // Already running on the shared backend: execute here without proxying
+    // back to ourselves (including the Onvo webhook).
+    if (sharedService) return null;
     return Response.json(
       { error: "La configuración del backend remoto produce un ciclo." },
       { status: 500 },

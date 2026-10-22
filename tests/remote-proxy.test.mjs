@@ -78,12 +78,65 @@ test("el proxy conserva same-origin y adapta la cookie para localhost", async (t
   assert.equal(received.headers["x-larutica-client-origin"], "http://localhost:3000");
 });
 
-test("un backend con secreto configurado no se reenvía", async () => {
+test("Sites ejecuta sus propias solicitudes sin generar un ciclo", async () => {
   process.env.LARUTICA_REMOTE_API_ORIGIN = "https://backend.example.com";
-  process.env.SUPABASE_SECRET_KEY = "server-only-test-key";
   const { proxyRemoteApiRequest } = await import("../lib/api/remote-proxy.ts");
   const response = await proxyRemoteApiRequest(new Request(
-    "http://localhost:3000/api/auth/session",
+    "https://backend.example.com/api/maps/places?q=Heredia",
   ));
   assert.equal(response, null);
+});
+
+test("mapas y pagos usan el backend compartido aunque existan claves locales", async (t) => {
+  const received = [];
+  const server = createServer((request, response) => {
+    received.push({ method: request.method, path: request.url });
+    response.writeHead(503, { "content-type": "application/json" });
+    response.end('{"error":"respuesta del backend compartido"}');
+  });
+  await new Promise(resolve => server.listen(0, "127.0.0.1", resolve));
+  t.after(() => server.close());
+  process.env.LARUTICA_REMOTE_API_ORIGIN = `http://127.0.0.1:${server.address().port}`;
+  process.env.SUPABASE_SECRET_KEY = "local-test-key";
+  process.env.SUPABASE_SERVICE_ROLE_KEY = "legacy-local-test-key";
+  const { proxyRemoteApiRequest } = await import("../lib/api/remote-proxy.ts");
+  const paths = [
+    ["GET", "/api/maps/places?q=Heredia"],
+    ["GET", "/api/maps/reverse?lat=10&lon=-84"],
+    ["POST", "/api/maps/route"],
+    ["GET", "/api/maps/tiles/7/35/60"],
+    ["GET", "/api/publications/journey-status"],
+    ["POST", "/api/publications"],
+    ["PATCH", "/api/publications/test"],
+    ["POST", "/api/reservations/test/payment"],
+    ["POST", "/api/reservations/test/payment/confirm"],
+    ["POST", "/api/payments/onvopay/webhook"],
+    ["GET", "/api/admin/payments"],
+    ["GET", "/api/admin/payments/balances"],
+    ["POST", "/api/admin/settlements"],
+    ["PATCH", "/api/reservations/test"],
+    ["DELETE", "/api/publications/test/departures/test"],
+  ];
+  for (const [method, path] of paths) {
+    const response = await proxyRemoteApiRequest(new Request(`http://localhost:3000${path}`, { method }));
+    assert.equal(response?.status, 503); // Never fall back to local credentials on upstream errors.
+    assert.equal((await response.json()).error, "respuesta del backend compartido");
+  }
+  assert.deepEqual(received, paths.map(([method, path]) => ({ method, path })));
+});
+
+test("los módulos ajenos a mapas y pagos conservan su backend local", async () => {
+  process.env.LARUTICA_REMOTE_API_ORIGIN = "https://backend.example.com";
+  process.env.SUPABASE_SECRET_KEY = "local-test-key";
+  const { proxyRemoteApiRequest } = await import("../lib/api/remote-proxy.ts");
+  for (const path of ["/api/auth/session", "/api/catalog", "/api/profile", "/api/publications", "/api/admin/users", "/api/reservations/test"]) {
+    assert.equal(await proxyRemoteApiRequest(new Request(`http://localhost:3000${path}`)), null);
+  }
+});
+
+test("un backend propio exige desactivar explícitamente el destino remoto", async () => {
+  process.env.LARUTICA_REMOTE_API_ORIGIN = "";
+  process.env.SUPABASE_SECRET_KEY = "local-test-key";
+  const { proxyRemoteApiRequest } = await import("../lib/api/remote-proxy.ts");
+  assert.equal(await proxyRemoteApiRequest(new Request("http://localhost:3000/api/maps/route")), null);
 });
