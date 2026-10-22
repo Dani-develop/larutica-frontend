@@ -1,6 +1,12 @@
 import { createTransport } from 'nodemailer';
 import { callMailRelay, deliverMail, mailFailure, readMailConfig, smtpTransportOptions } from '../lib/mail/send.ts';
-import { departureCancellationMessage, publicationDecisionMessage, reservationConfirmationMessages } from '../lib/mail/messages.ts';
+import {
+  departureCancellationMessage,
+  departureDateChangeMessage,
+  publicationDeactivationMessage,
+  publicationDecisionMessage,
+  reservationConfirmationMessages,
+} from '../lib/mail/messages.ts';
 
 // No secrets in arguments, output or reports. Node loads the ignored .env.local.
 const args = process.argv.slice(2);
@@ -40,6 +46,8 @@ if (!process.exitCode && send) {
   const messages = [
     ...reservationConfirmationMessages(facts, true),
     departureCancellationMessage(facts),
+    departureDateChangeMessage({ ...facts, newDepartureStartAt: '2099-06-16T15:00:00.000Z' }),
+    publicationDeactivationMessage(facts),
     ...['APPROVED', 'REJECTED'].map(status => publicationDecisionMessage({ previousStatus: 'PENDING', status,
       title: facts.publicationTitle, agencyEmail: to })),
   ];
@@ -48,6 +56,6 @@ if (!process.exitCode && send) {
     const result = await deliverMail({ ...message, subject: `[PRUEBA ${i + 1}/5] ${message.subject}` });
     if (result.status === 'sent') sent++;
   }
-  console.log(`SMTP_ACCEPTED: ${sent}/5. Estos mensajes prueban transporte y plantillas; no crean reservas ni publicaciones.`);
-  if (sent !== 5) process.exitCode = 1;
+  console.log(`SMTP_ACCEPTED: ${sent}/7. Estos mensajes prueban transporte y plantillas; no crean reservas ni publicaciones.`);
+  if (sent !== 7) process.exitCode = 1;
 }

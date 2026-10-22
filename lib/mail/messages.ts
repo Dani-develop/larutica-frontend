@@ -69,6 +69,36 @@ export function departureCancellationMessage(facts: ReservationMailFacts & { pas
   };
 }
 
+export function departureDateChangeMessage(
+  facts: ReservationMailFacts & { passengerEmail: string; newDepartureStartAt: string },
+): MailMessage {
+  return {
+    to: facts.passengerEmail,
+    subject: "Cambio de fecha del viaje",
+    text: reservationBody(facts, [
+      "La agencia cambió la fecha de esta salida.",
+      `Fecha nueva: ${dateLabel(facts.newDepartureStartAt)}`,
+      "Tu reserva fue cancelada por el cambio de fecha.",
+      "Si deseas asistir, debes realizar una nueva reserva para la fecha disponible.",
+      "Si ya habías pagado, revisa el estado del reembolso en Mis reservas.",
+    ]),
+  };
+}
+
+export function publicationDeactivationMessage(
+  facts: ReservationMailFacts & { passengerEmail: string },
+): MailMessage {
+  return {
+    to: facts.passengerEmail,
+    subject: "Viaje o gira desactivada",
+    text: reservationBody(facts, [
+      "La agencia desactivó este viaje o gira.",
+      "Tu reserva fue cancelada.",
+      "Si ya habías pagado, revisa el estado del reembolso en Mis reservas.",
+    ]),
+  };
+}
+
 export function publicationDecisionMessage(input: {
   previousStatus: string;
   status: "APPROVED" | "REJECTED";

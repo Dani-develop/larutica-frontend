@@ -11,6 +11,10 @@ import { proxyRemoteApiRequest } from "@/lib/api/remote-proxy";
 
 import { getSupabaseAdminClient } from "@/lib/supabase/admin-client";
 
+import { notifyPublicationDeactivation } from "@/lib/mail/notify";
+
+import { deactivatePublicationAndCancelReservations } from "@/lib/reservations/repository";
+
 import { requireAppSession } from "@/lib/supabase/session";
 
 type RouteContext = {
@@ -1610,43 +1614,18 @@ export async function DELETE(
       );
     }
 
-    const {
-      data:
-        updatedPublication,
-      error:
-        updateError,
-    } = await supabase
-      .from("publications")
-      .update({
-        status:
-          "INACTIVE",
-      })
-      .eq(
-        "id",
+    const cancelledReservations =
+      await deactivatePublicationAndCancelReservations(
+        supabase,
         publication.id,
-      )
-      .select(
-        `
-          id,
-          status
-        `,
-      )
-      .single();
-
-    if (
-      updateError ||
-      !updatedPublication
-    ) {
-      console.error(
-        "Error desactivando publicación:",
-        updateError,
       );
 
-      throw new ApiError(
-        "No se pudo desactivar la publicación.",
-        500,
-      );
-    }
+    const updatedPublication = {
+      id: publication.id,
+      status: "INACTIVE" as const,
+    };
+
+    await notifyPublicationDeactivation(cancelledReservations);
 
     return Response.json(
       {

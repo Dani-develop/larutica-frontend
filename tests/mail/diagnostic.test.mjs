@@ -28,14 +28,22 @@ test('el diagnóstico autenticado verifica SMTP sin enviar si no se solicita', a
     assert.doesNotMatch(JSON.stringify(result), /test-password|test-user|diagnostic-token/);
   } finally { await smtp.close(); }
 });
-test('el diagnóstico recorre los tres notificadores reales y envía cinco pruebas al único buzón configurado', async () => {
+test('el diagnóstico recorre los notificadores reales y envía siete pruebas al único buzón configurado', async () => {
   const smtp = await createSmtp();
   try {
     const response = await runMailDiagnostic(request({ send: true }), { ...smtp.env, ...config() });
     assert.equal(response.status, 200);
-    const result = await response.json(); assert.equal(result.data.accepted, 5);
-    assert.equal(smtp.received.length, 5);
+    const result = await response.json(); assert.equal(result.data.accepted, 7);
+    assert.equal(smtp.received.length, 7);
     assert.ok(smtp.received.every(message => message.to[0] === 'diagnostic@example.invalid'));
-    assert.deepEqual(result.data.messages.map(x => x.flow), ['reserva_viajero', 'reserva_agencia', 'cancelacion_salida', 'publicacion_aprobada', 'publicacion_rechazada']);
+    assert.deepEqual(result.data.messages.map(x => x.flow), [
+      'reserva_viajero',
+      'reserva_agencia',
+      'cancelacion_salida',
+      'cambio_fecha',
+      'publicacion_desactivada',
+      'publicacion_aprobada',
+      'publicacion_rechazada',
+    ]);
   } finally { await smtp.close(); }
 });

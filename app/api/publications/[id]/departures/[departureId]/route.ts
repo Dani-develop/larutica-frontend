@@ -10,9 +10,14 @@ import { getSupabaseAdminClient } from "@/lib/supabase/admin-client";
 
 import { notifyDepartureCancellations } from "@/lib/mail/notify";
 
+import { notifyDepartureDateChanges } from "@/lib/mail/notify";
+
 import { applyDepartureCancellation } from "@/lib/reservations/departure-cancel";
 
-import { cancelDepartureReservations } from "@/lib/reservations/repository";
+import {
+  cancelDepartureReservations,
+  rescheduleDepartureAndCancelReservations,
+} from "@/lib/reservations/repository";
 
 import { requireAppSession } from "@/lib/supabase/session";
 
@@ -33,6 +38,17 @@ type UpdateDeparturePayload = {
   endAt?: string | null;
   capacity?: number | null;
   status?: DepartureStatus;
+};
+
+type UpdatedDepartureRow = {
+  id: string;
+  publication_id: string;
+  start_at: string;
+  end_at: string | null;
+  capacity: number;
+  status: DepartureStatus;
+  created_at: string;
+  updated_at: string;
 };
 
 function cleanText(
@@ -451,43 +467,29 @@ export async function PATCH(
       );
     }
 
-    const cancelledReservations =
-      await applyDepartureCancellation(
-        departure.status,
-        status,
-        () =>
-          cancelDepartureReservations(
-            supabase,
-            departure.id,
-          ),
-      );
+    const dateChanged =
+      Date.parse(startAt) !== Date.parse(departure.start_at);
+    let updatedDeparture: UpdatedDepartureRow | null = null;
 
-    const {
-      data:
-        updatedDeparture,
-      error:
-        updateError,
-    } = await supabase
-      .from(
-        "publication_departures",
-      )
-      .update({
-        start_at:
-          startAt,
+    if (dateChanged) {
+      const changedReservations =
+        await rescheduleDepartureAndCancelReservations(
+          supabase,
+          {
+            departureId: departure.id,
+            startAt,
+            endAt,
+            capacity,
+            status,
+          },
+        );
 
-        end_at:
-          endAt,
-
-        capacity,
-
-        status,
-      })
-      .eq(
-        "id",
-        departure.id,
-      )
-      .select(
-        `
+      const {
+        data,
+        error,
+      } = await supabase
+        .from("publication_departures")
+        .select(`
           id,
           publication_id,
           start_at,
@@ -496,28 +498,61 @@ export async function PATCH(
           status,
           created_at,
           updated_at
-        `,
-      )
-      .single();
+        `)
+        .eq("id", departure.id)
+        .single();
 
-    if (
-      updateError ||
-      !updatedDeparture
-    ) {
-      console.error(
-        "Error actualizando salida:",
-        updateError,
-      );
+      if (error || !data) {
+        console.error("Error consultando salida actualizada:", error);
+        throw new ApiError("No se pudo consultar la salida actualizada.", 500);
+      }
 
-      throw new ApiError(
-        "No se pudo actualizar la salida.",
-        500,
-      );
+      updatedDeparture = data;
+      await notifyDepartureDateChanges(changedReservations);
+    } else {
+      const cancelledReservations =
+        await applyDepartureCancellation(
+          departure.status,
+          status,
+          () =>
+            cancelDepartureReservations(
+              supabase,
+              departure.id,
+            ),
+        );
+
+      const {
+        data,
+        error,
+      } = await supabase
+        .from("publication_departures")
+        .update({
+          start_at: startAt,
+          end_at: endAt,
+          capacity,
+          status,
+        })
+        .eq("id", departure.id)
+        .select(`
+          id,
+          publication_id,
+          start_at,
+          end_at,
+          capacity,
+          status,
+          created_at,
+          updated_at
+        `)
+        .single();
+
+      if (error || !data) {
+        console.error("Error actualizando salida:", error);
+        throw new ApiError("No se pudo actualizar la salida.", 500);
+      }
+
+      updatedDeparture = data;
+      await notifyDepartureCancellations(cancelledReservations);
     }
-
-    await notifyDepartureCancellations(
-      cancelledReservations,
-    );
 
     return Response.json(
       {

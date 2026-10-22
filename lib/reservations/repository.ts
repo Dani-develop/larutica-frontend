@@ -318,25 +318,17 @@ export type CancelledDepartureReservation = {
   total: number;
 };
 
-export async function cancelDepartureReservations(
-  admin: SupabaseClient,
-  departureId: string,
-): Promise<CancelledDepartureReservation[]> {
-  const { data, error } = await admin.rpc("cancel_departure_reservations", {
-    p_departure_id: departureId,
-  });
-  if (error) throw error;
-  const rows = (data ?? []) as {
-    id: string;
-    passenger_email: string | null;
-    passenger_name: string | null;
-    publication_title: string | null;
-    departure_start_at: string;
-    number_of_people: number;
-    total: number | string;
-  }[];
-  // La salida cancelada libera a los viajeros: lo cobrado se devuelve completo.
-  await Promise.all(rows.map((row) => refundReservationPaymentSafely(admin, row.id)));
+type CancelledReservationRow = {
+  id: string;
+  passenger_email: string | null;
+  passenger_name: string | null;
+  publication_title: string | null;
+  departure_start_at: string;
+  number_of_people: number;
+  total: number | string;
+};
+
+function mapCancelledDepartureReservations(rows: CancelledReservationRow[]): CancelledDepartureReservation[] {
   return rows.map((row) => ({
     id: row.id,
     passengerEmail: row.passenger_email,
@@ -345,6 +337,69 @@ export async function cancelDepartureReservations(
     departureStartAt: row.departure_start_at,
     numberOfPeople: row.number_of_people,
     total: Number(row.total),
+  }));
+}
+
+async function refundCancelledReservations(admin: SupabaseClient, rows: CancelledReservationRow[]) {
+  // La salida cancelada libera a los viajeros: lo cobrado se devuelve completo.
+  await Promise.all(rows.map((row) => refundReservationPaymentSafely(admin, row.id)));
+}
+
+export async function cancelDepartureReservations(
+  admin: SupabaseClient,
+  departureId: string,
+): Promise<CancelledDepartureReservation[]> {
+  const { data, error } = await admin.rpc("cancel_departure_reservations", {
+    p_departure_id: departureId,
+  });
+  if (error) throw error;
+  const rows = (data ?? []) as CancelledReservationRow[];
+  await refundCancelledReservations(admin, rows);
+  return mapCancelledDepartureReservations(rows);
+}
+
+export async function deactivatePublicationAndCancelReservations(
+  admin: SupabaseClient,
+  publicationId: string,
+): Promise<CancelledDepartureReservation[]> {
+  const { data, error } = await admin.rpc("deactivate_publication_and_cancel_reservations", {
+    p_publication_id: publicationId,
+  });
+  if (error) throw error;
+  const rows = (data ?? []) as CancelledReservationRow[];
+  await refundCancelledReservations(admin, rows);
+  return mapCancelledDepartureReservations(rows);
+}
+
+export type RescheduledDepartureReservation = CancelledDepartureReservation & {
+  newDepartureStartAt: string;
+};
+
+export async function rescheduleDepartureAndCancelReservations(
+  admin: SupabaseClient,
+  input: {
+    departureId: string;
+    startAt: string;
+    endAt: string | null;
+    capacity: number;
+    status: string;
+  },
+): Promise<RescheduledDepartureReservation[]> {
+  const { data, error } = await admin.rpc("reschedule_departure_and_cancel_reservations", {
+    p_departure_id: input.departureId,
+    p_start_at: input.startAt,
+    p_end_at: input.endAt,
+    p_capacity: input.capacity,
+    p_status: input.status,
+  });
+  if (error) throw error;
+  const rows = (data ?? []) as (CancelledReservationRow & {
+    new_departure_start_at: string;
+  })[];
+  await refundCancelledReservations(admin, rows);
+  return rows.map((row) => ({
+    ...mapCancelledDepartureReservations([row])[0],
+    newDepartureStartAt: row.new_departure_start_at,
   }));
 }
 
