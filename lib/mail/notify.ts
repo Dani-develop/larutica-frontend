@@ -1,5 +1,7 @@
 import {
   departureCancellationMessage,
+  departureDateChangeMessage,
+  publicationDeactivationMessage,
   publicationDecisionMessage,
   reservationConfirmationMessages,
   type ReservationMailFacts,
@@ -36,6 +38,32 @@ export async function notifyDepartureCancellations(
     const to = row.passengerEmail?.trim();
     if (!to) return [];
     return [departureCancellationMessage({ ...row, passengerEmail: to })];
+  });
+  await deliverEach(messages, send);
+  return rows;
+}
+
+export async function notifyDepartureDateChanges(
+  rows: (CancelledReservationMail & { newDepartureStartAt: string })[],
+  send: MailSender = deliverMail,
+) {
+  const messages = rows.flatMap((row) => {
+    const to = row.passengerEmail?.trim();
+    if (!to) return [];
+    return [departureDateChangeMessage({ ...row, passengerEmail: to })];
+  });
+  await deliverEach(messages, send);
+  return rows;
+}
+
+export async function notifyPublicationDeactivation(
+  rows: CancelledReservationMail[],
+  send: MailSender = deliverMail,
+) {
+  const messages = rows.flatMap((row) => {
+    const to = row.passengerEmail?.trim();
+    if (!to) return [];
+    return [publicationDeactivationMessage({ ...row, passengerEmail: to })];
   });
   await deliverEach(messages, send);
   return rows;

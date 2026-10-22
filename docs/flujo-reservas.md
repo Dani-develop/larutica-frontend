@@ -22,6 +22,37 @@
    cuya salida pasó se muestran como Vencida sin confirmación, sin acciones
    para confirmar ni cancelar. Una experiencia sin próximas salidas no sale
    en el catálogo principal, aunque se puede abrir desde una reserva antigua.
+9. Si la agencia desactiva una publicación o cambia la fecha de una salida,
+   las reservas PENDING y CONFIRMED afectadas se cancelan, se intenta el
+   reembolso completo de los pagos y se envía un correo por viajero. El correo
+   de cambio de fecha incluye la fecha nueva; para asistir, el viajero debe
+   realizar una nueva reserva.
+
+## Aplicación pendiente en Supabase (avisos de cambios)
+
+La migración nueva depende de las tablas `profiles`, `agencies`, `publications`,
+`publication_departures` y `reservations`. En un proyecto que no tenga esas
+tablas, primero deben aplicarse las migraciones base en orden:
+
+1. `supabase/migrations/202608270001_auth_profiles.sql`
+2. `supabase/migrations/202609210001_agencies.sql`
+3. `supabase/migrations/202609220001_publications.sql`
+4. `supabase/migrations/202609220002_reservations.sql`
+
+Después, aplica las migraciones posteriores pendientes en orden cronológico,
+incluida
+`supabase/migrations/202610210003_cancel_reservations_on_trip_changes.sql`.
+La forma recomendada de mantener ese orden es ejecutar `npx supabase db push`
+con el proyecto vinculado, como se explica en `supabase/README.md`. Si se usa
+SQL Editor, hay que ejecutar cada migración pendiente en ese mismo orden y no
+repetir migraciones que ya fueron aplicadas.
+
+El error PostgreSQL `42P01: relation "public.publication_departures" does not
+exist` significa que falta la migración base
+`202609220001_publications.sql` (o que se aplicó fuera de orden). Las funciones
+nuevas solo pueden ejecutarse con `service_role`; la desactivación y la
+reprogramación cancelan las reservas en la misma transacción que actualiza la
+publicación o la salida.
 
 ## Aplicación pendiente en Supabase
 
@@ -47,11 +78,12 @@ Pruebas aisladas realizadas: ver qa-reservas-2026-10-05.md. Sin publicación.
    solo entonces marca el cobro. El webhook
    `POST /api/payments/onvopay/webhook` (encabezado `x-webhook-secret`) hace lo
    mismo de forma asíncrona y también verifica el cobro en Onvo.
-4. Cancelar una reserva pagada (viajero, proveedor, administrador o
-   cancelación de la salida) pide a Onvo el reembolso completo. Si el reembolso
-   falla, la cancelación se mantiene, el cobro sigue "paid" y la reserva muestra
-   "Reembolso en proceso"; se resuelve a mano en el panel de Onvo. Un cobro que
-   llega después de cancelar se devuelve de inmediato.
+4. Cancelar una reserva pagada (viajero, proveedor, administrador, cancelación
+   de la salida, desactivación de publicación o cambio de fecha) pide a Onvo el
+   reembolso completo. Si el reembolso falla, la cancelación se mantiene, el
+   cobro sigue "paid" y la reserva muestra "Reembolso en proceso"; se resuelve
+   a mano en el panel de Onvo. Un cobro que llega después de cancelar se
+   devuelve de inmediato.
 5. Una reserva pagada no admite cambiar el número de personas.
 
 Variables (solo servidor): `ONVO_TEST_API_KEY`, `ONVO_PUBLISHABLE_KEY`,
@@ -91,4 +123,3 @@ API (todas exigen rol Admin): `GET /api/admin/payments`,
 
 Ejecutar supabase/migrations/202610210002_agency_settlements.sql después de
 202610210001_reservation_payments.sql.
-

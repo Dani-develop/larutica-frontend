@@ -1,7 +1,13 @@
 import { timingSafeEqual } from "node:crypto";
 import { apiErrorResponse, assertSameOrigin } from "../api/errors.ts";
 import { callMailRelay, deliverMail, mailFailure, readMailConfig, smtpTransportOptions, type MailDeliveryResult } from "./send.ts";
-import { notifyDepartureCancellations, notifyPublicationDecision, notifyReservationCreated } from "./notify.ts";
+import {
+  notifyDepartureCancellations,
+  notifyDepartureDateChanges,
+  notifyPublicationDeactivation,
+  notifyPublicationDecision,
+  notifyReservationCreated,
+} from "./notify.ts";
 
 /** Disabled unless the Site owner configures an expiring diagnostic capability.
  * It can only send test templates to the one configured test recipient. It does
@@ -63,21 +69,31 @@ export async function runMailDiagnostic(request: Request, env: NodeJS.ProcessEnv
       const facts = { id: "00000001-0000-4000-8000-000000000000", publicationTitle: "[PRUEBA TÉCNICA] LaRutica Sites — no es una reserva real",
         departureStartAt: "2099-06-15T15:00:00.000Z", numberOfPeople: 2, total: 80,
         passengerName: "Prueba técnica", passengerEmail: to, agencyEmail: to };
-      const labels = ["reserva_viajero", "reserva_agencia", "cancelacion_salida", "publicacion_aprobada", "publicacion_rechazada"];
+      const labels = [
+        "reserva_viajero",
+        "reserva_agencia",
+        "cancelacion_salida",
+        "cambio_fecha",
+        "publicacion_desactivada",
+        "publicacion_aprobada",
+        "publicacion_rechazada",
+      ];
       const send = async (message: { to: string; subject: string; text: string }) => {
         const index = messages.length;
-        const result = await deliverMail({ ...message, to, subject: `[PRUEBA Sites ${index + 1}/5] ${message.subject}` }, { env: activeEnv });
+        const result = await deliverMail({ ...message, to, subject: `[PRUEBA Sites ${index + 1}/7] ${message.subject}` }, { env: activeEnv });
         messages.push({ flow: labels[index], ...result });
         return result;
       };
       await notifyReservationCreated(facts, true, send);
       await notifyDepartureCancellations([facts], send);
+      await notifyDepartureDateChanges([{ ...facts, newDepartureStartAt: "2099-06-16T15:00:00.000Z" }], send);
+      await notifyPublicationDeactivation([facts], send);
       await notifyPublicationDecision({ previousStatus: "PENDING", status: "APPROVED", title: facts.publicationTitle, agencyEmail: to }, send);
       await notifyPublicationDecision({ previousStatus: "PENDING", status: "REJECTED", title: facts.publicationTitle, agencyEmail: to }, send);
     }
     const accepted = messages.filter(message => message.status === "sent").length;
     return Response.json({ data: { verified, probes, accepted, messages } }, {
-      status: verified && (!body.send || accepted === 5) ? 200 : 502,
+      status: verified && (!body.send || accepted === 7) ? 200 : 502,
       headers: { "cache-control": "no-store" },
     });
   } catch (error) { return apiErrorResponse(error); }

@@ -26,13 +26,13 @@ test('mail:check verifica SMTP sin enviar correos', async () => {
     assert.equal(smtp.received.length, 0);
   } finally { await smtp.close(); }
 });
-test('mail:check --send-flows entrega las cinco plantillas al buzón indicado', async () => {
+test('mail:check --send-flows entrega las siete plantillas al buzón indicado', async () => {
   const smtp = await createSmtp();
   try {
     const result = await check(smtp.env, ['--send-flows', '--to', 'cli@example.invalid']);
     assert.equal(result.code, 0, result.output);
-    assert.match(result.output, /SMTP_ACCEPTED: 5\/5/);
-    assert.equal(smtp.received.length, 5);
+    assert.match(result.output, /SMTP_ACCEPTED: 7\/7/);
+    assert.equal(smtp.received.length, 7);
     assert.ok(smtp.received.every(message => message.to[0] === 'cli@example.invalid'));
     assert.ok(smtp.received.every(message => message.subject.startsWith('[PRUEBA')));
   } finally { await smtp.close(); }

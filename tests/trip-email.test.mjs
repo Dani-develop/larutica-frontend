@@ -5,12 +5,16 @@ import { money } from "../modules/booking/types.ts";
 import { deliverMail } from "../lib/mail/send.ts";
 import {
   departureCancellationMessage,
+  departureDateChangeMessage,
+  publicationDeactivationMessage,
   publicationDecisionMessage,
   reservationCode,
   reservationConfirmationMessages,
 } from "../lib/mail/messages.ts";
 import {
   notifyDepartureCancellations,
+  notifyDepartureDateChanges,
+  notifyPublicationDeactivation,
   notifyPublicationDecision,
   notifyReservationCreated,
 } from "../lib/mail/notify.ts";
@@ -111,6 +115,61 @@ test("la cancelación y la revisión dicen el resultado de esa salida o publicac
   assert.equal(publicationDecisionMessage({
     previousStatus: "APPROVED", status: "REJECTED", title: "Volcán Arenal", agencyEmail: "agencia@ejemplo.com",
   }), null);
+});
+
+test("los correos informan la nueva fecha y la cancelación de cada reserva", async () => {
+  const changed = {
+    ...facts,
+    passengerEmail: "ana@ejemplo.com",
+    newDepartureStartAt: "2099-06-16T15:00:00.000Z",
+  };
+  const dateChange = departureDateChangeMessage(changed);
+  assert.equal(dateChange.to, "ana@ejemplo.com");
+  assert.match(dateChange.subject, /Cambio de fecha/);
+  assert.match(dateChange.text, /Fecha nueva/);
+  assert.match(dateChange.text, /reserva fue cancelada/);
+
+  const deactivation = publicationDeactivationMessage({
+    ...facts,
+    passengerEmail: "ana@ejemplo.com",
+  });
+  assert.match(deactivation.subject, /desactivada/i);
+  assert.match(deactivation.text, /reserva fue cancelada/);
+
+  const sent = [];
+  const send = async (message) => {
+    sent.push(message);
+    if (message.to === "luis@ejemplo.com") throw new Error("smtp");
+  };
+  await notifyDepartureDateChanges([
+    changed,
+    { ...changed, passengerEmail: "luis@ejemplo.com" },
+  ], send);
+  await notifyPublicationDeactivation([
+    { ...facts, passengerEmail: "ana@ejemplo.com" },
+  ], send);
+  assert.deepEqual(sent.map((message) => message.to), [
+    "ana@ejemplo.com",
+    "luis@ejemplo.com",
+    "ana@ejemplo.com",
+  ]);
+});
+
+test("la base de datos cancela reservas al desactivar o reprogramar", async () => {
+  const migration = await read("supabase/migrations/202610210003_cancel_reservations_on_trip_changes.sql");
+  assert.match(migration, /function public\.deactivate_publication_and_cancel_reservations/i);
+  assert.match(migration, /function public\.reschedule_departure_and_cancel_reservations/i);
+  assert.match(migration, /status in \('PENDING', 'CONFIRMED'\)/);
+  assert.match(migration, /set status = 'INACTIVE'/);
+  assert.match(migration, /set status = 'CANCELLED'/);
+  assert.match(migration, /grant execute on function public\.deactivate_publication_and_cancel_reservations\(uuid\) to service_role/i);
+  assert.match(migration, /grant execute on function public\.reschedule_departure_and_cancel_reservations/i);
+  const publicationRoute = await read("app/api/publications/[id]/route.ts");
+  const departureRoute = await read("app/api/publications/[id]/departures/[departureId]/route.ts");
+  assert.match(publicationRoute, /deactivatePublicationAndCancelReservations/);
+  assert.match(publicationRoute, /notifyPublicationDeactivation/);
+  assert.match(departureRoute, /rescheduleDepartureAndCancelReservations/);
+  assert.match(departureRoute, /notifyDepartureDateChanges/);
 });
 
 test("una reserva previa no avisa y una nueva avisa a quien reservó y a quien publicó", async () => {
