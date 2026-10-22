@@ -1,3 +1,4 @@
+
 /* Experience detail: same visual language as the discovery landing. */
 .booking-site.booking-detail-page { --detail-ink:var(--ink); --detail-muted:var(--ink-muted); --detail-line:var(--border); --detail-green:var(--brand-green); --primary:var(--ink); --primary-foreground:#fff; --ring:var(--focus); background:#fff; color:var(--detail-ink); font-family:var(--font-brand); }
 .booking-site.booking-detail-page h1,.booking-site.booking-detail-page h2,.booking-site.booking-detail-page h3 { color:var(--detail-ink); letter-spacing:-.02em; }
@@ -19,6 +20,7 @@
 .booking-site.booking-detail-page .booking-prose h2 { font-size:var(--type-section); font-weight:700; margin-bottom:10px; }
 .booking-site.booking-detail-page .booking-prose p { color:var(--text-secondary); font-size:16px; line-height:1.6; }
 
+/* Booking panel styles below are intentionally unchanged. */
 .booking-site.booking-detail-page .booking-panel { --booking-panel-offset:112px; position:sticky; top:var(--booking-panel-offset); align-self:start; max-height:calc(100dvh - var(--booking-panel-offset) - 16px); overflow-y:auto; overscroll-behavior-y:contain; scrollbar-gutter:stable; scroll-padding-block:24px; padding:24px; border:1px solid var(--detail-line); border-radius:var(--radius-card); box-shadow:0 4px 24px #002c1614; }
 .booking-site.booking-detail-page .booking-panel h2 { font-size:var(--type-card); font-weight:700; margin-bottom:16px; }
 .booking-price-from { display:flex; flex-wrap:wrap; align-items:baseline; gap:4px 8px; margin:0 0 16px !important; padding-bottom:16px; border-bottom:1px solid var(--detail-line); color:var(--detail-muted); font-size:14px; }
@@ -56,4 +58,64 @@
   .booking-site.booking-detail-page .booking-container { padding:20px 16px 48px; }
   .booking-site.booking-detail-page .booking-detail-photo { aspect-ratio:4/3; margin-bottom:24px; }
   .booking-detail-meta { font-size:14px; }
+}
+
+/* Refinamiento visual exclusivo de la información de la experiencia.
+   No se alteran reglas de .booking-panel ni su contenido. */
+.booking-site.booking-detail-page .booking-detail-breadcrumb {
+  display:flex; align-items:center; flex-wrap:wrap; gap:9px;
+  margin-bottom:14px; color:var(--detail-muted); font-size:.8rem; font-weight:500;
+}
+.booking-site.booking-detail-page .booking-detail-breadcrumb a {
+  color:var(--detail-ink); text-decoration:none;
+}
+.booking-site.booking-detail-page .booking-detail-breadcrumb a:hover { text-decoration:underline; text-underline-offset:3px; }
+.booking-site.booking-detail-page .booking-detail-heading h1 { margin-bottom:12px; letter-spacing:-.035em; }
+.booking-site.booking-detail-page .booking-detail-meta { gap:10px 18px; font-size:.84rem; line-height:1.45; }
+.booking-site.booking-detail-page .booking-detail-meta li { gap:7px; min-width:0; }
+.booking-site.booking-detail-page .booking-detail-meta svg { flex:none; color:var(--detail-ink); stroke-width:1.8; }
+.booking-site.booking-detail-page .booking-detail-meta strong { font-weight:650; }
+.booking-site.booking-detail-page .booking-detail-grid { gap:34px; margin-top:22px; }
+.booking-site.booking-detail-page .booking-prose { min-width:0; }
+.booking-site.booking-detail-page .booking-detail-photo {
+  display:block; width:100%; object-fit:cover; border-radius:13px; margin:0 0 12px;
+}
+.booking-site.booking-detail-page .booking-prose .booking-detail-section {
+  margin:0; padding:23px 0 24px; border-bottom:1px solid var(--detail-line);
+}
+.booking-site.booking-detail-page .booking-prose .booking-detail-section:last-child { border-bottom:0; }
+.booking-site.booking-detail-page .booking-prose .booking-detail-section h2 {
+  margin:0 0 9px; font-size:clamp(1.12rem,1.7vw,1.32rem); font-weight:700; line-height:1.3; letter-spacing:-.025em;
+}
+.booking-site.booking-detail-page .booking-prose .booking-detail-section > p {
+  margin:0; color:var(--detail-muted); font-size:.94rem; font-weight:400; line-height:1.75;
+  overflow-wrap:anywhere; white-space:pre-line;
+}
+.booking-site.booking-detail-page .booking-detail-exclusions {
+  display:grid; grid-template-columns:auto minmax(0,1fr); align-items:start; gap:4px 14px;
+  margin-top:19px; padding:13px 16px; background:#f3f8f5; border-radius:10px;
+}
+.booking-site.booking-detail-page .booking-detail-exclusions h3 {
+  margin:0; font-size:.83rem; line-height:1.55; font-weight:650; white-space:nowrap;
+}
+.booking-site.booking-detail-page .booking-detail-exclusions p {
+  margin:0; color:var(--detail-muted); font-size:.84rem; line-height:1.6; white-space:pre-line;
+}
+.booking-site.booking-detail-page .booking-prose .booking-detail-section .booking-detail-timezone {
+  margin-top:12px; font-size:.8rem; color:var(--detail-muted);
+}
+@media (max-width:800px) {
+  .booking-site.booking-detail-page .booking-detail-grid { gap:25px; }
+  .booking-site.booking-detail-page .booking-detail-photo { margin-bottom:4px; }
+}
+@media (max-width:520px) {
+  .booking-site.booking-detail-page .booking-detail-meta { gap:9px 14px; font-size:.8rem; }
+  .booking-site.booking-detail-page .booking-prose .booking-detail-section { padding:20px 0; }
+  .booking-site.booking-detail-page .booking-detail-exclusions { grid-template-columns:1fr; gap:3px; padding:12px 14px; }
+}
+
+/* Único ajuste: ocultar el acento decorativo antes de los títulos de detalles. */
+.booking-site.booking-detail-page .booking-prose .booking-detail-section h2::before {
+  content: none;
+  display: none;
 }

@@ -1,3 +1,4 @@
+
 'use client';
 import { usePreferences } from "@/lib/preferences/Preferences";
 import { CurrencyNotice } from "@/components/preferences/PreferenceControls";
@@ -134,9 +135,44 @@ export function ExperienceDetail({ id, embedded = false }: { id: string; embedde
   return <Shell><Content id="contenido" tabIndex={-1} className={embedded ? "booking-container booking-embedded" : "booking-container"}>
     {created ? <section className="booking-success" role="status"><CheckCircle2 size={42} color="var(--primary)" aria-hidden="true"/><h1>{t("Reserva realizada")}</h1><span className="booking-status">{t("Reservada")}</span><CurrencyNotice usd={created.total}/><p className="mt-5">{t("Tu reserva está lista. Revisa los datos de tu viaje en Mis reservas.")}</p><dl className="booking-summary"><div><dt>{t("Experiencia")}</dt><dd>{created.publicationTitle}</dd></div><div><dt>{t("Salida")}</dt><dd>{dateLabel(created.departureStartAt)}</dd></div><div><dt>{t("Personas")}</dt><dd>{created.numberOfPeople}</dd></div><div className="booking-total"><dt>{t("Total")}</dt><dd>{money(created.total)}</dd></div></dl>{created.total > 0 && paymentState === 'pending' && <section aria-labelledby="booking-pay-title"><h2 id="booking-pay-title">{t("Paga tu reserva")}</h2><p>{t("Tus cupos ya están reservados. Completa el pago con tarjeta para dejarla pagada.")}</p><ReservationPayment reservationId={created.id} onPaid={() => setPaymentState('paid')} onCancel={() => setPaymentState('deferred')}/></section>}<p>{created.total <= 0 ? t("No se realizó ningún cobro. Guarda el número de reserva: ") : paymentState === 'paid' ? t("Pago recibido. Guarda el número de reserva: ") : paymentState === 'deferred' ? t("Todavía no has pagado; puedes hacerlo desde Mis reservas. Guarda el número de reserva: ") : t("Guarda el número de reserva: ")}<strong>{created.id.slice(0,8).toUpperCase()}</strong>.</p><Button asChild><Link href={reservationPath(created.id)}>{t("Ver mi reserva")}</Link></Button></section>
     : loading && !item ? <ExperienceDetailSkeleton /> : !item ? <div className="booking-empty" role="alert"><h1>{t("No pudimos abrir esta experiencia")}</h1><p>{t(error)}</p><Button onClick={() => setReload(n => n+1)}>{t("Volver a intentar")}</Button></div> : <>
-    <div className="booking-detail-heading"><h1>{item.title}</h1>
-      <ul className="booking-detail-meta"><li><MapPin size={16} aria-hidden="true"/>{item.destination}</li>{item.duration ? <li><Clock size={16} aria-hidden="true"/>{durationLabel(item.duration)}</li> : null}<li><Building2 size={16} aria-hidden="true"/>{t("Organizado por ")}<strong>{item.agency}</strong></li></ul></div>
-    <div className="booking-detail-grid"><div className="booking-prose"><img className="booking-detail-photo" src={item.image || '/playa.jpg'} alt={item.title}/><section><h2>{t("Sobre esta experiencia")}</h2><p>{item.description}</p></section><section><h2>{t("Qué incluye")}</h2><p>{item.included || t("Consulta los detalles con el proveedor.")}</p><h2>{t("Qué no incluye")}</h2><p>{item.notIncluded || t("El proveedor no ha indicado exclusiones.")}</p></section><section><h2>{t("Trayecto")}</h2><JourneyView journey={item.journey} meetingPoint={item.meetingPoint}/><p>{t("Las horas se muestran en la zona horaria de Costa Rica.")}</p></section><section><h2>{t("Antes de reservar")}</h2><p>{t("Tu reserva queda confirmada al completar este paso. Puedes consultar sus detalles y cancelar desde Mis reservas antes de la salida. Al reservar podrás pagar con tarjeta, de forma segura, con OnvoPAY.")}</p></section></div>
+    <div className="booking-detail-heading">
+      <nav className="booking-detail-breadcrumb" aria-label={t("Ruta de navegación")}>
+        <Link href="/#experiencias">{t("Explorar")}</Link>
+        <span aria-hidden="true">/</span>
+        <span aria-current="page">{item.title}</span>
+      </nav>
+      <h1>{item.title}</h1>
+      <ul className="booking-detail-meta">
+        <li><MapPin size={16} aria-hidden="true" />{item.destination}</li>
+        {item.duration ? <li><Clock size={16} aria-hidden="true" />{durationLabel(item.duration)}</li> : null}
+        <li><Building2 size={16} aria-hidden="true" />{t("Organizado por ")}<strong>{item.agency}</strong></li>
+      </ul>
+    </div>
+    <div className="booking-detail-grid">
+      <div className="booking-prose">
+        <img className="booking-detail-photo" src={item.image || '/playa.jpg'} alt={item.title} />
+        <section className="booking-detail-section booking-detail-about">
+          <h2>{t("Sobre esta experiencia")}</h2>
+          <p>{item.description}</p>
+        </section>
+        <section className="booking-detail-section booking-detail-inclusions">
+          <h2>{t("Qué incluye")}</h2>
+          <p>{item.included || t("Consulta los detalles con el proveedor.")}</p>
+          <div className="booking-detail-exclusions">
+            <h3>{t("Qué no incluye")}</h3>
+            <p>{item.notIncluded || t("El proveedor no ha indicado exclusiones.")}</p>
+          </div>
+        </section>
+        <section className="booking-detail-section booking-detail-journey">
+          <h2>{t("Trayecto")}</h2>
+          <JourneyView journey={item.journey} meetingPoint={item.meetingPoint} />
+          <p className="booking-detail-timezone">{t("Las horas se muestran en la zona horaria de Costa Rica.")}</p>
+        </section>
+        <section className="booking-detail-section booking-detail-before">
+          <h2>{t("Antes de reservar")}</h2>
+          <p>{t("Tu reserva queda confirmada al completar este paso. Puedes consultar sus detalles y cancelar desde Mis reservas antes de la salida. Al reservar podrás pagar con tarjeta, de forma segura, con OnvoPAY.")}</p>
+        </section>
+      </div>
     <aside ref={panelRef} className="booking-panel" aria-label={t("Solicitar reserva")}><p className="booking-price-from"><span>{t("Desde")}</span><strong>{money(item.price)}</strong><span>{t("por persona")}</span></p><CurrencyNotice usd={item.price*(people || 0)}/><ol className="booking-steps"><li aria-current={step === 'choose' ? 'step' : undefined}>{t("1. Elige tu salida")}</li><li aria-current={step === 'review' ? 'step' : undefined}>{t("2. Revisa y envía")}</li></ol><h2>{step === 'choose' ? t("Haz espacio para tu próximo viaje") : t("Revisa tu solicitud")}</h2>
     <p id="booking-block-reason" className={blockedReason ? 'booking-notice' : 'sr-only'} role="status">{t(blockedReason) || t("Puedes continuar con tu solicitud.")}</p>
     {existingReservation && <Button asChild variant="outline" className="w-full mb-4"><Link href={reservationPath(existingReservation.id)}>{t("Ver mi reserva")}</Link></Button>}
