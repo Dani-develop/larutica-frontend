@@ -1,8 +1,11 @@
 import { apiErrorResponse, ApiError } from "@/lib/api/errors";
+import { proxyRemoteApiRequest } from "@/lib/api/remote-proxy";
 import { geoapify, normalizePlace, requireMapPublisher } from "@/lib/maps/provider";
 import { placeSchema } from "@/lib/maps/validation";
 export async function GET(request: Request) {
   try {
+    const remote = await proxyRemoteApiRequest(request);
+    if (remote) return remote;
     await requireMapPublisher(request);
     const params = new URL(request.url).searchParams;
     const lat = Number(params.get("lat")), lon = Number(params.get("lon"));

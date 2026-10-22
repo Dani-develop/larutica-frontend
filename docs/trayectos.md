@@ -20,7 +20,9 @@ El formulario incorpora un paso exclusivo después de Datos: Trayecto → Servic
 3. Reiniciar `npm.cmd run dev` después de modificar variables de servidor. El paso `predev` prepara automáticamente un `.dev.vars` ignorado por Git a partir de los archivos `.env`; es necesario porque Cloudflare ignora `.env.local` cuando ya existe `.dev.vars`. Editar las variables en `.env.local`, no en el archivo generado. Se recomienda Node 24, como indica el proyecto.
 4. Si se usa el backend compartido de Sites, publicar también sus endpoints actualizados y configurar Geoapify allí. Un frontend nuevo con un backend antiguo no puede guardar trayectos: el formulario detecta la falta de compatibilidad antes de enviar y conserva sus datos.
 
-No se ha publicado una nueva versión en Sites ni se han subido cambios a Git.
+Las variables de Sites solo pertenecen al servidor publicado: no se descargan con `git pull`. Después de cambiarlas, volver a desplegar la versión guardada para aplicarlas. Además, el código publicado debe incluir las API del nuevo flujo.
+
+Los clones sin clave privada de Supabase usan `LARUTICA_REMOTE_API_ORIGIN` de `.env.development`; búsqueda, dirección, cálculo y mosaicos del mapa también pasan por ese backend. No necesitan copiar Geoapify para ese modo. Si se configura una clave privada de Supabase local, el servidor ejecuta sus propias API y necesita sus propias variables en `.env.local`, incluidas las tres `ONVO_*` para pagos y `GEOAPIFY_API_KEY` para mapas. `predev` copia también `ONVO_*` al archivo generado `.dev.vars`.
 
 ## Datos y límites
 

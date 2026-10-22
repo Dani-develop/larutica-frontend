@@ -1,9 +1,12 @@
 import { apiErrorResponse, ApiError } from "@/lib/api/errors";
+import { proxyRemoteApiRequest } from "@/lib/api/remote-proxy";
 import { geoapify, normalizePlace, requireMapPublisher } from "@/lib/maps/provider";
 import { isSpecificPlace } from "@/modules/journeys/route-input";
 import { placeSchema } from "@/lib/maps/validation";
 export async function GET(request: Request) {
   try {
+    const remote = await proxyRemoteApiRequest(request);
+    if (remote) return remote;
     await requireMapPublisher(request);
     const q = new URL(request.url).searchParams.get("q")?.trim() ?? "";
     if (q.length < 3 || q.length > 180) throw new ApiError("Escribe entre 3 y 180 caracteres para buscar.",400);

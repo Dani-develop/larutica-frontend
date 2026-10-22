@@ -1,4 +1,5 @@
 import { apiErrorResponse, ApiError } from "@/lib/api/errors";
+import { proxyRemoteApiRequest } from "@/lib/api/remote-proxy";
 import { geoapify, requireMapPublisher, signJourney } from "@/lib/maps/provider";
 import { placeSchema, journeySchema } from "@/lib/maps/validation";
 import { routeInputIssue } from "@/modules/journeys/route-input";
@@ -7,6 +8,8 @@ import { emptyJourney, type JourneyGeometry } from "@/modules/journeys/types";
 const schema = z.object({mode:z.enum(["drive","walk","hike"]),points:z.array(placeSchema).min(2).max(12)});
 export async function POST(request: Request) {
   try {
+    const remote = await proxyRemoteApiRequest(request);
+    if (remote) return remote;
     await requireMapPublisher(request);
     const parsed = schema.safeParse(await request.json().catch(()=>null));
     if (!parsed.success) throw new ApiError("Selecciona salida, llegada y paradas válidas.",400);
