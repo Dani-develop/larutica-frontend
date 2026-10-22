@@ -81,7 +81,8 @@ export async function createOnvoPaymentIntent(input: {
       amount: toMinorUnits(input.amount),
       currency: input.currency,
       description: input.description,
-      metadata: input.metadata,
+      // Onvo rechaza metadata con valores que no sean texto.
+      metadata: Object.fromEntries(Object.entries(input.metadata).map(([key, value]) => [key, String(value)])),
     }),
   }, "No pudimos preparar el pago. Intenta de nuevo.");
   if (!data.id) throw new ApiError("No pudimos preparar el pago. Intenta de nuevo.", 502);
