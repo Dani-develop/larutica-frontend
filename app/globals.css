@@ -165,14 +165,45 @@ a[data-slot="button"][data-variant="default"] {
 .button-primary:hover { background:var(--green-dark); }
 .button-danger { background:var(--danger); color:white; }
 .button-danger:hover { background:var(--danger-hover); }
-.larutica-swal-popup { border-radius:var(--radius-card); color:var(--ink); font-family:var(--font-brand); }
-.larutica-swal-title { color:var(--ink); }
-.larutica-swal-text { color:var(--ink-muted); }
-.swal2-styled.larutica-swal-confirm { border-radius:var(--radius-pill); background:var(--green)!important; padding:.7rem 1.1rem; font-weight:800; }
-.swal2-styled.larutica-swal-confirm:hover { background:var(--green-dark)!important; }
-.swal2-styled.larutica-swal-cancel { border:1px solid var(--ink)!important; border-radius:var(--radius-pill); background:transparent!important; color:var(--ink)!important; padding:.7rem 1.1rem; font-weight:800; }
-.swal2-styled.larutica-swal-cancel:hover { background:var(--accent)!important; }
-.swal2-styled.larutica-swal-confirm:focus,.swal2-styled.larutica-swal-cancel:focus { box-shadow:0 0 0 3px rgba(13,104,78,.24)!important; }
+.larutica-swal-popup { border-radius:var(--radius-dialog); color:var(--ink); font-family:var(--font-brand); padding:1.5rem 1.35rem 1.25rem; }
+.larutica-swal-title { color:var(--ink); font-size:var(--type-card); line-height:1.3; }
+.larutica-swal-text { color:var(--ink-muted); font-size:var(--type-body); line-height:1.5; }
+.larutica-swal-actions { display:flex !important; flex-wrap:wrap; justify-content:center; gap:.75rem; width:100%; margin-top:1.25rem !important; }
+.larutica-swal-popup .larutica-swal-confirm,
+.larutica-swal-popup .larutica-swal-cancel { display:inline-flex !important; align-items:center; justify-content:center; min-height:44px; margin:0 !important; padding:.65rem 1.25rem !important; border:2px solid transparent !important; border-radius:var(--radius-pill) !important; font-family:var(--font-brand); font-size:var(--type-small) !important; font-weight:700 !important; line-height:1.2; white-space:nowrap; cursor:pointer; box-shadow:none !important; }
+.larutica-swal-popup .larutica-swal-confirm { background:var(--primary) !important; color:var(--primary-foreground) !important; border-color:var(--primary) !important; }
+.larutica-swal-popup .larutica-swal-confirm:hover { background:var(--brand-forest-hover) !important; border-color:var(--brand-forest-hover) !important; }
+.larutica-swal-popup .larutica-swal-danger { background:var(--danger) !important; color:var(--surface) !important; border-color:var(--danger) !important; }
+.larutica-swal-popup .larutica-swal-danger:hover { background:var(--danger-hover) !important; border-color:var(--danger-hover) !important; }
+.larutica-swal-popup .larutica-swal-cancel { background:var(--surface) !important; color:var(--ink) !important; border-color:var(--ink) !important; }
+.larutica-swal-popup .larutica-swal-cancel:hover { background:var(--surface-muted) !important; }
+.larutica-swal-popup .larutica-swal-confirm:focus-visible,
+.larutica-swal-popup .larutica-swal-cancel:focus-visible { outline:3px solid var(--focus) !important; outline-offset:3px; box-shadow:none !important; }
+.upcoming-reservations .card-image-wrap,
+.upcoming-reservations .card-image-wrap img { height:180px; min-height:180px; }
+.upcoming-reservations .reservation-summary { margin:.15rem 0; color:var(--ink-muted); line-height:1.45; }
+.upcoming-reservations .card-body { width:100%; }
+.reservation-detail { display:grid; gap:1.25rem; scroll-margin-top:110px; }
+.reservation-detail:focus { outline:3px solid var(--focus); outline-offset:4px; }
+.reservation-detail-hero.card-image-wrap,
+.reservation-detail-hero.card-image-wrap img { height:min(360px,52vw); min-height:200px; border-radius:var(--radius-card); }
+.reservation-detail-panel { display:grid; gap:1rem; padding:1.5rem; border:1px solid var(--line); border-radius:var(--radius-card); background:var(--surface); }
+.reservation-detail .reservation-facts { grid-template-columns:repeat(2,minmax(0,1fr)); gap:1rem 1.5rem; }
+.reservation-detail .notice,
+.reservation-detail .onvo-pay,
+.reservation-detail .reservation-journey,
+.reservation-detail .preference-rate-note { width:100%; }
+.reservation-detail-actions { width:100%; }
+.reservation-detail-actions > .button { flex:1 1 12rem; text-align:center; }
+@media (max-width:620px) {
+  .reservation-detail .reservation-facts { grid-template-columns:1fr; }
+  .reservation-detail-hero.card-image-wrap,
+  .reservation-detail-hero.card-image-wrap img { height:220px; min-height:220px; }
+  .reservation-detail-panel { padding:1.15rem; }
+}
+.reservation-journey { margin:.35rem 0 0; }
+.reservation-journey summary { cursor:pointer; font-weight:700; color:var(--ink); }
+.reservation-journey-map { margin-top:.75rem; }
 .hero { min-height:680px; padding:clamp(2rem,5vw,5rem); display:grid; grid-template-columns:1.15fr .85fr; gap:clamp(2rem,5vw,5rem); align-items:center; overflow:hidden; position:relative; }
 .hero::before { content:""; position:absolute; width:420px; height:420px; border-radius:50%; background:var(--lime); opacity:.33; top:-240px; left:30%; }
 .hero-copy { max-width:780px; position:relative; z-index:1; }

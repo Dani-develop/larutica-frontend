@@ -58,7 +58,10 @@ Object.assign(english, {
 "Finalizada":"Completed",
 "Este viaje ya se realizó. Puedes dejar tu calificación.":"This trip has already taken place. You can leave a rating.",
 "Esta reserva está cancelada y sigue en tu historial.":"This reservation is cancelled and remains in your history.",
-"El estado se actualiza solo, aproximadamente cada 30 segundos.":"Status updates on its own, about every 30 seconds."
+"El estado se actualiza solo, aproximadamente cada 30 segundos.":"Status updates on its own, about every 30 seconds.",
+"Volver a reservas por venir":"Back to upcoming trips",
+"Trayecto de tu reserva":"Your reservation route",
+"No encontramos esta reserva.":"We could not find this reservation."
 });
 
 Object.assign(english, {

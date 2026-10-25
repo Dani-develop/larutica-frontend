@@ -1,6 +1,7 @@
 import { dateLabel, money } from "../../modules/booking/types.ts";
 
 import type { MailMessage } from "./send";
+import { renderBrandedMail } from "./template.ts";
 
 export type ReservationMailFacts = {
   id: string;
@@ -17,15 +18,32 @@ export function reservationCode(id: string) {
   return id.slice(0, 8).toUpperCase();
 }
 
-function reservationBody(facts: ReservationMailFacts, extra: string[]) {
+function reservationFacts(facts: ReservationMailFacts): Array<[string, string]> {
   return [
-    ...extra,
-    `Experiencia: ${facts.publicationTitle}`,
-    `Salida: ${dateLabel(facts.departureStartAt)}`,
-    `Personas: ${facts.numberOfPeople}`,
-    `Total: ${money(facts.total)}`,
-    `Número de reserva: ${reservationCode(facts.id)}`,
-  ].join("\n");
+    ["Experiencia", facts.publicationTitle],
+    ["Salida", dateLabel(facts.departureStartAt)],
+    ["Personas", String(facts.numberOfPeople)],
+    ["Total", money(facts.total)],
+    ["Número de reserva", reservationCode(facts.id)],
+  ];
+}
+
+function mailMessage(
+  to: string,
+  subject: string,
+  paragraphs: string[],
+  facts: Array<[string, string]> = [],
+): MailMessage {
+  return {
+    to,
+    subject,
+    text: [...paragraphs, ...facts.map(([label, value]) => `${label}: ${value}`)].join("\n"),
+    html: renderBrandedMail({
+      heading: paragraphs[0] || subject,
+      paragraphs: paragraphs.slice(1),
+      facts,
+    }),
+  };
 }
 
 export function reservationConfirmationMessages(facts: ReservationMailFacts, inserted: boolean): MailMessage[] {
@@ -38,65 +56,45 @@ export function reservationConfirmationMessages(facts: ReservationMailFacts, ins
   const messages: MailMessage[] = [];
   const traveler = facts.passengerEmail?.trim();
   if (traveler) {
-    messages.push({
-      to: traveler,
-      subject: "Reserva realizada",
-      text: reservationBody(facts, shared),
-    });
+    messages.push(mailMessage(traveler, "Reserva realizada", shared, reservationFacts(facts)));
   }
   const agency = facts.agencyEmail?.trim();
   if (agency) {
-    messages.push({
-      to: agency,
-      subject: "Reserva realizada",
-      text: reservationBody(facts, [
-        ...shared,
-        `A nombre de: ${facts.passengerName?.trim() || "Viajero"}`,
-      ]),
-    });
+    messages.push(mailMessage(agency, "Reserva realizada", shared, [
+      ["A nombre de", facts.passengerName?.trim() || "Viajero"],
+      ...reservationFacts(facts),
+    ]));
   }
   return messages;
 }
 
 export function departureCancellationMessage(facts: ReservationMailFacts & { passengerEmail: string }): MailMessage {
-  return {
-    to: facts.passengerEmail,
-    subject: "Salida cancelada",
-    text: reservationBody(facts, [
-      "El organizador canceló esta salida.",
-      "Tu reserva quedó cancelada.",
-    ]),
-  };
+  return mailMessage(facts.passengerEmail, "Salida cancelada", [
+    "El organizador canceló esta salida.",
+    "Tu reserva quedó cancelada.",
+  ], reservationFacts(facts));
 }
 
 export function departureDateChangeMessage(
   facts: ReservationMailFacts & { passengerEmail: string; newDepartureStartAt: string },
 ): MailMessage {
-  return {
-    to: facts.passengerEmail,
-    subject: "Cambio de fecha del viaje",
-    text: reservationBody(facts, [
-      "La agencia cambió la fecha de esta salida.",
-      `Fecha nueva: ${dateLabel(facts.newDepartureStartAt)}`,
-      "Tu reserva fue cancelada por el cambio de fecha.",
-      "Si deseas asistir, debes realizar una nueva reserva para la fecha disponible.",
-      "Si ya habías pagado, revisa el estado del reembolso en Mis reservas.",
-    ]),
-  };
+  return mailMessage(facts.passengerEmail, "Cambio de fecha del viaje", [
+    "La agencia cambió la fecha de esta salida.",
+    `Fecha nueva: ${dateLabel(facts.newDepartureStartAt)}`,
+    "Tu reserva fue cancelada por el cambio de fecha.",
+    "Si deseas asistir, debes realizar una nueva reserva para la fecha disponible.",
+    "Si ya habías pagado, revisa el estado del reembolso en Mis reservas.",
+  ], reservationFacts(facts));
 }
 
 export function publicationDeactivationMessage(
   facts: ReservationMailFacts & { passengerEmail: string },
 ): MailMessage {
-  return {
-    to: facts.passengerEmail,
-    subject: "Viaje o gira desactivada",
-    text: reservationBody(facts, [
-      "La agencia desactivó este viaje o gira.",
-      "Tu reserva fue cancelada.",
-      "Si ya habías pagado, revisa el estado del reembolso en Mis reservas.",
-    ]),
-  };
+  return mailMessage(facts.passengerEmail, "Viaje o gira desactivada", [
+    "La agencia desactivó este viaje o gira.",
+    "Tu reserva fue cancelada.",
+    "Si ya habías pagado, revisa el estado del reembolso en Mis reservas.",
+  ], reservationFacts(facts));
 }
 
 export function publicationDecisionMessage(input: {
@@ -109,14 +107,10 @@ export function publicationDecisionMessage(input: {
   if (input.previousStatus !== "PENDING" || !to) return null;
   const accepted = input.status === "APPROVED";
   const result = accepted ? "aceptada" : "negada";
-  return {
-    to,
-    subject: accepted ? "Publicación aceptada" : "Publicación negada",
-    text: [
-      `Tu publicación «${input.title}» fue ${result}.`,
-      accepted
-        ? "La administración aceptó esta gira o viaje."
-        : "La administración negó esta gira o viaje.",
-    ].join("\n"),
-  };
+  return mailMessage(to, accepted ? "Publicación aceptada" : "Publicación negada", [
+    `Tu publicación «${input.title}» fue ${result}.`,
+    accepted
+      ? "La administración aceptó esta gira o viaje."
+      : "La administración negó esta gira o viaje.",
+  ]);
 }

@@ -15,6 +15,38 @@ function decodeQuotedPrintable(value) {
   }
   return Buffer.from(bytes).toString('utf8');
 }
+function decodeTransfer(headers, body) {
+  if (/Content-Transfer-Encoding:\s*base64/i.test(headers)) return Buffer.from(body.replace(/\s/g, ''), 'base64').toString('utf8');
+  if (/Content-Transfer-Encoding:\s*quoted-printable/i.test(headers)) return decodeQuotedPrintable(body);
+  return body;
+}
+function collectText(headers, body, into) {
+  const contentType = headers.match(/^Content-Type:\s*(.*)$/mi)?.[1] ?? '';
+  const boundary = contentType.match(/boundary="?([^";\s]+)"?/i)?.[1];
+  if (boundary && /multipart\//i.test(contentType)) {
+    for (const chunk of body.split(`--${boundary}`)) {
+      const normalized = chunk.replace(/^\r\n/, '');
+      if (!normalized.trim() || normalized.startsWith('--')) continue;
+      const split = normalized.indexOf('\r\n\r\n');
+      if (split < 0) continue;
+      collectText(normalized.slice(0, split), normalized.slice(split + 4).replace(/\r\n$/, ''), into);
+    }
+    return;
+  }
+  const decoded = decodeTransfer(headers, body);
+  if (/text\/html/i.test(contentType)) into.html = decoded;
+  else if (/text\/plain/i.test(contentType) || !into.text) into.text = decoded;
+}
+function messageBodies(raw) {
+  const split = raw.indexOf('\r\n\r\n');
+  const headers = raw.slice(0, Math.max(split, 0)).replace(/\r\n[ \t]+/g, ' ');
+  const body = split >= 0 ? raw.slice(split + 4) : raw;
+  const into = { text: '', html: '' };
+  const contentType = headers.match(/^Content-Type:\s*(.*)$/mi)?.[1] ?? '';
+  if (/multipart\//i.test(contentType)) collectText(headers, body, into);
+  else into.text = decodeTransfer(headers, body);
+  return { headers, ...into };
+}
 export async function createSmtp(options = {}) {
   const received = [], attempts = [];
   const state = { rejectRecipients: new Set(), failAuth: false, failData: false };
@@ -38,11 +70,7 @@ export async function createSmtp(options = {}) {
       stream.on('end', () => {
         if (state.failData) return done(Object.assign(new Error('Temporary SMTP failure'), { responseCode: 451 }));
         const raw = Buffer.concat(chunks).toString('utf8');
-        const split = raw.indexOf('\r\n\r\n');
-        const headers = raw.slice(0, split).replace(/\r\n[ \t]+/g, ' ');
-        let text = raw.slice(split + 4);
-        if (/Content-Transfer-Encoding: base64/i.test(headers)) text = Buffer.from(text, 'base64').toString('utf8');
-        else if (/Content-Transfer-Encoding: quoted-printable/i.test(headers)) text = decodeQuotedPrintable(text);
+        const { headers, text } = messageBodies(raw);
         received.push({ to: session.envelope.rcptTo.map(x => x.address),
           from: session.envelope.mailFrom.address,
           subject: decodeWord(headers.match(/^Subject: (.*)$/mi)?.[1] ?? ''), text, raw });

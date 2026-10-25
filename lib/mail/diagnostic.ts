@@ -1,6 +1,6 @@
 import { timingSafeEqual } from "node:crypto";
 import { apiErrorResponse, assertSameOrigin } from "../api/errors.ts";
-import { callMailRelay, deliverMail, mailFailure, readMailConfig, smtpTransportOptions, type MailDeliveryResult } from "./send.ts";
+import { callMailRelay, deliverMail, mailFailure, readMailConfig, smtpTransportOptions, type MailDeliveryResult, type MailMessage } from "./send.ts";
 import {
   notifyDepartureCancellations,
   notifyDepartureDateChanges,
@@ -78,7 +78,7 @@ export async function runMailDiagnostic(request: Request, env: NodeJS.ProcessEnv
         "publicacion_aprobada",
         "publicacion_rechazada",
       ];
-      const send = async (message: { to: string; subject: string; text: string }) => {
+      const send = async (message: MailMessage) => {
         const index = messages.length;
         const result = await deliverMail({ ...message, to, subject: `[PRUEBA Sites ${index + 1}/7] ${message.subject}` }, { env: activeEnv });
         messages.push({ flow: labels[index], ...result });

@@ -10,11 +10,12 @@ import "sweetalert2/dist/sweetalert2.min.css";
 import { useAuth } from "@/modules/auth/context/AuthContext";
 import { ExperienceDetail } from "@/modules/booking/ExperienceDetail";
 import { UpcomingReservationCard } from "@/modules/booking/UpcomingReservationCard";
+import { UpcomingReservationDetail } from "@/modules/booking/UpcomingReservationDetail";
 import { canTravelerCancel, isUpcomingReservation, paymentNotice, reservationNotice, reservationStatusText } from "@/modules/booking/reservationState";
 import { useNow } from "@/modules/booking/useNow";
 import { useEffect, useMemo, useRef, useState } from "react";
 
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import type { SystemUser } from "@/modules/crm/users/models/User";
 import { MyProfilePage } from "@/modules/crm/users/components/MyProfilePage";
 import type { TravelerPublication } from "@/modules/traveler/types/traveler-publication.types";
@@ -37,8 +38,13 @@ const reservationAlertClasses = {
   popup: "larutica-swal-popup",
   title: "larutica-swal-title",
   htmlContainer: "larutica-swal-text",
+  actions: "larutica-swal-actions",
   confirmButton: "larutica-swal-confirm",
   cancelButton: "larutica-swal-cancel",
+};
+const cancelReservationAlertClasses = {
+  ...reservationAlertClasses,
+  confirmButton: "larutica-swal-confirm larutica-swal-danger",
 };
 
 function TripHeading({ eyebrow, title, lead }: { eyebrow: string; title: string; lead: string }) {
@@ -974,6 +980,7 @@ export function TravelerSavedPage() {
 export function TravelerReservationsPage() {
   const { t } = usePreferences();
   const now = useNow();
+  const router = useRouter();
   const searchParams = useSearchParams();
   const selectedReservation = searchParams.get("reserva");
   const [reservationView, setReservationView] = useState<"upcoming" | "past">("upcoming");
@@ -982,6 +989,7 @@ export function TravelerReservationsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [cancellingReservationId, setCancellingReservationId] = useState<string | null>(null);
+  const [detailHoldId, setDetailHoldId] = useState<string | null>(null);
   const alignedSelection = useRef<string | null>(null);
   const focusedSelection = useRef<string | null>(null);
 
@@ -1017,6 +1025,13 @@ export function TravelerReservationsPage() {
   }, []);
 
   useEffect(() => {
+    if (selectedReservation) return;
+    alignedSelection.current = null;
+    focusedSelection.current = null;
+    setDetailHoldId(null);
+  }, [selectedReservation]);
+
+  useEffect(() => {
     if (loading || !selectedReservation || alignedSelection.current === selectedReservation) return;
     const selected = reservations.find((reservation) => reservation.id === selectedReservation);
     if (!selected) return;
@@ -1032,7 +1047,8 @@ export function TravelerReservationsPage() {
     focusedSelection.current = selectedReservation;
     card.setAttribute("tabindex", "-1");
     card.focus({ preventScroll: true });
-    card.scrollIntoView({ block: "center", behavior: "instant" });
+    if (card.classList.contains("reservation-detail")) window.scrollTo({ top: 0, behavior: "instant" });
+    else card.scrollIntoView({ block: "center", behavior: "instant" });
   }, [loading, selectedReservation, reservationView, reservations]);
 
   const visibleReservations = reservations.filter((reservation) =>
@@ -1057,8 +1073,7 @@ export function TravelerReservationsPage() {
       confirmButtonText: t("Sí, cancelar viaje"),
       cancelButtonText: t("Mantener reserva"),
       reverseButtons: true,
-      buttonsStyling: false,
-      customClass: reservationAlertClasses,
+      customClass: cancelReservationAlertClasses,
     });
     if (!confirmation.isConfirmed) return;
 
@@ -1072,7 +1087,6 @@ export function TravelerReservationsPage() {
         text: cause instanceof Error ? cause.message : "Intenta de nuevo en unos momentos.",
         icon: "error",
         confirmButtonText: t("Cerrar"),
-        buttonsStyling: false,
         customClass: reservationAlertClasses,
       });
       return;
@@ -1082,14 +1096,52 @@ export function TravelerReservationsPage() {
     setReservations((current) => current.map((item) =>
       item.id === updated.id ? updated : item,
     ));
+    const returnToList = searchParams.get("reserva") === reservation.id && isUpcomingReservation(reservation, now);
+    if (returnToList) setDetailHoldId(reservation.id);
     await Swal.fire({
       title: t("Viaje cancelado"),
       text: t("Tu reserva se canceló correctamente."),
       icon: "success",
       confirmButtonText: t("Aceptar"),
-      buttonsStyling: false,
       customClass: reservationAlertClasses,
     });
+    if (returnToList) router.replace("/?viaje=reservas");
+  }
+
+  const selected = reservations.find((reservation) => reservation.id === selectedReservation) ?? null;
+  const showUpcomingDetail = Boolean(selected && (isUpcomingReservation(selected, now) || detailHoldId === selected.id));
+
+  if (selectedReservation && loading && !selected) {
+    return (
+      <section className="page-shell trip-page-shell">
+        <p className="empty-state">{t("Cargando reservas...")}</p>
+      </section>
+    );
+  }
+
+  if (selectedReservation && !loading && !selected) {
+    return (
+      <section className="page-shell trip-page-shell">
+        <Link className="back-link" href="/?viaje=reservas">{t("Volver a reservas por venir")}</Link>
+        {error ? <p className="notice" role="alert">{t(error)}</p> : <p className="empty-state" role="status">{t("No encontramos esta reserva.")}</p>}
+      </section>
+    );
+  }
+
+  if (showUpcomingDetail && selected) {
+    return (
+      <UpcomingReservationDetail
+        reservation={selected}
+        image={publicationImages[selected.publicationId] || selected.publicationImageUrl || undefined}
+        onCancel={() => void cancelReservation(selected)}
+        busy={cancellingReservationId !== null}
+        cancelling={cancellingReservationId === selected.id}
+        onPaid={() => setReservations((current) => current.map((item) =>
+          item.id === selected.id ? { ...item, paymentStatus: "PAID" } : item,
+        ))}
+        existing={searchParams.get("existente") === "1"}
+      />
+    );
   }
 
   return (
@@ -1120,15 +1172,16 @@ export function TravelerReservationsPage() {
           onClick={() => setReservationView("past")}
         >{t("Historial ")}</button>
       </div>
-      {reservationView === "upcoming" ? <section aria-labelledby="upcoming-reservations-title">
+      {reservationView === "upcoming" ? <section className="reservation-history" aria-labelledby="upcoming-reservations-title">
         <h2 id="upcoming-reservations-title" className="subheading">{t("Reservas por venir")}</h2>
         {visibleReservations.length === 0 ? <p className="empty-state">{t(loading ? "Cargando reservas..." : error ? "El listado no está disponible." : "No tienes reservas por venir.")}</p> :
-          <div className="booking-list upcoming-reservations">{visibleReservations.map(reservation =>
-            <UpcomingReservationCard key={reservation.id} reservation={reservation}
-              onCancel={() => void cancelReservation(reservation)} busy={cancellingReservationId !== null}
-              onPaid={() => setReservations((current) => current.map((item) =>
-                item.id === reservation.id ? { ...item, paymentStatus: "PAID" } : item,
-              ))} />
+          <div className="card-grid upcoming-reservations">{visibleReservations.map(reservation =>
+            <div className="reservation-history-item" key={reservation.id}>
+              <UpcomingReservationCard
+                reservation={reservation}
+                image={publicationImages[reservation.publicationId] || reservation.publicationImageUrl || undefined}
+              />
+            </div>
           )}</div>}
       </section> : <ReservationGroup
         title={t("Historial de reservas")}
