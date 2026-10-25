@@ -94,6 +94,15 @@ test("la confirmación repite la pantalla y la agencia ve quién reservó", () =
     assert.match(message.text, /15/);
   }
   assert.match(messages[1].text, /Ana Solís/);
+  assert.match(messages[0].html, /cid:larutica-logo/);
+  assert.match(messages[0].html, /LaRutica/);
+  assert.match(messages[0].html, /#003b22/);
+  assert.match(messages[0].html, /#00df5b/);
+  assert.match(messages[0].html, /Volcán Arenal/);
+  const unsafe = reservationConfirmationMessages({ ...facts, publicationTitle: "A < B & C" }, true)[0];
+  assert.match(unsafe.text, /A < B & C/);
+  assert.match(unsafe.html, /A &lt; B &amp; C/);
+  assert.doesNotMatch(unsafe.html, /A < B/);
   assert.equal(reservationConfirmationMessages({ ...facts, passengerEmail: "  " }, true)[0].to, "agencia@ejemplo.com");
   assert.equal(reservationConfirmationMessages(facts, false).length, 0);
 });
