@@ -17,7 +17,8 @@ for (const [pathname, expected] of [
   ["/login", "Iniciar sesión"],
   ["/register", "Crear cuenta"],
   ["/forgot-password", "Recuperar contraseña"],
-  ["/update-password", "Nueva contraseña"],
+  ["/forgot-password/code", "one-time-code"],
+  ["/forgot-password/new", "Nueva contraseña"],
   ["/dashboard", "Validando sesión"],
   ...['/dashboard/my-agency','/dashboard/my-agency/new','/dashboard/my-agency/edit','/dashboard/users','/dashboard/users/new','/dashboard/users/00000000-0000-4000-8000-000000000001','/dashboard/users/00000000-0000-4000-8000-000000000001/edit','/dashboard/agencies','/dashboard/agencies/new','/dashboard/agencies/00000000-0000-4000-8000-000000000001','/dashboard/agencies/00000000-0000-4000-8000-000000000001/edit','/dashboard/publications','/dashboard/publications/new','/dashboard/publications/00000000-0000-4000-8000-000000000001','/dashboard/publications/00000000-0000-4000-8000-000000000001/edit','/dashboard/reservations','/dashboard/profile','/dashboard/reviews','/dashboard/promotions','/dashboard/destinations','/dashboard/graficas'].map(path => [path, 'Validando sesión']),
   ['/terminos', 'LaRutica'],
@@ -30,6 +31,13 @@ for (const [pathname, expected] of [
     assert.match(await response.text(), new RegExp(expected, "i"));
   });
 }
+
+test("redirige /update-password a la recuperación por código", async () => {
+  const response = await render("/update-password");
+  assert.equal(response.status, 307);
+  const location = response.headers.get("location") ?? "";
+  assert.equal(new URL(location, "http://localhost").pathname, "/forgot-password");
+});
 
 for (const [query, expected] of [
   ['', '/?viaje=reservas'],

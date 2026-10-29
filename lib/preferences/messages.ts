@@ -1,4 +1,4 @@
-import { dashboardEnglish } from './dashboard-messages';
+import { dashboardEnglish } from './dashboard-messages.ts';
 // Interface messages only; user and provider content is never rewritten.
 export const english: Record<string,string> = Object.fromEntries([
 ['Explorar','Explore'],['Destinos','Destinations'],['Mi viaje','My trip'],['Ayuda','Help'],['Accesibilidad','Accessibility'],['Mi cuenta','My account'],['Cerrar sesión','Sign out'],['Cerrando sesión…','Signing out…'],['Cargando cuenta…','Loading account…'],['Ingresar','Sign in'],['Inicio','Home'],['Volver al inicio','Back to home'],['Volver al sitio','Back to website'],['LaRutica, volver al inicio','LaRutica, back to home'],['Ir al contenido principal','Skip to main content'],['Navegación principal','Main navigation'],['Saltar al contenido','Skip to content'],['Saltar al formulario','Skip to form'],
@@ -158,4 +158,22 @@ for (const [key, value] of Object.entries({
 "Guardar comisión":"Save commission",
 "Indica un monto válido.":"Enter a valid amount.",
 "La comisión debe estar entre 0 y 100.":"The commission must be between 0 and 100.",
+"Código de recuperación":"Recovery code",
+"Escribe el código de 5 dígitos. Caduca a los 15 minutos.":"Enter the 5-digit code. It expires after 15 minutes.",
+"Código":"Code",
+"Comprobar código":"Check code",
+"Comprobando código…":"Checking code…",
+"Pedir otro código":"Request another code",
+"Enviando código…":"Sending code…",
+"Puedes usar el código más reciente.":"You can use the latest code.",
+"Espera un momento antes de pedir otro código.":"Wait a moment before requesting another code.",
+"El código no es válido.":"The code is not valid.",
+"Ese código ya no sirve. Pide otro código.":"That code no longer works. Request another code.",
+"Elige una contraseña de 8 a 128 caracteres y confírmala.":"Choose a password of 8 to 128 characters and confirm it.",
+"La contraseña debe tener entre 8 y 128 caracteres.":"The password must be between 8 and 128 characters.",
+"Las contraseñas no coinciden.":"The passwords do not match.",
+"El permiso para cambiar la contraseña no es válido. Pide un código nuevo.":"The permission to change the password is not valid. Request a new code.",
+"Ingresa un correo válido.":"Enter a valid email.",
+"No se pudo preparar la recuperación.":"We could not prepare the recovery.",
+"No se pudo guardar la contraseña.":"We could not save the password.",
 })) { english[key] ??= value; }
