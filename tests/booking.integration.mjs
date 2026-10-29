@@ -65,7 +65,11 @@ test('viajero reserva confirmada, se validan permisos, cancela y recupera cupo',
     assert.equal((await request(`/api/catalog?id=${pubs[0]}`)).body.data.length,0);
     assert.equal((await request('/api/reservations','POST',{departureId:deps[0],numberOfPeople:1},traveler.cookie)).status,409);
   } finally {
-    if (deps.length) {const r=await admin.from('reservations').delete().in('departure_id',deps); assert.ifError(r.error);}
+    if (deps.length) {
+      const rows=await admin.from('reservations').select('id').in('departure_id',deps); assert.ifError(rows.error);
+      if (rows.data.length) {const r=await admin.from('reservation_payments').delete().in('reservation_id',rows.data.map(row=>row.id)); assert.ifError(r.error);}
+      const r=await admin.from('reservations').delete().in('departure_id',deps); assert.ifError(r.error);
+    }
     if (pubs.length) {const r=await admin.from('publications').delete().in('id',pubs); assert.ifError(r.error);}
     if (agencyId) {const r=await admin.from('agencies').delete().eq('id',agencyId); assert.ifError(r.error);}
     for (const id of ids) {const r=await admin.auth.admin.deleteUser(id); assert.ifError(r.error);}

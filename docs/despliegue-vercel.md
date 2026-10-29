@@ -2,7 +2,7 @@
 
 La prueba parte de `origin/main` `7ab31b32f324ac9988cba08e252e5c42af5f66b7`.
 Proyecto: `larutica-preview`. URL de revisión: https://larutica-cr.vercel.app.
-Esta URL apunta a un despliegue Preview; Sites se conserva sin modificaciones.
+Esta URL está vinculada a Production del fork; Sites se conserva sin modificaciones.
 
 ## Compilación
 
@@ -26,9 +26,9 @@ Configurar en Vercel, nunca en Git:
 - `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASS`, `MAIL_FROM`.
 - `LARUTICA_REMOTE_API_ORIGIN` vacío para ejecutar todas las API en Vercel.
 
-Preview tiene las credenciales configuradas. Antes de producción hay que
-completar y revisar también sus variables. Las credenciales de mapas, asistente
-y Onvo añadidas por el usuario están habilitadas en ambos entornos.
+Las quince variables de la aplicación están habilitadas en Production y Preview.
+Gmail rechaza las credenciales SMTP actuales con 535/EAUTH: se necesita una
+contraseña de aplicación válida para el usuario SMTP configurado.
 Los secretos no se pueden exportar desde Sites.
 
 Preview actualmente consulta la misma base de Supabase que el proyecto local:
@@ -66,15 +66,24 @@ crea reservas ni cuentas. No sustituye la prueba autenticada de pagos/webhook.
 ## Verificación realizada
 
 - Compilación remota Linux de Vercel: correcta.
-- 30 pruebas aisladas de pagos, reservas y transporte SMTP: correctas.
+- 22 pruebas de contratos de autenticación, retorno de reservas y pagos: correctas.
+- 23 pruebas aisladas SMTP/diagnóstico: correctas.
+- TypeScript y build Vercel: correctos.
 - Landing, login, catálogo, tipos de cambio y mosaicos de mapas: HTTP 200.
 - Sesión y administración sin autenticar: HTTP 401, como corresponde.
-- Pendientes: navegación autenticada por rol, reserva/pago completo de prueba,
-  entrega real de correo y recepción del webhook de Onvo en el nuevo dominio.
-- No se crearon reservas ni se ejecutaron cobros durante estas comprobaciones.
+- Navegador compilado y Vercel: enlaces, detalle, mapa, login, registro, Atrás
+  y cambio de idioma funcionan sin el error del router original.
+- Integración contra Vercel: login, perfil, permisos Admin/Viajero, CRUD de
+  usuarios temporales y cierre de sesión correctos.
+- Integración contra Vercel: reserva confirmada automáticamente, reintento
+  idempotente, control de cupo/permisos, cancelación y recuperación de cupo correctos.
+- Onvo: preparación de checkout correcta desde Vercel. No se introdujo tarjeta
+  ni se realizó cobro. Los datos temporales de las pruebas fueron eliminados.
+- Correo real desde Vercel: Gmail responde 535/EAUTH en 587 y 465; cero mensajes
+  aceptados. Las pruebas SMTP locales no prueban la validez de las credenciales.
+- Pendientes: recepción real de correo con credenciales válidas y transacción
+  completa con tarjeta de prueba/webhook de Onvo. La preparación del checkout
+  no equivale a un pago completado.
 
-La vista previa conserva la protección de acceso de Vercel. No se modificó la
-configuración de Sites, no se subió código a GitHub ni se promovió Preview a
-producción. Vercel creó automáticamente una versión inicial de producción
-dentro del proyecto nuevo durante su primer despliegue; la URL limpia se asignó
-posteriormente al Preview verificado.
+Vercel conserva su configuración de protección. Las correcciones se publicaron
+únicamente en `Dani-develop/larutica-frontend`; no en el main original de FranderCT.
