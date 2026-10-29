@@ -38,12 +38,12 @@ test('viajero reserva confirmada, se validan permisos, cancela y recupera cupo',
     assert.equal((await request('/api/reservations','POST',{departureId:deps[0],numberOfPeople:1})).status,401);
     const created = await request('/api/reservations','POST',{departureId:deps[0],numberOfPeople:2},traveler.cookie);
     assert.equal(created.status,201,JSON.stringify(created.body)); const id = created.body.data.id;
-    assert.equal(created.body.data.status,'CONFIRMED'); assert.equal(created.body.data.total,25000);
+    assert.equal(created.body.data.status,'PENDING'); assert.equal(created.body.data.total,25000);
     const repeated = await request('/api/reservations','POST',{departureId:deps[0],numberOfPeople:2},traveler.cookie);
     assert.equal(repeated.status,201); assert.equal(repeated.body.data.id,id); // Idempotent retry.
     const overflow = await request('/api/reservations','POST',{departureId:deps[0],numberOfPeople:1},outsider.cookie);
     assert.equal(overflow.status,400,JSON.stringify(overflow.body));
-    assert.equal((await request(`/api/reservations/${id}`,'PATCH',{status:'CONFIRMED'},traveler.cookie)).status,403);
+    assert.equal((await request(`/api/reservations/${id}`,'PATCH',{status:'CONFIRMED'},traveler.cookie)).status,409);
     assert.equal((await request(`/api/reservations/${id}`,'PATCH',{status:'CONFIRMED'},outsider.cookie)).status,404);
     const providerList = await request('/api/reservations','GET',undefined,provider.cookie);
     assert.equal(providerList.body.data[0].id,id); assert.equal(providerList.body.data[0].passengerName,'Prueba reservas Viajero');
@@ -57,8 +57,8 @@ test('viajero reserva confirmada, se validan permisos, cancela y recupera cupo',
       assert.equal((await request(`/api/reservations/${id}/payment`,'POST',{},outsider.cookie)).status,404);
     }
     const confirmed = await request(`/api/reservations/${id}`,'PATCH',{status:'CONFIRMED'},provider.cookie);
-    assert.equal(confirmed.status,400); // Already confirmed automatically.
-    assert.equal((await request(`/api/reservations/${id}`,'GET',undefined,traveler.cookie)).body.data.status,'CONFIRMED');
+    assert.equal(confirmed.status,409); // Payment is required even for the provider.
+    assert.equal((await request(`/api/reservations/${id}`,'GET',undefined,traveler.cookie)).body.data.status,'PENDING');
     assert.equal((await request(`/api/reservations/${id}`,'PATCH',{status:'CANCELLED'},traveler.cookie)).status,200);
     catalog = await request(`/api/catalog?id=${pubs[0]}`); assert.equal(catalog.body.data[0].departures[0].available,2);
     await admin.from('agencies').update({status:'INACTIVE'}).eq('id',agencyId);

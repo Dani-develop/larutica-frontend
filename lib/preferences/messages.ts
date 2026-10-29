@@ -156,6 +156,12 @@ for (const [key, value] of Object.entries({
 "Porcentaje que retiene LaRutica (%)":"Percentage LaRutica keeps (%)",
 "Se aplica solo a los cobros que se creen desde ahora. Los cobros anteriores conservan la comisión con la que se cobraron.":"It only applies to payments created from now on. Earlier payments keep the commission they were charged with.",
 "Guardar comisión":"Save commission",
+"Completa el pago":"Complete payment",
+"Continuar al pago":"Continue to payment",
+"Pendiente de pago":"Awaiting payment",
+"Para confirmar tu reserva, completa el pago seguro con OnvoPAY.":"Complete the secure OnvoPAY payment to confirm your reservation.",
+"Completa el pago seguro con OnvoPAY para confirmar tu reserva.":"Complete the secure OnvoPAY payment to confirm your reservation.",
+"Tu reserva se confirma cuando completas el pago seguro con OnvoPAY. Después podrás consultar sus detalles y cancelar desde Mis reservas antes de la salida.":"Your reservation is confirmed once you complete the secure OnvoPAY payment. You can then view its details and cancel from My reservations before departure.",
 "Indica un monto válido.":"Enter a valid amount.",
 "La comisión debe estar entre 0 y 100.":"The commission must be between 0 and 100.",
 })) { english[key] ??= value; }

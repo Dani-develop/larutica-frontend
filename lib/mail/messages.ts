@@ -12,6 +12,8 @@ export type ReservationMailFacts = {
   passengerName?: string | null;
   passengerEmail?: string | null;
   agencyEmail?: string | null;
+  paymentReference?: string;
+  paidAt?: string;
 };
 
 export function reservationCode(id: string) {
@@ -25,6 +27,12 @@ function reservationFacts(facts: ReservationMailFacts): Array<[string, string]> 
     ["Personas", String(facts.numberOfPeople)],
     ["Total", money(facts.total)],
     ["Número de reserva", reservationCode(facts.id)],
+    ...(facts.paymentReference ? [
+      ["Estado del pago", "Pagado · OnvoPAY"],
+      ["Referencia del pago", facts.paymentReference],
+      ["Fecha del pago", dateLabel(facts.paidAt ?? new Date().toISOString())],
+      ["Monto pagado", money(facts.total)],
+    ] as Array<[string, string]> : []),
   ];
 }
 
@@ -51,7 +59,7 @@ export function reservationConfirmationMessages(facts: ReservationMailFacts, ins
   const shared = [
     "Reserva realizada",
     "Reservada",
-    "No se realizó ningún cobro.",
+    facts.paymentReference ? "Tu pago fue recibido y tu reserva está confirmada." : "No se realizó ningún cobro.",
   ];
   const messages: MailMessage[] = [];
   const traveler = facts.passengerEmail?.trim();

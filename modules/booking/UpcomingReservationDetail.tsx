@@ -68,7 +68,7 @@ export function UpcomingReservationDetail({ reservation: r, image, onCancel, onP
         {r.agencyName ? <p><strong>{t('Proveedor:')}</strong> {r.agencyName}{r.agencyPhone ? ` · ${r.agencyPhone}` : ''}{r.agencyEmail ? ` · ${r.agencyEmail}` : ''}</p> : null}
         {notice ? <p className="notice">{t(notice)}</p> : null}
         {payNotice ? <p className="notice">{t(payNotice)}</p> : null}
-        {paying && reservationCanBePaid(r, now) ? <ReservationPayment reservationId={r.id} onPaid={() => { setPaying(false); onPaid(); }} onCancel={() => setPaying(false)} /> : null}
+        {paying && reservationCanBePaid(r, now) ? <ReservationPayment reservationId={r.id} onPaid={() => { setPaying(false); onPaid(); }} /> : null}
         <div className="trip-actions reservation-detail-actions">
           {reservationCanBePaid(r, now) && !paying ? <button type="button" className="button button-primary" disabled={busy} onClick={() => setPaying(true)}>{t('Pagar ahora')}</button> : null}
           {r.publicationId ? <Link className="button button-outline" href={`/experiencias/${r.publicationId}`}>{t('Ver experiencia')}</Link> : null}

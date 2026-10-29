@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
 import { test, before, beforeEach, after } from 'node:test';
 import { createDatabase, ids } from './database.mjs';
-import { getReservationRecord } from '../../lib/reservations/repository.ts';
+import { createReservationRecord, getReservationRecord } from '../../lib/reservations/repository.ts';
+import { createSmtp } from './smtp.mjs';
 import {
   applyPaymentStatus, confirmReservationPayment, handleOnvoWebhook, refundReservationPaymentSafely, startReservationPayment,
 } from '../../lib/payments/repository.ts';
@@ -33,13 +34,33 @@ function installOnvo() {
 }
 
 async function createReservation(passengerId = ids.traveler, people = 2) {
-  const { data, error } = await fixture.admin.rpc('create_reservation', {
-    p_passenger_id: passengerId, p_departure_id: ids.departure, p_number_of_people: people,
-  });
-  assert.equal(error, null);
-  return getReservationRecord(fixture.admin, data.id);
+  const { record } = await createReservationRecord(fixture.admin, passengerId, ids.departure, people);
+  return record;
 }
 const paymentRows = async () => (await fixture.db.query('select * from reservation_payments order by created_at')).rows;
+
+test('solo el pago verificado confirma y envía el comprobante una vez', async () => {
+  const smtp = await createSmtp();
+  const env = { ...process.env };
+  Object.assign(process.env, smtp.env);
+  try {
+    const reservation = await createReservation();
+    assert.equal(reservation.status, 'PENDING');
+    const started = await startReservationPayment(fixture.admin, reservation, ids.traveler);
+    assert.equal(smtp.received.length, 0);
+    onvo.intents.get(started.paymentIntentId).status = 'succeeded';
+    await confirmReservationPayment(fixture.admin, reservation, ids.traveler, started.paymentIntentId);
+    await handleOnvoWebhook(fixture.admin, {type:'payment-intent.succeeded',data:{id:started.paymentIntentId,status:'succeeded'}});
+    assert.equal((await getReservationRecord(fixture.admin,reservation.id)).status, 'CONFIRMED');
+    assert.equal(smtp.received.length, 2);
+    for (const message of smtp.received) {
+      assert.match(message.text, /Tu pago fue recibido/);
+      assert.ok(message.text.includes(started.paymentIntentId));
+      assert.match(message.text, /Monto pagado/);
+      assert.doesNotMatch(message.text, /No se realizó ningún cobro/);
+    }
+  } finally { process.env = env; await smtp.close(); }
+});
 
 before(async () => {
   fixture = await createDatabase();

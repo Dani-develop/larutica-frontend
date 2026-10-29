@@ -48,9 +48,29 @@ async function request(path, method = 'POST', body, actor = 'traveler', headers 
     body: body === undefined ? undefined : JSON.stringify(body) });
   return { status: response.status, body: await response.json() };
 }
-const book = (actor = 'traveler', people = 2) => request('/api/reservations', 'POST', { departureId: ids.departure, numberOfPeople: people }, actor);
+const book = async (actor = 'traveler', people = 2, pay = true) => {
+  const response = await request('/api/reservations', 'POST', { departureId: ids.departure, numberOfPeople: people }, actor);
+  if (response.status === 201 && pay) {
+    const { applyPaymentStatus } = await import('../../lib/payments/repository.ts');
+    const id = response.body.data.id;
+    const current = await fixture.db.query('select status from reservation_payments where reservation_id=$1', [id]);
+    if (!current.rows.length) {
+      await fixture.db.query("insert into reservation_payments(reservation_id,provider_payment_id,amount,currency,status) values($1,$2,$3,'USD','pending')",[id,'pi_'+id,response.body.data.total]);
+      await applyPaymentStatus(fixture.admin, 'pi_'+id, 'paid', {source:'verified-test'});
+    }
+    response.body.data.status = 'CONFIRMED';
+  }
+  return response;
+};
 const departurePath = `/api/publications/${ids.publication}/departures/${ids.departure}`;
 const reviewPath = `/api/admin/publications/${ids.publication}/status`;
+
+test('crear una reserva sin pago no la confirma ni envía correos', async () => {
+  const response = await book('traveler', 2, false);
+  assert.equal(response.status, 201);
+  assert.equal(response.body.data.status, 'PENDING');
+  assert.equal(smtp.received.length, 0);
+});
 
 test('HTTP → reserva persistida → SMTP autenticado → correos al viajero y agencia', async () => {
   const response = await book();
@@ -63,7 +83,8 @@ test('HTTP → reserva persistida → SMTP autenticado → correos al viajero y 
     assert.equal(message.subject, 'Reserva realizada');
     assert.match(message.text, /Volcán Arenal/);
     assert.match(message.text, /Personas: 2/);
-    assert.match(message.text, /No se realizó ningún cobro/);
+    assert.match(message.text, /Tu pago fue recibido/);
+    assert.match(message.text, /Referencia del pago/);
     assert.match(message.text, new RegExp(response.body.data.id.slice(0, 8).toUpperCase()));
   }
 });

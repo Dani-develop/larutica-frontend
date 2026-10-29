@@ -21,7 +21,7 @@ export function reservationStatusText(reservation: Reservation, now: number) {
   if (reservation.departureStatus === 'CANCELLED') return 'Salida cancelada';
   if (reservation.status === 'PENDING' && departureHasStarted(reservation.departureStartAt, now)) return 'Vencida sin confirmación';
   if (reservation.status === 'CONFIRMED') return 'Confirmada';
-  if (reservation.status === 'PENDING') return 'Pendiente de confirmación';
+  if (reservation.status === 'PENDING') return 'Pendiente de pago';
   if (reservation.status === 'CANCELLED') return 'Cancelada';
   return 'Finalizada';
 }
@@ -40,7 +40,7 @@ export function reservationNotice(reservation: Reservation, now: number) {
     return 'Tu reserva está confirmada. Revisa el punto de encuentro y coordina con el proveedor cualquier detalle del viaje.';
   }
   if (isUpcomingReservation(reservation, now) && reservation.status === 'PENDING') {
-    return 'El proveedor está por revisar tu solicitud. Todavía no está confirmada.';
+    return 'Completa el pago seguro con OnvoPAY para confirmar tu reserva.';
   }
   if (reservation.status === 'PAST') return 'Este viaje ya se realizó. Puedes dejar tu calificación.';
   if (reservation.status === 'CANCELLED') return 'Esta reserva está cancelada y sigue en tu historial.';
