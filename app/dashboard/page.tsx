@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAdminDashboard, type DashboardPeriod } from "@/modules/dashboard/hooks/useAdminDashboard";
 import { ReservationsBarChart } from "@/modules/dashboard/components/ReservationsBarChart";
+import { AgencyDashboard } from "@/modules/dashboard/components/AgencyDashboard";
 
 import Link from "next/link";
 import {
@@ -80,7 +81,7 @@ const quickLinks = [
 
 export default function Page() {
   const { role } = useDashboardRole();
-  return role === "Admin" ? <AdminDashboard /> : <ExistingDashboard />;
+  return role === "Admin" ? <AdminDashboard /> : role === "Agencia" ? <AgencyDashboard /> : <ExistingDashboard />;
 }
 
 function AdminDashboard() {

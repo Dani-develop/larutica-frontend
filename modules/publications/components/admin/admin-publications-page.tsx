@@ -1,5 +1,5 @@
 "use client";
-import { DashboardBreadcrumb } from "@/components/dashboard/DashboardBreadcrumb";
+import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 import { usePreferences } from "@/lib/preferences/Preferences";
 
 import {
@@ -8,11 +8,13 @@ import {
 } from "react";
 
 import {
-  RefreshCw,
+
+  Home,
   Search,
   SlidersHorizontal,
 } from "lucide-react";
 
+import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -103,16 +105,24 @@ export default function AdminPublicationsPage() {
     );
 
   return (
-    <div className="mx-auto w-full max-w-[1180px]">
-      <div className="mb-5">
-        <DashboardBreadcrumb className="mb-2" items={[{ label: "Publicaciones" }]} />
+    <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
+      <Breadcrumb>
+        <BreadcrumbList className="!text-sm">
+          <BreadcrumbItem><BreadcrumbLink href="/dashboard" className="flex items-center gap-1.5 !text-sm"><Home className="size-3.5" />{t("Inicio ")}</BreadcrumbLink></BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem><BreadcrumbPage className="!text-sm">{t("Publicaciones")}</BreadcrumbPage></BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
+      <div className="flex flex-row items-start justify-between gap-4">
+        <div>
 
-        <h1 className="!m-0 lr-page-title">{t("Publicaciones ")}</h1>
+        <h1 className="!m-0 !max-w-none lr-page-title">{t("Publicaciones ")}</h1>
 
-        <p className="mt-1 text-[11px] leading-5 text-[#66706B]">{t("Revisa y administra las publicaciones enviadas por las agencias. ")}</p>
+        <p className="text-muted-foreground mt-0.5 !text-sm !leading-5">{t("Revisa y administra las publicaciones enviadas por las agencias. ")}</p>
+        </div>
       </div>
 
-      <div className="mb-6 flex items-center gap-3">
+      <div className="flex items-center gap-3">
         <div className="relative min-w-0 flex-1">
           <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
           <Input
@@ -158,24 +168,22 @@ export default function AdminPublicationsPage() {
       </div>
 
       {error && (
-        <div className="mb-3 flex items-center justify-between gap-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3">
-          <p className="text-[10px] text-red-700">
+        <div role="alert" className="border-destructive/20 bg-destructive/5 flex flex-col gap-3 rounded-lg border p-4 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-destructive !text-sm">
             {t(error)}
           </p>
 
-          <button
+          <Button
             type="button"
             onClick={() =>
               void loadPublications()
             }
-            className="inline-flex h-8 items-center gap-1.5 rounded-md border border-red-200 bg-white px-3 text-[10px] font-semibold text-red-700"
-          >
-            <RefreshCw
-              size={12}
-            />{t("Reintentar ")}</button>
+            size="sm" variant="outline" className="!text-sm"
+          >{t("Reintentar ")}</Button>
         </div>
       )}
 
+      <div className="bg-card overflow-hidden rounded-xl border shadow-sm">
       {loading ? (
         <LoadingState />
       ) : (
@@ -185,38 +193,22 @@ export default function AdminPublicationsPage() {
           }
         />
       )}
+      </div>
     </div>
   );
 }
 
 function LoadingState() {
   return (
-    <div className="overflow-hidden rounded-xl border border-[#DDE2DF] bg-white">
-      {Array.from({
-        length: 4,
-      }).map(
-        (
-          _,
-          index,
-        ) => (
-          <div
-            key={
-              index
-            }
-            className="flex items-center gap-4 border-b border-[#EEF1EF] px-4 py-4 last:border-b-0"
-          >
-            <div className="size-11 animate-pulse rounded-lg bg-[#EDF2EF]" />
-
-            <div className="flex-1">
-              <div className="h-3 w-40 animate-pulse rounded bg-[#E3E8E5]" />
-
-              <div className="mt-2 h-2.5 w-56 animate-pulse rounded bg-[#EEF1EF]" />
-            </div>
-
-            <div className="h-7 w-20 animate-pulse rounded-full bg-[#EEF1EF]" />
-          </div>
-        ),
-      )}
+    <div className="divide-y">
+      {Array.from({ length: 6 }).map((_, index) => (
+        <div key={index} className="flex items-center gap-4 px-4 py-3">
+          <Skeleton className="size-9 shrink-0 rounded-full" />
+          <Skeleton className="h-4 w-36" />
+          <Skeleton className="ml-auto hidden h-4 w-28 sm:block" />
+          <Skeleton className="hidden h-5 w-16 rounded-full md:block" />
+        </div>
+      ))}
     </div>
   );
 }
