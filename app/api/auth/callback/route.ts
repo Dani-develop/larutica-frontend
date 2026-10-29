@@ -21,17 +21,18 @@ export async function GET(request: Request) {
 
   try {
     const flow = await consumePkceFlow(opaqueFlow);
+    if (flow.flow_kind === "recovery") {
+      return NextResponse.redirect(clientUrl("/forgot-password", request));
+    }
+
     const { client } = createPkceAuthClient(flow.code_verifier);
     const { data, error } = await client.auth.exchangeCodeForSession(code);
     if (error || !data.session || !data.user) throw error ?? new Error("Intercambio PKCE inválido.");
 
     try {
-      const appSession = await createAppSession(data.user.id, {
-        passwordReset: flow.flow_kind === "recovery",
-      });
-      const destination = flow.flow_kind === "recovery" ? "/update-password" : "/dashboard";
+      const appSession = await createAppSession(data.user.id);
       return setSessionCookie(
-        NextResponse.redirect(clientUrl(destination, request)),
+        NextResponse.redirect(clientUrl("/dashboard", request)),
         appSession.opaqueToken,
       );
     } finally {
