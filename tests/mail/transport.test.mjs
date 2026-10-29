@@ -9,6 +9,11 @@ import { createSmtp } from './smtp.mjs';
 
 const env = { SMTP_HOST: 'smtp.example.com', SMTP_USER: 'sender@example.com', SMTP_PASS: 'password', MAIL_FROM: 'LaRutica <sender@example.com>' };
 const message = { to: 'recipient@example.invalid', subject: 'Prueba LaRutica', text: 'Mensaje de prueba: español y ₡.' };
+test('la contraseña de aplicación de Gmail admite los separadores visuales', () => {
+  const grouped = 'abcd efgh ijkl mnop';
+  assert.equal(readMailConfig({ ...env, SMTP_HOST: 'smtp.gmail.com', SMTP_PASS: grouped }).pass, 'abcdefghijklmnop');
+  assert.equal(readMailConfig({ ...env, SMTP_PASS: grouped }).pass, grouped);
+});
 for (const key of ['SMTP_HOST', 'SMTP_USER', 'SMTP_PASS', 'MAIL_FROM']) {
   test(`configuración sin ${key} no abre conexión`, async () => {
     const incomplete = { ...env, [key]: '  ' };

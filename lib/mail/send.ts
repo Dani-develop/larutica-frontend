@@ -58,7 +58,12 @@ function booleanValue(value: string | undefined, fallback: boolean) {
 export function readMailConfig(env: NodeJS.ProcessEnv = process.env): MailConfig | null {
   const host = env.SMTP_HOST?.trim() ?? "";
   const user = env.SMTP_USER?.trim() ?? "";
-  const pass = env.SMTP_PASS ?? "";
+  const rawPass = env.SMTP_PASS ?? "";
+  // Gmail displays app passwords in four groups; the separators aren't part
+  // of the credential. Leave passwords from other SMTP providers untouched.
+  const pass = host.toLowerCase() === "smtp.gmail.com"
+    && /^\s*[a-z]{4}(?:\s+[a-z]{4}){3}\s*$/i.test(rawPass)
+    ? rawPass.replace(/\s/g, "") : rawPass;
   const from = env.MAIL_FROM?.trim() ?? "";
   if (!host || !user || !pass.trim() || !from) return null;
   const port = positiveInteger(env.SMTP_PORT, 587, 65535);

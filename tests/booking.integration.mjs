@@ -3,11 +3,14 @@ import test from 'node:test';
 import { createClient } from '@supabase/supabase-js';
 
 // Opt-in integration: creates isolated fixtures and removes them in finally.
-test('viajero solicita, trabajador confirma, viajero cancela y recupera cupo', {skip:process.env.LARUTICA_TEST_WRITE !== '1'}, async () => {
+test('viajero reserva confirmada, se validan permisos, cancela y recupera cupo', {skip:process.env.LARUTICA_TEST_WRITE !== '1'}, async () => {
   const admin = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL,process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.SUPABASE_SECRET_KEY,{auth:{persistSession:false}});
-  const worker = (await import('../dist/server/index.js')).default;
+  const appUrl = process.env.LARUTICA_TEST_URL;
+  const worker = appUrl ? null : (await import('../dist/server/index.js')).default;
   const request = async (path,method='GET',body,cookie) => {
-    const response = await worker.fetch(new Request(`http://localhost${path}`,{method,headers:{origin:'http://localhost',...(body?{'content-type':'application/json'}:{}),...(cookie?{cookie}:{})},body:body?JSON.stringify(body):undefined}),{}, {waitUntil(){},passThroughOnException(){}});
+    const origin = appUrl ? new URL(appUrl).origin : 'http://localhost';
+    const req = new Request(`${origin}${path}`,{method,headers:{origin,...(body?{'content-type':'application/json'}:{}),...(cookie?{cookie}:{})},body:body?JSON.stringify(body):undefined});
+    const response = worker ? await worker.fetch(req,{}, {waitUntil(){},passThroughOnException(){}}) : await fetch(req);
     return {status:response.status,body:await response.json(),cookie:response.headers.get('set-cookie')?.split(';')[0]};
   };
   const suffix = `${Date.now()}-${Math.random().toString(36).slice(2,7)}`, ids = [], pubs = [], deps = [];
@@ -35,16 +38,26 @@ test('viajero solicita, trabajador confirma, viajero cancela y recupera cupo', {
     assert.equal((await request('/api/reservations','POST',{departureId:deps[0],numberOfPeople:1})).status,401);
     const created = await request('/api/reservations','POST',{departureId:deps[0],numberOfPeople:2},traveler.cookie);
     assert.equal(created.status,201,JSON.stringify(created.body)); const id = created.body.data.id;
-    assert.equal(created.body.data.status,'PENDING'); assert.equal(created.body.data.total,25000);
-    const overflow = await request('/api/reservations','POST',{departureId:deps[0],numberOfPeople:1},traveler.cookie);
+    assert.equal(created.body.data.status,'CONFIRMED'); assert.equal(created.body.data.total,25000);
+    const repeated = await request('/api/reservations','POST',{departureId:deps[0],numberOfPeople:2},traveler.cookie);
+    assert.equal(repeated.status,201); assert.equal(repeated.body.data.id,id); // Idempotent retry.
+    const overflow = await request('/api/reservations','POST',{departureId:deps[0],numberOfPeople:1},outsider.cookie);
     assert.equal(overflow.status,400,JSON.stringify(overflow.body));
     assert.equal((await request(`/api/reservations/${id}`,'PATCH',{status:'CONFIRMED'},traveler.cookie)).status,403);
     assert.equal((await request(`/api/reservations/${id}`,'PATCH',{status:'CONFIRMED'},outsider.cookie)).status,404);
     const providerList = await request('/api/reservations','GET',undefined,provider.cookie);
     assert.equal(providerList.body.data[0].id,id); assert.equal(providerList.body.data[0].passengerName,'Prueba reservas Viajero');
     assert.equal((await request('/api/reservations','GET',undefined,outsider.cookie)).body.data.length,0);
+    if (process.env.LARUTICA_TEST_PAYMENTS === '1') {
+      // Prepare the checkout only: no card, charge or payment confirmation.
+      const payment = await request(`/api/reservations/${id}/payment`,'POST',{},traveler.cookie);
+      assert.equal(payment.status,200, payment.body.error ?? 'No se pudo preparar Onvo');
+      assert.ok(payment.body.data.paymentIntentId);
+      assert.equal(payment.body.data.currency,'USD');
+      assert.equal((await request(`/api/reservations/${id}/payment`,'POST',{},outsider.cookie)).status,404);
+    }
     const confirmed = await request(`/api/reservations/${id}`,'PATCH',{status:'CONFIRMED'},provider.cookie);
-    assert.equal(confirmed.status,200,JSON.stringify(confirmed.body));
+    assert.equal(confirmed.status,400); // Already confirmed automatically.
     assert.equal((await request(`/api/reservations/${id}`,'GET',undefined,traveler.cookie)).body.data.status,'CONFIRMED');
     assert.equal((await request(`/api/reservations/${id}`,'PATCH',{status:'CANCELLED'},traveler.cookie)).status,200);
     catalog = await request(`/api/catalog?id=${pubs[0]}`); assert.equal(catalog.body.data[0].departures[0].available,2);
