@@ -2,6 +2,7 @@ import type { Journey } from "@/modules/journeys/types";
 import { publicationDepartures } from "./availability";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { ApiError } from "@/lib/api/errors";
+import { catalogPromotionFlag } from "@/lib/promotions/window";
 import type { TravelerPublication } from "@/modules/traveler/types/traveler-publication.types";
 
 type PublicationRow = {
@@ -19,6 +20,7 @@ type PublicationRow = {
   main_image_url: string | null;
   default_capacity: number | null;
   service_type: string | null;
+  promoted_until: string | null;
 };
 
 type PublicationLanguageRow = {
@@ -30,7 +32,7 @@ type LanguageRow = { id: number; name: string };
 type AgencyRow = { id: string; agency_name: string; commercial_name: string };
 
 const PUBLICATION_COLUMNS =
-  "id, agency_id, title, description, destination, price_per_person, duration_minutes, included, not_included, meeting_point, main_image_url, default_capacity, service_type";
+  "id, agency_id, title, description, destination, price_per_person, duration_minutes, included, not_included, meeting_point, main_image_url, default_capacity, service_type, promoted_until";
 
 export async function listTravelerPublications(
   admin: SupabaseClient,
@@ -129,6 +131,7 @@ export async function listTravelerPublications(
         .toLocaleLowerCase()
         .replace(/[^a-z0-9]+/g, "-")
         .replace(/^-|-$/g, ""),
+      promoted: catalogPromotionFlag(row.promoted_until, Date.now()).promoted,
     };
   });
 }
