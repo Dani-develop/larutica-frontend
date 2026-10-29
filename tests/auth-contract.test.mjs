@@ -104,14 +104,24 @@ test("las passkeys guardan solo la clave pública y usan desafíos de un solo us
   assert.match(loginVerify, /createAppSession\(userId\)/);
 });
 
-test("cambiar la contraseña exige la actual salvo desde el enlace de recuperación", async () => {
+test("cambiar la contraseña con sesión exige la actual y el enlace viejo vuelve al código", async () => {
   const route = await read("app/api/auth/password/route.ts");
   const callback = await read("app/api/auth/callback/route.ts");
   const session = await read("lib/supabase/session.ts");
   const sql = await read("supabase/migrations/202609240002_password_reset_sessions.sql");
+  const forgot = await read("app/api/auth/forgot-password/route.ts");
+  const updatePassword = await read("app/update-password/page.tsx");
   assert.match(route, /requiresCurrentPassword = !current\.canResetPasswordWithoutCurrent/);
+  assert.match(route, /currentPassword/);
   assert.doesNotMatch(route, /hasOwnProperty/);
-  assert.match(callback, /passwordReset: flow\.flow_kind === "recovery"/);
+  assert.doesNotMatch(callback, /passwordReset/);
+  assert.match(callback, /flow\.flow_kind === "recovery"/);
+  assert.ok(callback.indexOf('flow.flow_kind === "recovery"') < callback.indexOf("exchangeCodeForSession"));
+  assert.match(callback, /clientUrl\("\/forgot-password"/);
+  assert.match(callback, /clientUrl\("\/dashboard"/);
+  assert.match(forgot, /challengeId/);
+  assert.doesNotMatch(forgot, /resetPasswordForEmail/);
+  assert.match(updatePassword, /redirect\("\/forgot-password"\)/);
   assert.match(session, /PASSWORD_RESET_SECONDS = 15 \* 60/);
   assert.match(sql, /add column if not exists password_reset_until timestamptz/i);
 });

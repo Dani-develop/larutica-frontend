@@ -105,6 +105,14 @@ export function publicationDeactivationMessage(
   ], reservationFacts(facts));
 }
 
+export function passwordResetCodeMessage(to: string, code: string): MailMessage {
+  return mailMessage(to, "Código para recuperar tu contraseña", [
+    "Código para recuperar tu contraseña",
+    `Usa este código: ${code}.`,
+    "Este código vence en 15 minutos y solo puede usarse una vez.",
+  ], [["Código", code]]);
+}
+
 export function publicationDecisionMessage(input: {
   previousStatus: string;
   status: "APPROVED" | "REJECTED";

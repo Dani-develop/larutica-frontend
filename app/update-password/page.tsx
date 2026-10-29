@@ -1,11 +1,5 @@
-import type { Metadata } from "next";
-import UpdatePasswordForm from "./UpdatePasswordForm";
-
-export const metadata: Metadata = {
-  title: "Cambiar contraseña | LaRutica",
-  description: "Crea una nueva contraseña para tu cuenta.",
-};
+import { redirect } from "next/navigation";
 
 export default function Page() {
-  return <UpdatePasswordForm />;
+  redirect("/forgot-password");
 }
