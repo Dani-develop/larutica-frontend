@@ -2,13 +2,18 @@
 import { usePreferences } from "@/lib/preferences/Preferences";
 
 import {
-  ChevronRight,
+  Eye,
+  MoreHorizontal,
   ImageIcon,
 } from "lucide-react";
 
 import {
   useRouter,
 } from "next/navigation";
+
+import { Button } from "@/components/ui/button";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 import type {
   AdminPublication,
@@ -32,25 +37,28 @@ export default function AdminPublicationsTable({
     0
   ) {
     return (
-      <div className="rounded-xl border border-[#DDE2DF] bg-white px-6 py-10 text-center">
-        <ImageIcon
-          size={24}
-          className="mx-auto text-[#87908C]"
-        />
+      <div className="flex flex-col items-center gap-3 px-4 py-16 text-center">
+        <div className="bg-muted flex size-14 items-center justify-center rounded-full"><ImageIcon className="text-muted-foreground/30 size-7" /></div>
 
-        <p className="mt-3 text-[12px] font-semibold text-[#252B28]">{t("No hay publicaciones para mostrar ")}</p>
+        <p className="!text-sm !font-medium">{t("No hay publicaciones para mostrar ")}</p>
 
-        <p className="mt-1 text-[10px] text-[#66706B]">{t("Cambia los filtros o espera nuevas publicaciones enviadas a revisión. ")}</p>
+        <p className="text-muted-foreground !text-xs">{t("Cambia los filtros o espera nuevas publicaciones enviadas a revisión. ")}</p>
       </div>
     );
   }
 
   return (
-    <div className="overflow-hidden rounded-xl border border-[#DDE2DF] bg-white">
-      <div className="overflow-x-auto">
-        <table className="w-full border-collapse">
-          <thead className="bg-[#F6F8F7]">
-            <tr className="border-b border-[#E2E6E4]">
+        <Table className="min-w-[640px] table-fixed">
+          <colgroup>
+            <col />
+            <col className="w-[22%]" />
+            <col className="w-[20%]" />
+            <col className="w-24" />
+            <col className="w-28" />
+            <col className="w-24" />
+          </colgroup>
+          <TableHeader>
+            <TableRow className="bg-muted/30 hover:bg-muted/30">
               <Header>{t("Publicación ")}</Header>
 
               <Header>{t("Agencia ")}</Header>
@@ -64,23 +72,23 @@ export default function AdminPublicationsTable({
               <Header
                 align="right"
               >{t("Acción ")}</Header>
-            </tr>
-          </thead>
+            </TableRow>
+          </TableHeader>
 
-          <tbody>
+          <TableBody>
             {publications.map(
               (
                 publication,
               ) => (
-                <tr
+                <TableRow
                   key={
                     publication.id
                   }
-                  className="border-b border-[#EEF1EF] last:border-b-0 hover:bg-[#FAFCFB]"
+                  className="hover:bg-muted/30 transition-colors"
                 >
-                  <td className="px-4 py-3">
+                  <TableCell className="!py-3">
                     <div className="flex items-center gap-3">
-                      <div className="flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-[#EDF2EF]">
+                      <div className="bg-primary/10 text-primary flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-full">
                         {publication.mainImageUrl ? (
                           <img
                             src={
@@ -91,76 +99,80 @@ export default function AdminPublicationsTable({
                           />
                         ) : (
                           <ImageIcon
-                            size={17}
-                            className="text-[#8A9690]"
+                            size={16}
+                            className="text-primary"
                           />
                         )}
                       </div>
 
-                      <div className="min-w-0">
-                        <p className="truncate text-[11px] font-semibold text-[#252B28]">
+                      <div className="min-w-0 flex-1 overflow-hidden">
+                        <p className="truncate !text-sm !font-medium" title={publication.title || "Sin título"}>
                           {publication.title ||
                             "Sin título"}
                         </p>
 
-                        <p className="mt-0.5 text-[9px] text-[#7A837F]">
+                        <p className="text-muted-foreground mt-0.5 truncate !text-xs">
                           {serviceTypeLabel(
                             publication.serviceType,
                           )}
                         </p>
                       </div>
                     </div>
-                  </td>
+                  </TableCell>
 
-                  <td className="px-4 py-3">
-                    <p className="text-[10px] font-medium text-[#252B28]">
+                  <TableCell className="!py-3">
+                    <p
+                      className="truncate !text-sm !font-medium"
+                      title={publication.agency?.commercialName ?? publication.agency?.agencyName ?? "Sin agencia"}
+                    >
                       {publication.agency?.commercialName ??
                         publication.agency?.agencyName ??
                         "Sin agencia"}
                     </p>
-                  </td>
+                  </TableCell>
 
-                  <td className="px-4 py-3 text-[10px] text-[#66706B]">
-                    {publication.destination ||
-                      "—"}
-                  </td>
+                  <TableCell className="!py-3 text-muted-foreground !text-sm whitespace-normal">
+                    <span className="line-clamp-2 max-w-full whitespace-normal break-normal">
+                      {publication.destination ||
+                        "—"}
+                    </span>
+                  </TableCell>
 
-                  <td className="px-4 py-3 text-[10px] font-medium text-[#252B28]">
+                  <TableCell className="!py-3 !text-sm !font-medium whitespace-nowrap">
                     {publication.pricePerPerson !==
                     null
                       ? `$${publication.pricePerPerson.toFixed(2)}`
                       : "—"}
-                  </td>
+                  </TableCell>
 
-                  <td className="px-4 py-3">
+                  <TableCell className="!py-3">
                     <StatusBadge
                       status={
                         publication.status
                       }
                     />
-                  </td>
+                  </TableCell>
 
-                  <td className="px-4 py-3 text-right">
-                    <button
-                      type="button"
-                      onClick={() =>
-                        router.push(
-                          `/dashboard/publications/${publication.id}`,
-                        )
-                      }
-                      className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-[#D7E1DC] bg-white px-3 text-[10px] font-semibold text-[#075E36] hover:bg-[#EFF8F3]"
-                    >{t("Ver detalle ")}<ChevronRight
-                        size={12}
-                      />
-                    </button>
-                  </td>
-                </tr>
+                  <TableCell className="!py-3 text-left">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="size-8">
+                          <MoreHorizontal className="size-4" />
+                          <span className="sr-only">{t("Acción ")}{publication.title || "Sin título"}</span>
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-40 !text-sm">
+                        <DropdownMenuItem onClick={() => router.push(`/dashboard/publications/${publication.id}`)}>
+                          <Eye className="size-4" />{t("Ver detalle ")}
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
+                </TableRow>
               ),
             )}
-          </tbody>
-        </table>
-      </div>
-    </div>
+          </TableBody>
+        </Table>
   );
 }
 
@@ -176,17 +188,17 @@ function Header({
     | "right";
 }) {
   return (
-    <th
+    <TableHead
       className={[
-        "px-4 py-3 text-[10px] font-semibold uppercase tracking-[0.04em] text-[#69726D]",
+        "text-muted-foreground !py-3 !text-[11px] !font-semibold !tracking-wider uppercase",
         align ===
         "right"
-          ? "text-right"
+          ? "w-24 text-left"
           : "text-left",
       ].join(" ")}
     >
       {children}
-    </th>
+    </TableHead>
   );
 }
 
@@ -202,19 +214,19 @@ function StatusBadge({
     string
   > = {
     DRAFT:
-      "border-[#DDE2DF] bg-[#F5F6F5] text-[#59615D]",
+      "bg-slate-100 text-slate-700 border-slate-200",
 
     PENDING:
-      "border-[#F1D49A] bg-[#FFF8E8] text-[#886617]",
+      "bg-amber-100 text-amber-800 border-amber-200",
 
     APPROVED:
-      "border-[#CBE5D4] bg-[#EAF6EE] text-[#075E36]",
+      "bg-emerald-100 text-emerald-700 border-emerald-200",
 
     REJECTED:
-      "border-[#F2CACA] bg-[#FFF0F0] text-[#A63737]",
+      "bg-red-100 text-red-700 border-red-200",
 
     INACTIVE:
-      "border-[#DDE2DF] bg-[#F1F2F1] text-[#727A76]",
+      "bg-slate-100 text-slate-600 border-slate-200",
   };
 
   const labels: Record<
@@ -239,7 +251,7 @@ function StatusBadge({
 
   return (
     <span
-      className={`inline-flex rounded-full border px-2 py-1 text-[9px] font-semibold ${styles[status]}`}
+      className={`inline-flex items-center rounded-full border px-2 py-0.5 !text-xs !font-medium ${styles[status]}`}
     >
       {t(labels[status])}
     </span>
