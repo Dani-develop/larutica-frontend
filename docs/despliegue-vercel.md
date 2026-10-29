@@ -37,10 +37,11 @@ envían correos o cobran deben usar cuentas y datos de prueba identificados.
 
 ## Conexión futura con GitHub
 
-La prueba se publicó manualmente; todavía no hay despliegues automáticos.
-Después de revisar e incorporar esta configuración:
+El proyecto está conectado al fork `Dani-develop/larutica-frontend`.
+Los cambios se publican desde `main` de ese fork. Sincronizarlo explícitamente
+cuando se incorporen cambios del repositorio original.
 
-1. Conectar `FranderCT/larutica-frontend` al proyecto de Vercel.
+1. Mantener conectado `Dani-develop/larutica-frontend` al proyecto de Vercel.
 2. Seleccionar `main` como rama de producción y la raíz del repositorio.
 3. Mantener `npm ci` y `npm run build:vercel`, definidos en `vercel.json`.
 4. Asignar el dominio limpio al proyecto y al destino de producción.
@@ -48,6 +49,19 @@ Después de revisar e incorporar esta configuración:
    Usar claves de Onvo de prueba hasta completar la validación del pago.
 
 Los cambios en otras ramas podrán generar Preview; los de `main`, producción.
+
+## Navegación del build de producción
+
+El build del navegador conserva `preserveEntrySignatures: 'strict'` y los
+nombres de exports internos. Sin esto, Rolldown fusionaba `navigation.js` con
+la entrada y eliminaba exports que `next/link` carga dinámicamente. La página
+se renderizaba, pero los clics fallaban con `is not a function` y errores de
+precarga RSC. La opción solo afecta al destino Vercel.
+
+Después de compilar/publicar, ejecutar `npm run test:vercel` con
+`LARUTICA_TEST_URL` apuntando al despliegue accesible. La prueba recorre enlaces,
+detalle, recarga, login, registro y atrás; falla ante errores del router. No
+crea reservas ni cuentas. No sustituye la prueba autenticada de pagos/webhook.
 
 ## Verificación realizada
 

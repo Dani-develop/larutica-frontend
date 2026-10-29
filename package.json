@@ -27,7 +27,8 @@
     "security:verify": "npm audit signatures && npm audit --omit=dev",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next",
     "db:generate": "drizzle-kit generate",
-    "build:vercel": "node scripts/build-vercel.mjs"
+    "build:vercel": "node scripts/build-vercel.mjs",
+    "test:vercel": "playwright test --config playwright.vercel.config.ts"
   },
   "dependencies": {
     "@radix-ui/react-dropdown-menu": "^2.1.24",
