@@ -6,7 +6,7 @@ import type { Journey, JourneyPlace } from "@/modules/journeys/types";
 import { mapProviderFailure } from "./provider-errors";
 
 export function mapKey(): string {
-  const key = process.env.GEOAPIFY_API_KEY?.trim();
+  const key = (process.env.GEOAPIFY_API_KEY ?? process.env.GEOAPIFY)?.trim();
   if (!key) throw new ApiError("El servicio de mapas todavía no está configurado.", 503);
   return key;
 }

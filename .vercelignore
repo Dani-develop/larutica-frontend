@@ -1,0 +1,16 @@
+node_modules
+dist
+.output
+.wrangler
+.openai
+.env*
+.dev.vars*
+.preview-qa
+.vercel-build.log
+.vercel-tests.log
+test-results
+playwright-report
+docs
+tests
+/supabase/
+/worker/
