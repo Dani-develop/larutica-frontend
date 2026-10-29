@@ -19,6 +19,7 @@
     "mail:check": "node --experimental-strip-types --env-file-if-exists=.env.local scripts/mail-check.mjs",
     "test:booking:integration": "node --env-file-if-exists=.env.local --test tests/booking.integration.mjs",
     "test:auth:cloud": "node --env-file-if-exists=.env.local --test tests/supabase-auth.integration.mjs",
+    "test:auth:runtime": "node --experimental-strip-types --test tests/auth-runtime.test.mjs",
     "test:maps": "node --import ./tests/maps/register.mjs --test tests/maps/routing.test.mjs",
     "test:maps:e2e": "playwright test --config playwright.maps.config.ts",
     "test:maps:runtime": "playwright test --config playwright.maps.runtime.config.ts",
@@ -47,6 +48,7 @@
     "react": "19.2.6",
     "react-dom": "19.2.6",
     "react-phone-number-input": "^3.4.18",
+    "reflect-metadata": "0.2.2",
     "sweetalert2": "11.26.25",
     "tailwind-merge": "^3.6.0",
     "zod": "^4.4.3"
