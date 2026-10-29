@@ -110,6 +110,8 @@ test("mapas y pagos usan el backend compartido aunque existan claves locales", a
     ["PATCH", "/api/publications/test"],
     ["POST", "/api/reservations/test/payment"],
     ["POST", "/api/reservations/test/payment/confirm"],
+    ["POST", "/api/publications/11111111-1111-4111-8111-111111111111/promotion/payment"],
+    ["POST", "/api/publications/11111111-1111-4111-8111-111111111111/promotion/payment/confirm"],
     ["POST", "/api/payments/onvopay/webhook"],
     ["GET", "/api/admin/payments"],
     ["GET", "/api/admin/payments/balances"],
