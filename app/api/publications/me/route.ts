@@ -46,6 +46,8 @@ type PublicationRow = {
     | "REJECTED"
     | "INACTIVE";
 
+  promoted_until: string | null;
+
   created_at: string;
   updated_at: string;
   publication_languages: { language_id: number; languages: LanguageRow | LanguageRow[] | null }[];
@@ -188,6 +190,7 @@ export async function GET(
           main_image_url,
           default_capacity,
           status,
+          promoted_until,
           created_at,
           updated_at,
           publication_languages(language_id,languages(id,name,code,active))
@@ -298,6 +301,9 @@ export async function GET(
 
             status:
               publication.status,
+
+            promotedUntil:
+              publication.promoted_until,
 
             languages:
               publicationLanguages.map(

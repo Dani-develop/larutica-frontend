@@ -34,4 +34,6 @@ export type TravelerPublication = {
   providerName?: string;
 
   providerSlug?: string;
+
+  promoted?: boolean;
 };

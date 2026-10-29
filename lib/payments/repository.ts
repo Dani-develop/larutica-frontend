@@ -12,7 +12,9 @@ import {
   mapOnvoStatus,
   type PaymentStatus,
 } from "@/lib/payments/onvo";
+import { applyPromotionPaymentStatus, applyPromotionRefundEvent } from "@/lib/payments/promotion";
 import { canPayReservation, derivePaymentStatus } from "@/lib/payments/status";
+import { settlementTarget } from "@/lib/promotions/window";
 import type { ReservationRecord } from "@/lib/reservations/repository";
 
 const CURRENCY = "USD" as const;
@@ -222,7 +224,10 @@ export async function handleOnvoWebhook(admin: SupabaseClient, payload: Record<s
       .eq("provider_payment_id", paymentIntentId).maybeSingle();
     if (error) throw error;
     const payment = data as PaymentRow | null;
-    if (!payment) return;
+    if (!payment) {
+      await applyPromotionRefundEvent(admin, paymentIntentId, payload);
+      return;
+    }
     const minor = extractNumber(payload, ["data.amount", "data.object.amount", "amount"]);
     const refunded = Math.max(money(payment.refunded_amount), minor === undefined ? 0 : fromMinorUnits(minor));
     await admin.from("reservation_payments").update({
@@ -251,5 +256,8 @@ export async function handleOnvoWebhook(admin: SupabaseClient, payload: Record<s
     const intent = await fetchOnvoPaymentIntent(paymentIntentId);
     if (mapOnvoStatus(intent.status) !== "paid") return;
   }
-  await applyPaymentStatus(admin, paymentIntentId, next, payload);
+  const reservationPayment = await applyPaymentStatus(admin, paymentIntentId, next, payload);
+  if (settlementTarget(reservationPayment) === "promotion") {
+    await applyPromotionPaymentStatus(admin, paymentIntentId, next, payload);
+  }
 }

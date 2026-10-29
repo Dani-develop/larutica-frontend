@@ -62,6 +62,8 @@ export type Publication = {
   createdAt: string;
 
   updatedAt: string;
+
+  promotedUntil?: string | null;
 };
 
 export type PublicationDeparture = {
