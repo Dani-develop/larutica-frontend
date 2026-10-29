@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { getMyPublications, getPublicationDepartures } from "@/modules/publications/services/publication.service";
+import { getMyPublications, getMyDepartures } from "@/modules/publications/services/publication.service";
 import type { Publication, PublicationDeparture } from "@/modules/publications/types/publication.types";
 import { listReservations, type Reservation } from "@/modules/transport/reservations/services/reservation.service";
 import { reservationDay, type DashboardPeriod } from "./useAdminDashboard";
@@ -10,23 +10,12 @@ type Resource<T> = { data: T | null; loading: boolean; error: boolean };
 type AgencyDeparture = PublicationDeparture & { publication: Publication };
 const initial = <T,>(): Resource<T> => ({ data: null, loading: true, error: false });
 
-// The existing API lists departures per publication. Never report a partial total.
-async function loadDepartures(publications: Publication[], isActive: () => boolean) {
-  const unique = [...new Map(publications.map(publication => [publication.id, publication])).values()];
-  const departures: AgencyDeparture[] = [];
-  let cursor = 0;
-  let failed = false;
-  await Promise.all(Array.from({ length: Math.min(4, unique.length) }, async () => {
-    while (isActive() && cursor < unique.length) {
-      const publication = unique[cursor++];
-      try {
-        const rows = await getPublicationDepartures(publication.id);
-        departures.push(...rows.map(departure => ({ ...departure, publication })));
-      } catch { failed = true; }
-    }
-  }));
-  if (failed) throw new Error("Could not load agency departures");
-  return departures;
+function combineDepartures(publications: Publication[], rows: PublicationDeparture[]): AgencyDeparture[] {
+  const owned = new Map(publications.map(publication => [publication.id, publication]));
+  return rows.flatMap(row => {
+    const publication = owned.get(row.publicationId);
+    return publication ? [{ ...row, publication }] : [];
+  });
 }
 
 export function useAgencyDashboard() {
@@ -56,18 +45,13 @@ export function useAgencyDashboard() {
       setDepartures(initial<AgencyDeparture[]>());
       // Default scope is owned-agency. `mine: true` would select passenger bookings.
       void load(() => listReservations(), setReservations);
-      void load(getMyPublications, setPublications).then(data => {
-        if (!active) return;
-        if (!data) {
-          setDepartures({ data: null, loading: false, error: true });
-          return;
-        }
-        return load(async () => {
-          const rows = await loadDepartures(data, () => active);
-          if (active) setSnapshotTime(Date.now());
-          return rows;
-        }, setDepartures);
-      });
+      const publicationsRequest = load(getMyPublications, setPublications);
+      void load(async () => {
+        const [data, rows] = await Promise.all([publicationsRequest, getMyDepartures()]);
+        if (!data) throw new Error("Could not load agency publications");
+        if (active) setSnapshotTime(Date.now());
+        return combineDepartures(data, rows);
+      }, setDepartures);
     });
     return () => { active = false; };
   }, [request]);

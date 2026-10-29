@@ -202,6 +202,12 @@ export async function deletePublication(
   return body.data;
 }
 
+export async function getMyDepartures(): Promise<PublicationDeparture[]> {
+  const response = await apiFetch('/api/publications/departures', { cache: 'no-store' });
+  await ensureOk(response);
+  return ((await response.json()) as PublicationDeparturesApiResponse).data ?? [];
+}
+
 export async function getPublicationDepartures(
   publicationId: string,
 ): Promise<PublicationDeparture[]> {

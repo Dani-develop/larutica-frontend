@@ -31,6 +31,11 @@ test('viajero reserva confirmada, se validan permisos, cancela y recupera cupo',
     assert.ifError(publication.error); pubs.push(publication.data.id);
     const departure = await admin.from('publication_departures').insert({publication_id:pubs[0],start_at:new Date(Date.now()+7*86400000).toISOString(),capacity:2,status:'ACTIVE'}).select('id').single();
     assert.ifError(departure.error); deps.push(departure.data.id);
+    const agencyDepartures = await request('/api/publications/departures','GET',undefined,provider.cookie);
+    assert.equal(agencyDepartures.status,200);
+    assert.ok(agencyDepartures.body.data.some(row=>row.id===deps[0] && row.publicationId===pubs[0]));
+    assert.equal((await request('/api/publications/departures','GET',undefined,outsider.cookie)).body.data.length,0);
+    assert.equal((await request('/api/publications/departures')).status,401);
     let catalog = await request(`/api/catalog?id=${pubs[0]}`);
     assert.equal(catalog.status,200,JSON.stringify(catalog.body));
     assert.equal(catalog.body.data[0].departures[0].available,2);

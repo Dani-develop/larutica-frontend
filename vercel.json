@@ -2,5 +2,8 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": null,
   "buildCommand": "npm run build:vercel",
-  "installCommand": "npm ci"
+  "installCommand": "npm ci",
+  "headers": [{ "source": "/maplibre/maplibre-gl-worker.mjs", "headers": [
+    { "key": "Cache-Control", "value": "public, max-age=86400" }
+  ] }]
 }
