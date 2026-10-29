@@ -77,7 +77,7 @@ export async function listCatalogPublications(): Promise<TravelerPublication[]> 
     mainImageUrl:p.image, pricePerPerson:p.price, durationMinutes:p.duration, included:p.included,
     notIncluded:p.notIncluded, meetingPoint:p.meetingPoint, journey:p.journey, defaultCapacity:0, languages:[],
     serviceType:p.serviceType as TravelerPublication['serviceType'], departures:p.departures,
-    providerName:p.agency, providerSlug:p.agency.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'') }));
+    providerName:p.agency, promoted: p.promoted, providerSlug:p.agency.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'') }));
 }
 export async function listSavedPublicationIds(): Promise<string[]> {
   const response = await apiFetch('/api/traveler/saved?ids=1', { credentials:'same-origin' });

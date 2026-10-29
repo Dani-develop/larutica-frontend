@@ -1277,6 +1277,7 @@ function TravelerTripCard({
           <h3>
             <Link href={href}>{publication.title}</Link>
           </h3>
+          {publication.promoted ? <p className="badge static-badge">{t("Patrocinado")}</p> : null}
 
           <p className="discovery-trip-location">
             <MapPin size={16} strokeWidth={2} aria-hidden="true" />
@@ -1335,6 +1336,7 @@ function TravelerTripCard({
         ) : null}
       </div>
       <div className="card-body">
+        {publication.promoted ? <p className="badge static-badge">{t("Patrocinado")}</p> : null}
         <p className="card-place">{publication.destination}</p>
         <h3>{publication.title}</h3>
         <p className="trip-departure-info">

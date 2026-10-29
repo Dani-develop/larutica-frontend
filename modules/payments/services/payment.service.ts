@@ -30,3 +30,21 @@ export async function confirmReservationPayment(reservationId: string, paymentIn
   });
   await parse<unknown>(response);
 }
+
+export async function startPromotionPayment(publicationId: string): Promise<StartedPayment> {
+  const response = await apiFetch(`/api/publications/${encodeURIComponent(publicationId)}/promotion/payment`, {
+    method: 'POST',
+    credentials: 'include',
+  });
+  return parse<StartedPayment>(response);
+}
+
+export async function confirmPromotionPayment(publicationId: string, paymentIntentId: string): Promise<void> {
+  const response = await apiFetch(`/api/publications/${encodeURIComponent(publicationId)}/promotion/payment/confirm`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ paymentIntentId }),
+  });
+  await parse<unknown>(response);
+}
