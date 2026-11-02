@@ -443,6 +443,7 @@ export async function reviewAdminPublication(
   status:
     | "APPROVED"
     | "REJECTED",
+  rejectionReason?: string,
 ): Promise<AdminPublicationStatus> {
   const response =
     await apiFetch(
@@ -461,6 +462,7 @@ export async function reviewAdminPublication(
         body:
           JSON.stringify({
             status,
+            ...(status === "REJECTED" ? { rejectionReason } : {}),
           }),
       },
     );

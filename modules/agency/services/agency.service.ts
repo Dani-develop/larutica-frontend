@@ -88,6 +88,8 @@ interface RawAgency {
 
   whatsapp?: string | null;
 
+  rejection_reason?: string | null;
+  rejectionReason?: string | null;
   status: AgencyStatus;
 
   accepted_terms?: boolean;
@@ -446,6 +448,7 @@ function normalizeAgency(
       raw.whatsapp ??
       null,
 
+    rejectionReason: raw.rejectionReason ?? raw.rejection_reason ?? null,
     status:
       raw.status,
 

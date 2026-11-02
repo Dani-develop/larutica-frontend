@@ -422,6 +422,7 @@ export async function PATCH(request: Request) {
         whatsapp: payload.whatsapp,
 
         status,
+        ...(status === "PENDING" ? { rejection_reason: null } : {}),
 
         accepted_terms: payload.acceptedTerms,
         terms_accepted_at: payload.acceptedTerms

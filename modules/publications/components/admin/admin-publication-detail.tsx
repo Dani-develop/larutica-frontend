@@ -1,4 +1,8 @@
 "use client";
+import { useRef, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
 import { JourneyView } from "@/modules/journeys/JourneyView";
 
 import { DashboardBreadcrumb } from "@/components/dashboard/DashboardBreadcrumb";
@@ -18,6 +22,9 @@ const panelClassName = "py-6 focus-visible:outline-2 focus-visible:outline-offse
 export default function AdminPublicationDetail({ publicationId }: AdminPublicationDetailProps) {
   const { t, language } = usePreferences();
   const { publication, loading, reviewing, error, loadPublication, approve, reject } = useAdminPublication(publicationId);
+  const [rejectOpen, setRejectOpen] = useState(false);
+  const [rejectionReason, setRejectionReason] = useState("");
+  const rejectButtonRef = useRef<HTMLButtonElement>(null);
 
   if (loading) return <LoadingState />;
 
@@ -41,17 +48,48 @@ export default function AdminPublicationDetail({ publicationId }: AdminPublicati
 
   async function reviewPublication(status: "APPROVED" | "REJECTED") {
     if (!publication || reviewing) return;
+    if (status === "REJECTED") {
+      setRejectionReason("");
+      setRejectOpen(true);
+      return;
+    }
     const action = status === "APPROVED" ? "¿Deseas aprobar la publicación" : "¿Deseas rechazar la publicación";
     if (!window.confirm(`${t(action)} "${publication.title ?? t("Sin título")}"?`)) return;
     try {
-      await (status === "APPROVED" ? approve() : reject());
+      await approve();
     } catch {
       // The hook displays the review error and keeps the current publication.
     }
   }
 
+  async function rejectPublication() {
+    if (reviewing || !rejectionReason.trim()) return;
+    try {
+      await reject(rejectionReason.trim());
+      setRejectOpen(false);
+      setRejectionReason("");
+    } catch {
+      // Preserve the reason so the administrator can retry.
+    }
+  }
+
   return (
     <div className="mx-auto w-full max-w-[1180px] text-foreground">
+      <Dialog open={rejectOpen} onOpenChange={(open) => { if (!reviewing) setRejectOpen(open); }}>
+        <DialogContent aria-busy={reviewing} onCloseAutoFocus={(event) => { event.preventDefault(); rejectButtonRef.current?.focus(); }}>
+          <DialogTitle>{t("Rechazar publicación")}</DialogTitle>
+          <DialogDescription>{t("Describe qué debe corregir la agencia...")}</DialogDescription>
+          <form className="grid gap-4" onSubmit={(event) => { event.preventDefault(); void rejectPublication(); }}>
+            <label htmlFor="publication-rejection-reason" className="text-sm font-medium">{t("Motivo del rechazo")}</label>
+            <Textarea id="publication-rejection-reason" required value={rejectionReason} disabled={reviewing} onChange={(event) => setRejectionReason(event.target.value)} placeholder={t("Describe qué debe corregir la agencia...")} />
+            {error && <p role="alert" className="text-sm text-destructive">{t(error)}</p>}
+            <div className="flex flex-wrap justify-end gap-3">
+              <Button type="button" variant="outline" disabled={reviewing} onClick={() => setRejectOpen(false)}>{t("Cancelar")}</Button>
+              <Button type="submit" variant="destructive" disabled={reviewing || !rejectionReason.trim()}>{t(reviewing ? "Procesando..." : "Rechazar")}</Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
       <header className="border-b border-border pb-6">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <DashboardBreadcrumb items={[{ label: "Publicaciones", href: "/dashboard/publications" }, { label: "Revisión de publicación" }]} />
@@ -170,7 +208,7 @@ export default function AdminPublicationDetail({ publicationId }: AdminPublicati
               <p className="mt-1 text-sm text-muted-foreground">{t("Verifica que la información sea correcta antes de aprobar o rechazar la publicación.")}</p>
             </div>
             <div className="flex shrink-0 gap-3">
-              <button type="button" disabled={reviewing} onClick={() => void reviewPublication("REJECTED")} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-destructive/30 px-4 text-sm font-semibold text-destructive hover:bg-destructive/5 focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50">
+              <button type="button" disabled={reviewing} ref={rejectButtonRef} onClick={() => void reviewPublication("REJECTED")} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-destructive/30 px-4 text-sm font-semibold text-destructive hover:bg-destructive/5 focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50">
                 <X size={16} aria-hidden="true" />{t("Rechazar")}
               </button>
               <button type="button" disabled={reviewing} onClick={() => void reviewPublication("APPROVED")} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50">

@@ -17,6 +17,8 @@ import {
 import { Tabs } from "radix-ui";
 import { DashboardBreadcrumb } from "@/components/dashboard/DashboardBreadcrumb";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { useAdminAgency } from "../../hooks/admin/useAdminAgency";
@@ -196,6 +198,9 @@ export default function AdminAgencyDetail({
     approve,
     reject,
   } = useAdminAgency(agencyId);
+  const [rejectOpen, setRejectOpen] = useState(false);
+  const [rejectionReason, setRejectionReason] = useState("");
+  const rejectButtonRef = useRef<HTMLButtonElement>(null);
   const [lightbox, setLightbox] = useState<{
     src: string;
     alt: string;
@@ -224,12 +229,28 @@ export default function AdminAgencyDetail({
 
   async function reviewAgency(status: "APPROVED" | "REJECTED") {
     if (!agency || reviewing) return;
+    if (status === "REJECTED") {
+      setRejectionReason("");
+      setRejectOpen(true);
+      return;
+    }
     const action = status === "APPROVED" ? "¿Deseas aprobar la agencia" : "¿Deseas rechazar la agencia";
     if (!window.confirm(`${t(action)} "${agency.commercialName}"?`)) return;
     try {
-      await (status === "APPROVED" ? approve() : reject());
+      await approve();
     } catch {
       // The hook displays the error and preserves the agency status.
+    }
+  }
+
+  async function rejectAgency() {
+    if (reviewing || !rejectionReason.trim()) return;
+    try {
+      await reject(rejectionReason.trim());
+      setRejectOpen(false);
+      setRejectionReason("");
+    } catch {
+      // Preserve the reason so the administrator can retry.
     }
   }
 
@@ -238,6 +259,21 @@ export default function AdminAgencyDetail({
 
   return (
     <div className="mx-auto w-full max-w-[1180px] text-foreground">
+      <Dialog open={rejectOpen} onOpenChange={(open) => { if (!reviewing) setRejectOpen(open); }}>
+        <DialogContent aria-busy={reviewing} onCloseAutoFocus={(event) => { event.preventDefault(); rejectButtonRef.current?.focus(); }}>
+          <DialogTitle>{t("Rechazar agencia")}</DialogTitle>
+          <DialogDescription>{t("Describe qué debe corregir la agencia...")}</DialogDescription>
+          <form className="grid gap-4" onSubmit={(event) => { event.preventDefault(); void rejectAgency(); }}>
+            <label htmlFor="agency-rejection-reason" className="text-sm font-medium">{t("Motivo del rechazo")}</label>
+            <Textarea id="agency-rejection-reason" required value={rejectionReason} disabled={reviewing} onChange={(event) => setRejectionReason(event.target.value)} placeholder={t("Describe qué debe corregir la agencia...")} />
+            {error && <p role="alert" className="text-sm text-destructive">{t(error)}</p>}
+            <div className="flex flex-wrap justify-end gap-3">
+              <Button type="button" variant="outline" disabled={reviewing} onClick={() => setRejectOpen(false)}>{t("Cancelar")}</Button>
+              <Button type="submit" variant="destructive" disabled={reviewing || !rejectionReason.trim()}>{t(reviewing ? "Procesando..." : "Rechazar")}</Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
       <header className="border-b border-border pb-6">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <DashboardBreadcrumb items={[{ label: "Agencias", href: "/dashboard/agencies" }, { label: agency.commercialName || agency.agencyName }]} />
@@ -344,7 +380,7 @@ export default function AdminAgencyDetail({
               <p className="mt-1 text-sm text-muted-foreground">{t("Aprueba la agencia si la información y documentación son correctas, o recházala para que pueda corregirse.")}</p>
             </div>
             <div className="flex shrink-0 flex-wrap gap-3">
-              <Button type="button" variant="outline" className="min-h-11 gap-2 text-destructive hover:text-destructive" disabled={reviewing} onClick={() => void reviewAgency("REJECTED")}><X className="size-4" aria-hidden="true" />{t("Rechazar")}</Button>
+              <Button type="button" variant="outline" className="min-h-11 gap-2 text-destructive hover:text-destructive" disabled={reviewing} ref={rejectButtonRef} onClick={() => void reviewAgency("REJECTED")}><X className="size-4" aria-hidden="true" />{t("Rechazar")}</Button>
               <Button type="button" className="min-h-11 gap-2" disabled={reviewing} onClick={() => void reviewAgency("APPROVED")}><Check className="size-4" aria-hidden="true" />{t(reviewing ? "Procesando…" : "Aprobar")}</Button>
             </div>
           </div>

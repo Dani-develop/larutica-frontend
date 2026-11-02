@@ -57,7 +57,7 @@ function getPublicationId(
 
 function parseStatus(
   value: unknown,
-): ReviewStatus {
+): { status: ReviewStatus; rejectionReason: string | null } {
   if (
     !value ||
     typeof value !==
@@ -93,7 +93,15 @@ function parseStatus(
     );
   }
 
-  return status;
+  const rejectionReason = status === "REJECTED" && typeof body.rejectionReason === "string"
+    ? body.rejectionReason.trim()
+    : null;
+
+  if (status === "REJECTED" && !rejectionReason) {
+    throw new AdminApiError("El motivo del rechazo es obligatorio.", 400);
+  }
+
+  return { status, rejectionReason };
 }
 
 export async function PATCH(
@@ -125,7 +133,7 @@ export async function PATCH(
         request,
       );
 
-    const status =
+    const { status, rejectionReason } =
       parseStatus(
         await request.json(),
       );
@@ -238,6 +246,7 @@ export async function PATCH(
         )
         .update({
           status,
+          rejection_reason: rejectionReason,
         })
         .eq(
           "id",

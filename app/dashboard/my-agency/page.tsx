@@ -217,6 +217,12 @@ export default function MyAgencyPage() {
           <p className="text-[11px] font-semibold text-[#963333]">{t("La agencia requiere correcciones ")}</p>
 
           <p className="mt-0.5 text-[10px] leading-4 text-[#A75A5A]">{t("Edita la información necesaria y vuelve a enviarla para revisión. ")}</p>
+          {agency.rejectionReason && (
+            <div className="mt-3 text-sm text-destructive">
+              <p className="font-semibold">{t("Motivo del rechazo")}</p>
+              <p className="mt-1 whitespace-pre-wrap break-words">{agency.rejectionReason}</p>
+            </div>
+          )}
         </div>
       )}
 
