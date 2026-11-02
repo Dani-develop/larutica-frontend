@@ -32,6 +32,7 @@ export async function createDatabase() {
     'supabase/migrations/202610200001_cancel_departure_reservations.sql',
     'supabase/migrations/202610210001_reservation_payments.sql',
     'supabase/migrations/202610210002_agency_settlements.sql',
+    'supabase/migrations/202610290002_rejection_reasons.sql',
   ]) await db.exec(await readFile(new URL('../../' + file, import.meta.url), 'utf8'));
 
   const encode = value => value && typeof value === 'object' && !(value instanceof Date) ? JSON.stringify(value) : value;

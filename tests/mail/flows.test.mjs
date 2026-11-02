@@ -153,7 +153,7 @@ test('editar capacidad sin cancelar no envía correo de cancelación', async () 
 for (const status of ['APPROVED', 'REJECTED']) {
   test(`revisión ${status} → publicación persistida → SMTP a la agencia`, async () => {
     await fixture.db.exec("update publications set status='PENDING'");
-    const response = await request(reviewPath, 'PATCH', { status }, 'admin');
+    const response = await request(reviewPath, 'PATCH', { status, ...(status === 'REJECTED' ? { rejectionReason: 'Corrige la descripción.' } : {}) }, 'admin');
     assert.equal(response.status, 200, JSON.stringify(response.body));
     assert.equal((await fixture.db.query('select status from publications')).rows[0].status, status);
     assert.equal(smtp.received.length, 1);
@@ -173,18 +173,18 @@ test('agencia sin aprobación bloquea aprobación y no envía correos', async ()
 });
 test('error SMTP al revisar no deshace la decisión persistida', async () => {
   await fixture.db.exec("update publications set status='PENDING'"); smtp.state.failData = true;
-  assert.equal((await request(reviewPath, 'PATCH', { status: 'REJECTED' }, 'admin')).status, 200);
+  assert.equal((await request(reviewPath, 'PATCH', { status: 'REJECTED', rejectionReason: 'Corrige la descripción.' }, 'admin')).status, 200);
   assert.equal((await fixture.db.query('select status from publications')).rows[0].status, 'REJECTED');
   assert.equal(smtp.received.length, 0);
 });
 test('sin correo de contacto no se intenta SMTP al revisar', async () => {
   await fixture.db.exec("update publications set status='PENDING'; update agencies set email=null");
-  assert.equal((await request(reviewPath, 'PATCH', { status: 'REJECTED' }, 'admin')).status, 200);
+  assert.equal((await request(reviewPath, 'PATCH', { status: 'REJECTED', rejectionReason: 'Corrige la descripción.' }, 'admin')).status, 200);
   assert.equal(smtp.attempts.length, 0);
 });
 test('fallo de escritura de una revisión no envía correo', async () => {
   await fixture.db.exec("update publications set status='PENDING'"); fixture.admin.failUpdate = 'publications';
-  assert.equal((await request(reviewPath, 'PATCH', { status: 'REJECTED' }, 'admin')).status, 500);
+  assert.equal((await request(reviewPath, 'PATCH', { status: 'REJECTED', rejectionReason: 'Corrige la descripción.' }, 'admin')).status, 500);
   assert.equal((await fixture.db.query('select status from publications')).rows[0].status, 'PENDING');
   assert.equal(smtp.received.length, 0);
 });

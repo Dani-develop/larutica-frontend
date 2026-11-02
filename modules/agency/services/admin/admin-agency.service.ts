@@ -98,6 +98,7 @@ interface RawAgency {
   whatsapp:
     string | null;
 
+  rejection_reason?: string | null;
   status:
     AgencyStatus;
 
@@ -313,6 +314,7 @@ function normalizeAgency(
     whatsapp:
       raw.whatsapp,
 
+    rejectionReason: raw.rejection_reason ?? null,
     status:
       raw.status,
 
@@ -471,6 +473,7 @@ export async function reviewAgency(
   status:
     | "APPROVED"
     | "REJECTED",
+  rejectionReason?: string,
 ): Promise<AgencyStatus> {
   const response =
     await apiFetch(
@@ -490,6 +493,7 @@ export async function reviewAgency(
         body:
           JSON.stringify({
             status,
+            ...(status === "REJECTED" ? { rejectionReason } : {}),
           }),
       },
     );

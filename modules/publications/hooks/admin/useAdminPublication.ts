@@ -93,6 +93,7 @@ export function useAdminPublication(
       status:
         | "APPROVED"
         | "REJECTED",
+      rejectionReason?: string,
     ) => {
       if (!publication) {
         return;
@@ -106,6 +107,7 @@ export function useAdminPublication(
           await reviewAdminPublication(
             publication.id,
             status,
+            rejectionReason,
           );
 
         setPublication(
@@ -150,9 +152,10 @@ export function useAdminPublication(
         ),
 
     reject:
-      () =>
+      (rejectionReason: string) =>
         review(
           "REJECTED",
+          rejectionReason,
         ),
   };
 }
