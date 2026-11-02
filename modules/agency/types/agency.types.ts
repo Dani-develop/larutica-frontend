@@ -54,6 +54,7 @@ export interface Agency {
   facebookUrl: string | null
   whatsapp: string | null
 
+  rejectionReason: string | null
   status: AgencyStatus
 
   acceptedTerms: boolean

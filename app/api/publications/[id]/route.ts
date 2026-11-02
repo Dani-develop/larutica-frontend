@@ -99,6 +99,7 @@ type PublicationRow = {
     | number
     | null;
 
+  rejection_reason: string | null;
   status:
     | "DRAFT"
     | "PENDING"
@@ -615,6 +616,7 @@ async function requireOwnedPublication(
         main_image_url,
         default_capacity,
         status,
+        rejection_reason,
         created_at,
         updated_at
       `,
@@ -918,6 +920,7 @@ export async function GET(
           defaultCapacity:
             publication.default_capacity,
 
+          rejectionReason: publication.rejection_reason,
           status:
             publication.status,
 
@@ -1347,6 +1350,8 @@ export async function PATCH(
      * Si solo se edita como borrador,
      * se mantiene/retorna a DRAFT.
      */
+    if (action === "SUBMIT") updateData.rejection_reason = null;
+
     updateData.status =
       action === "SUBMIT"
         ? "PENDING"
@@ -1384,6 +1389,7 @@ export async function PATCH(
           main_image_url,
           default_capacity,
           status,
+          rejection_reason,
           created_at,
           updated_at
         `,
@@ -1531,6 +1537,7 @@ export async function PATCH(
           defaultCapacity:
             updatedPublication.default_capacity,
 
+          rejectionReason: updatedPublication.rejection_reason,
           status:
             updatedPublication.status,
 

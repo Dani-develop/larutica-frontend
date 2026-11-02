@@ -1,5 +1,10 @@
 // Interface labels only. Database values and provider content remain unchanged.
 export const dashboardEnglish: Record<string, string> = Object.fromEntries([
+['Rechazar agencia','Reject agency'],
+['Rechazar publicación','Reject listing'],
+['Motivo del rechazo','Rejection reason'],
+['Describe qué debe corregir la agencia...','Describe what the agency needs to correct...'],
+['El motivo del rechazo es obligatorio.','A rejection reason is required.'],
 ['Próximas salidas','Upcoming departures'],
 ['Experiencias programadas por las agencias.','Experiences scheduled by agencies.'],
 ['No se pudieron cargar las salidas.','Could not load departures.'],

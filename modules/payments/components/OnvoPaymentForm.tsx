@@ -72,14 +72,16 @@ export function OnvoPaymentForm({ startKey, start, confirm, onPaid, onCancel }: 
           },
         });
         instance.current.render(`#onvo-pay-${containerId}`);
-        const observer = new MutationObserver(() => {
+        const markReady = () => {
           const iframe = container()?.querySelector('iframe');
           if (iframe) {
             iframe.setAttribute('title', titleRef.current);
             setReady(true);
           }
-        });
+        };
+        const observer = new MutationObserver(markReady);
         if (target) observer.observe(target, { childList: true, subtree: true });
+        markReady(); // The SDK may have inserted its iframe synchronously.
         cleanup = () => observer.disconnect();
       } catch (cause) {
         if (!cancelled) setError(cause instanceof Error ? cause.message : 'No pudimos preparar el pago.');

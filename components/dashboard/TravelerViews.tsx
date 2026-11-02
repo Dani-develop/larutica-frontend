@@ -1137,7 +1137,7 @@ export function TravelerReservationsPage() {
         busy={cancellingReservationId !== null}
         cancelling={cancellingReservationId === selected.id}
         onPaid={() => setReservations((current) => current.map((item) =>
-          item.id === selected.id ? { ...item, paymentStatus: "PAID" } : item,
+          item.id === selected.id ? { ...item, status: "CONFIRMED", paymentStatus: "PAID" } : item,
         ))}
         existing={searchParams.get("existente") === "1"}
       />

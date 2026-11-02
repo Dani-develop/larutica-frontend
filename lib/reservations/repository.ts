@@ -236,16 +236,6 @@ export async function listReservationRecords(
   const records = rows
     .map(toReservationRecord)
     .filter((reservation) => canReadReservation(role, userId, reservation));
-  // Transition only upcoming, active legacy reservations. Past and cancelled
-  // bookings retain their history; persisted states match the traveler badge.
-  const legacyIds = records.filter(r => r.status === "PENDING" && r.departureStatus === "ACTIVE" && Date.parse(r.departureStartAt) > Date.now()).map(r => r.id);
-  for (let start = 0; start < legacyIds.length; start += 100) {
-    const { data, error } = await admin.from("reservations").update({ status: "CONFIRMED" })
-      .in("id", legacyIds.slice(start, start + 100)).eq("status", "PENDING").select("id");
-    if (error) throw error;
-    const confirmed = new Set((data ?? []).map((r: { id: string }) => r.id));
-    for (const record of records) if (confirmed.has(record.id)) record.status = "CONFIRMED";
-  }
   return records;
 }
 
@@ -273,13 +263,6 @@ export async function createReservationRecord(
     .in("status", ["PENDING", "CONFIRMED"]).order("created_at", { ascending: false }).limit(1).maybeSingle();
   if (existingError) throw existingError;
   if (existing) {
-    // Retry a legacy pending booking without reserving capacity a second time.
-    if (existing.status === "PENDING") {
-      await updateReservationStatus(admin, existing.id, "CONFIRMED", "PENDING");
-      const confirmed = await getReservationRecord(admin, existing.id);
-      if (!confirmed) throw new ApiError("No se pudo consultar la reserva.", 500);
-      return { record: confirmed, inserted: reservationWasInserted(existing.status) };
-    }
     return { record: toReservationRecord(existing as ReservationRow), inserted: reservationWasInserted(existing.status) };
   }
   const { data: departure, error: availabilityError } = await admin.from("publication_departures")
@@ -297,9 +280,12 @@ export async function createReservationRecord(
   if (!created?.id) throw new ApiError("No se pudo crear la reserva.", 500);
   const record = await getReservationRecord(admin, created.id);
   if (!record) throw new ApiError("No se pudo crear la reserva.", 500);
-  // Compatibility with databases still running the earlier RPC. Capacity is
-  // already secured by its departure lock; never confirm a cancelled booking.
-  if (record.status === "PENDING") {
+  // Paid services stay pending until Onvo verifies the payment.
+  if (record.total > 0 && record.status === "CONFIRMED") {
+    await updateReservationStatus(admin, record.id, "PENDING", "CONFIRMED");
+    record.status = "PENDING";
+  }
+  if (record.total <= 0 && record.status === "PENDING") {
     await updateReservationStatus(admin, record.id, "CONFIRMED", "PENDING");
     const confirmed = await getReservationRecord(admin, record.id);
     if (!confirmed) throw new ApiError("No se pudo consultar la reserva.", 500);
@@ -418,7 +404,7 @@ export async function updateReservationPartySize(
 export async function updateReservationStatus(
   admin: SupabaseClient,
   reservationId: string,
-  status: "CONFIRMED" | "CANCELLED",
+  status: "PENDING" | "CONFIRMED" | "CANCELLED",
   expectedStatus: ReservationStatus,
 ) {
   const { data, error } = await admin

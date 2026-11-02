@@ -122,6 +122,7 @@ export function useAdminAgency(
       status:
         | "APPROVED"
         | "REJECTED",
+      rejectionReason?: string,
     ) => {
       if (
         !agency
@@ -142,6 +143,7 @@ export function useAdminAgency(
           await reviewAgency(
             agency.id,
             status,
+            rejectionReason,
           );
 
         setAgency(
@@ -151,6 +153,7 @@ export function useAdminAgency(
             current
               ? {
                   ...current,
+                  rejectionReason: newStatus === "REJECTED" ? rejectionReason?.trim() ?? null : null,
                   status:
                     newStatus,
                 }
@@ -242,9 +245,10 @@ export function useAdminAgency(
         ),
 
     reject:
-      () =>
+      (rejectionReason: string) =>
         review(
           "REJECTED",
+          rejectionReason,
         ),
 
     openDocument,

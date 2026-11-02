@@ -53,6 +53,7 @@ export type Publication = {
 
   defaultCapacity: number | null;
 
+  rejectionReason?: string | null;
   status: PublicationStatus;
 
   languageIds: number[];

@@ -15,7 +15,8 @@ import {
 import { applyPromotionPaymentStatus, applyPromotionRefundEvent } from "@/lib/payments/promotion";
 import { canPayReservation, derivePaymentStatus } from "@/lib/payments/status";
 import { settlementTarget } from "@/lib/promotions/window";
-import type { ReservationRecord } from "@/lib/reservations/repository";
+import { getReservationRecord, type ReservationRecord } from "@/lib/reservations/repository";
+import { notifyReservationCreated } from "@/lib/mail/notify";
 
 const CURRENCY = "USD" as const;
 const PAYMENT_COLUMNS = "id, reservation_id, provider_payment_id, amount, currency, status, refunded_amount";
@@ -145,6 +146,15 @@ export async function applyPaymentStatus(
       await refundReservationPayment(admin, payment.reservation_id).catch((cause) => {
         console.error("No se pudo reembolsar un pago de una reserva cancelada", payment.reservation_id, cause);
       });
+    } else if (reservation) {
+      const { error: confirmError } = await admin.from("reservations").update({ status: "CONFIRMED" })
+        .eq("id", payment.reservation_id).eq("status", "PENDING");
+      if (confirmError) throw confirmError;
+      const confirmed = await getReservationRecord(admin, payment.reservation_id);
+      if (confirmed && confirmed.status !== "CANCELLED") {
+        await notifyReservationCreated({ ...confirmed, paymentReference: providerPaymentId,
+          paidAt: patch.paid_at as string }, true);
+      }
     }
   }
   return updated as PaymentRow;

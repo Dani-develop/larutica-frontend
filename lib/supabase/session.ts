@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { ApiError } from "@/lib/api/errors";
 import { getSupabaseAdminClient } from "./admin-client";
 import { profileRowToSystemUser, type ProfileRow } from "./profiles";
+import { shouldTouchSession } from "./session-activity";
 
 const PROFILE_COLUMNS = "id,full_name,email,role,phone,business_name,status,created_at,updated_at";
 const SESSION_BYTES = 32;
@@ -131,7 +132,7 @@ export async function requireAppSession(request: Request): Promise<AppSession> {
   const admin = getSupabaseAdminClient();
   const { data, error } = await admin
     .from("app_sessions")
-    .select("user_id,expires_at,idle_expires_at,password_reset_until")
+    .select("user_id,expires_at,idle_expires_at,password_reset_until,last_seen_at")
     .eq("session_hash", sessionHash)
     .maybeSingle();
   if (error) throw error;
@@ -158,12 +159,14 @@ export async function requireAppSession(request: Request): Promise<AppSession> {
     throw new ApiError("La cuenta está inactiva.", 403);
   }
 
-  const idleExpiresAt = new Date(now + IDLE_SESSION_SECONDS * 1000).toISOString();
-  const { error: touchError } = await admin
-    .from("app_sessions")
-    .update({ last_seen_at: new Date(now).toISOString(), idle_expires_at: idleExpiresAt })
-    .eq("session_hash", sessionHash);
-  if (touchError) throw touchError;
+  let idleExpiresAt = row.idle_expires_at;
+  if (shouldTouchSession(row.last_seen_at, now)) {
+    idleExpiresAt = new Date(now + IDLE_SESSION_SECONDS * 1000).toISOString();
+    const { error: touchError } = await admin.from("app_sessions")
+      .update({ last_seen_at: new Date(now).toISOString(), idle_expires_at: idleExpiresAt })
+      .eq("session_hash", sessionHash);
+    if (touchError) throw touchError;
+  }
 
   return {
     sessionHash,

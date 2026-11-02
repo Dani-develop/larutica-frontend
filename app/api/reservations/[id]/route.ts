@@ -80,7 +80,10 @@ export async function PATCH(request: Request, context: RouteContext) {
     }
 
     // Validate the whole request before making any change.
-    if (patch.status === "CONFIRMED") guardPolicy(() => assertCanConfirm(role, userId, reservation));
+    if (patch.status === "CONFIRMED") {
+      if (reservation.total > 0 && reservation.paymentStatus !== "PAID") throw new ApiError("Completa el pago para confirmar la reserva.", 409);
+      guardPolicy(() => assertCanConfirm(role, userId, reservation));
+    }
     if (patch.status === "CANCELLED") guardPolicy(() => assertCanCancel(role, userId, reservation));
     if (patch.numberOfPeople !== undefined) await updateReservationPartySize(admin, id, patch.numberOfPeople);
 

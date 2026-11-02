@@ -66,7 +66,7 @@ export async function POST(request: Request) {
       input.departureId,
       input.numberOfPeople,
     );
-    await notifyReservationCreated(created.record, created.inserted);
+    if (created.record.total <= 0) await notifyReservationCreated(created.record, created.inserted);
     return Response.json(
       { data: toPublicReservation(created.record) },
       { status: 201, headers: { "cache-control": "no-store" } },

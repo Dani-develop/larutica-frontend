@@ -1,5 +1,6 @@
 "use client";
 import { apiFetch, clearApiCache } from "@/lib/api/browser-fetch";
+import { responseErrorMessage } from "@/lib/api/response-error";
 
 import {
   createContext,
@@ -71,8 +72,9 @@ async function apiRequest<T>(path: string, init: RequestInit = {}): Promise<T> {
       ...init.headers,
     },
   });
-  const payload = await response.json().catch(() => ({})) as { data?: T; error?: string };
-  if (!response.ok) throw new HttpError(payload.error ?? "No se pudo completar la solicitud.", response.status);
+  const payload = await response.json().catch(() => null) as { data?: T; error?: unknown } | null;
+  if (!response.ok) throw new HttpError(responseErrorMessage(payload), response.status);
+  if (!payload || payload.data === undefined) throw new HttpError("No se pudo completar la solicitud.", 502);
   return payload.data as T;
 }
 

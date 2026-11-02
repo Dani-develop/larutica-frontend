@@ -277,6 +277,13 @@ export function PublicationDetail({
         </div>
       </div>
 
+      {publication.status === "REJECTED" && publication.rejectionReason && (
+        <section className="mb-5 rounded-2xl border border-destructive/30 bg-destructive/5 p-5">
+          <h2 className="!m-0 !text-sm !font-semibold text-destructive">{t("Motivo del rechazo")}</h2>
+          <p className="mt-2 whitespace-pre-wrap break-words text-sm text-foreground">{publication.rejectionReason}</p>
+        </section>
+      )}
+
       {/* Imagen */}
       <div className="overflow-hidden rounded-2xl border border-black/10 bg-muted shadow-sm">
         {publication.mainImageUrl ? (

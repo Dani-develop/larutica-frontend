@@ -1,12 +1,8 @@
-import {
-  generateAuthenticationOptions,
-  generateRegistrationOptions,
-  verifyAuthenticationResponse,
-  verifyRegistrationResponse,
-  type AuthenticationResponseJSON,
-  type RegistrationResponseJSON,
+import type {
+  AuthenticationResponseJSON,
+  RegistrationResponseJSON,
 } from "@simplewebauthn/server";
-import { isoBase64URL } from "@simplewebauthn/server/helpers";
+import { loadWebAuthn } from "./webauthn-runtime";
 import { ApiError } from "@/lib/api/errors";
 import { clientOrigin } from "@/lib/api/request-origin";
 import { getSupabaseAdminClient } from "./admin-client";
@@ -128,6 +124,7 @@ export async function createRegistrationOptions(request: Request, profile: Profi
   }
 
   const { rpID } = relyingParty(request);
+  const { generateRegistrationOptions } = await loadWebAuthn();
   const options = await generateRegistrationOptions({
     rpName: RP_NAME,
     rpID,
@@ -154,6 +151,7 @@ export async function verifyRegistration(
   userId: string,
   body: { flowId?: unknown; response?: unknown },
 ): Promise<PublicPasskey> {
+  const { verifyRegistrationResponse, isoBase64URL } = await loadWebAuthn();
   const flow = await consumeChallenge(body.flowId, "registration");
   if (flow.user_id !== userId) throw new ApiError("La solicitud de passkey no es válida.", 400);
 
@@ -195,6 +193,7 @@ export async function verifyRegistration(
 }
 
 export async function createAuthenticationOptions(request: Request) {
+  const { generateAuthenticationOptions } = await loadWebAuthn();
   const { rpID } = relyingParty(request);
   // Sin allowCredentials: el navegador ofrece las passkeys guardadas para este sitio.
   const options = await generateAuthenticationOptions({
@@ -210,6 +209,7 @@ export async function verifyAuthentication(
   request: Request,
   body: { flowId?: unknown; response?: unknown },
 ): Promise<string> {
+  const { verifyAuthenticationResponse, isoBase64URL } = await loadWebAuthn();
   const flow = await consumeChallenge(body.flowId, "authentication");
   const response = body.response as AuthenticationResponseJSON | undefined;
   if (!response || typeof response.id !== "string") {
