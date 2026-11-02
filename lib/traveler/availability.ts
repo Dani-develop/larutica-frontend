@@ -6,8 +6,11 @@ const ID_CHUNK = 100;
 /** Count pending and confirmed seats; cancelled reservations release their seats. */
 export async function usedDepartureSeats(admin: SupabaseClient, ids: string[]) {
   const used = new Map<string, number>();
-  for (let start = 0; start < ids.length; start += ID_CHUNK) {
-    const chunk = ids.slice(start, start + ID_CHUNK);
+  const unique = [...new Set(ids)];
+  let cursor = 0;
+  const load = async () => { while (cursor < unique.length) {
+    const start = cursor; cursor += ID_CHUNK;
+    const chunk = unique.slice(start, start + ID_CHUNK);
     for (let from = 0; ; from += 1000) {
       const { data, error } = await admin.from('reservations')
         .select('departure_id,number_of_people').in('departure_id', chunk)
@@ -16,7 +19,8 @@ export async function usedDepartureSeats(admin: SupabaseClient, ids: string[]) {
       for (const row of data ?? []) used.set(row.departure_id, (used.get(row.departure_id) ?? 0) + Number(row.number_of_people));
       if (!data || data.length < 1000) break;
     }
-  }
+  }};
+  await Promise.all(Array.from({ length: Math.min(4, Math.ceil(unique.length / ID_CHUNK)) }, load));
   return used;
 }
 
