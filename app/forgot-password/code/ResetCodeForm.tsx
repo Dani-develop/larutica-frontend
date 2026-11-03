@@ -18,10 +18,12 @@ export default function ResetCodeForm() {
   const [notice, setNotice] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [resending, setResending] = useState(false);
+  const [email, setEmail] = useState<string | null>(null);
 
   useEffect(() => {
     const draft = readPasswordResetDraft();
     if (!draft) router.replace("/forgot-password");
+    else setEmail(draft.displayEmail ?? draft.email);
   }, [router]);
 
   async function resend() {
@@ -44,7 +46,7 @@ export default function ResetCodeForm() {
       if (!response.ok || !payload.data?.challengeId) {
         throw new Error(payload.error ?? "No se pudo preparar la recuperación.");
       }
-      writePasswordResetDraft({ challengeId: payload.data.challengeId, email: draft.email });
+      writePasswordResetDraft({ challengeId: payload.data.challengeId, email: draft.email, displayEmail: draft.displayEmail });
       setCode("");
       setNotice("Puedes usar el código más reciente.");
     } catch (nextError) {
@@ -56,7 +58,7 @@ export default function ResetCodeForm() {
 
   return (
     <AuthShell eyebrow={t("Ayuda para entrar")} title={t("Código de recuperación")}>
-      <p className="mb-6 -mt-6 text-sm text-muted-foreground">{t("Escribe el código de 5 dígitos. Caduca a los 15 minutos.")}</p>
+      <p className="mb-6 -mt-6 text-sm text-muted-foreground">{email ? <>{t("Escribe el código de 5 dígitos que enviamos a")} <span className="font-medium">{email}</span>{t(". Caduca a los 15 minutos.")}</> : t("Escribe el código de 5 dígitos. Caduca a los 15 minutos.")}</p>
       <form className="flex flex-col gap-5" onSubmit={async (event) => {
         event.preventDefault();
         const draft = readPasswordResetDraft();

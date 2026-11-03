@@ -12,7 +12,7 @@ import { Label } from "@/components/ui/label";
 import { PageHeading } from "@/components/ui/page-heading";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { TablePagination, usePagedRows } from "@/components/ui/table-pagination";
+import { RecordTablePagination, usePagedRows } from "@/components/ui/table-pagination";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { usePreferences } from "@/lib/preferences/Preferences";
 import { promotionPeriodState, type PromotionPeriodState } from "@/lib/promotions/window";
@@ -185,7 +185,7 @@ export function AdminPromotionsPage() {
         </TableBody>
       </Table>
     </div>
-    <TablePagination page={paged.page} pageSize={paged.pageSize} total={paged.total} totalPages={paged.totalPages} onPageChange={paged.setPage} />
+    <RecordTablePagination page={paged.page} totalPages={paged.totalPages} onPageChange={paged.setPage} />
     {rows.length >= 500 ? <p className="text-sm text-muted-foreground">{t("Se muestran los 500 más recientes; usa los filtros para acotar.")}</p> : null}
 
     <Dialog open={!!refunding} onOpenChange={(open) => { if (!open && !refundBusy) setRefunding(null); }}>

@@ -1,4 +1,5 @@
 "use client";
+import { RecordTablePagination, usePagedRows } from "@/components/ui/table-pagination";
 import { usePreferences } from "@/lib/preferences/Preferences";
 
 import {
@@ -29,6 +30,7 @@ export default function AdminPublicationsTable({
   publications,
 }: AdminPublicationsTableProps) {
   const { t } = usePreferences();
+  const paged = usePagedRows(publications);
   const router =
     useRouter();
 
@@ -48,6 +50,7 @@ export default function AdminPublicationsTable({
   }
 
   return (
+    <div className="space-y-4">
         <Table className="min-w-[640px] table-fixed">
           <colgroup>
             <col />
@@ -76,7 +79,7 @@ export default function AdminPublicationsTable({
           </TableHeader>
 
           <TableBody>
-            {publications.map(
+            {paged.pageRows.map(
               (
                 publication,
               ) => (
@@ -173,6 +176,8 @@ export default function AdminPublicationsTable({
             )}
           </TableBody>
         </Table>
+      <RecordTablePagination page={paged.page} totalPages={paged.totalPages} onPageChange={paged.setPage} />
+    </div>
   );
 }
 

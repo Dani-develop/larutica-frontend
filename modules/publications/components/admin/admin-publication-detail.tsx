@@ -1,4 +1,7 @@
 "use client";
+import { RecordTablePagination, usePagedRows } from "@/components/ui/table-pagination";
+import type { AdminPublicationDeparture } from "../../services/admin/admin-publication.service";
+
 import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
@@ -16,6 +19,8 @@ interface AdminPublicationDetailProps {
   publicationId: string;
 }
 
+const emptyDepartures: AdminPublicationDeparture[] = [];
+
 const tabClassName = "min-h-12 shrink-0 border-b-2 border-transparent px-1 py-3 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary data-[state=active]:border-primary data-[state=active]:text-primary";
 const panelClassName = "py-6 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary";
 
@@ -24,6 +29,7 @@ export default function AdminPublicationDetail({ publicationId }: AdminPublicati
   const { publication, loading, reviewing, error, loadPublication, approve, reject } = useAdminPublication(publicationId);
   const [rejectOpen, setRejectOpen] = useState(false);
   const [rejectionReason, setRejectionReason] = useState("");
+  const pagedDepartures = usePagedRows(publication?.departures ?? emptyDepartures);
   const rejectButtonRef = useRef<HTMLButtonElement>(null);
 
   if (loading) return <LoadingState />;
@@ -170,23 +176,26 @@ export default function AdminPublicationDetail({ publicationId }: AdminPublicati
 
         <Tabs.Content value="departures" className={panelClassName}>
           {publication.departures.length > 0 ? (
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[560px] text-left text-sm">
-                <caption className="sr-only">{t("Salidas programadas")}</caption>
-                <thead className="border-b border-border text-muted-foreground">
-                  <tr>{["Salida", "Finaliza", "Capacidad", "Estado"].map(label => <th key={label} scope="col" className="px-3 pb-3 font-medium first:pl-0 last:pr-0">{t(label)}</th>)}</tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                  {publication.departures.map(departure => (
-                    <tr key={departure.id}>
-                      <td className="py-4 pr-3 font-medium">{formatDateTime(departure.startAt, language)}</td>
-                      <td className="px-3 py-4 text-muted-foreground">{departure.endAt ? formatDateTime(departure.endAt, language) : "—"}</td>
-                      <td className="px-3 py-4 tabular-nums">{departure.capacity} {t("personas")}</td>
-                      <td className="py-4 pl-3"><span className="inline-flex items-center rounded-full bg-muted px-2.5 py-1 text-xs font-medium">{t(departureStatusLabel(departure.status))}</span></td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div className="space-y-4">
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[560px] text-left text-sm">
+                  <caption className="sr-only">{t("Salidas programadas")}</caption>
+                  <thead className="border-b border-border text-muted-foreground">
+                    <tr>{["Salida", "Finaliza", "Capacidad", "Estado"].map(label => <th key={label} scope="col" className="px-3 pb-3 font-medium first:pl-0 last:pr-0">{t(label)}</th>)}</tr>
+                  </thead>
+                  <tbody className="divide-y divide-border">
+                    {pagedDepartures.pageRows.map(departure => (
+                      <tr key={departure.id}>
+                        <td className="py-4 pr-3 font-medium">{formatDateTime(departure.startAt, language)}</td>
+                        <td className="px-3 py-4 text-muted-foreground">{departure.endAt ? formatDateTime(departure.endAt, language) : "—"}</td>
+                        <td className="px-3 py-4 tabular-nums">{departure.capacity} {t("personas")}</td>
+                        <td className="py-4 pl-3"><span className="inline-flex items-center rounded-full bg-muted px-2.5 py-1 text-xs font-medium">{t(departureStatusLabel(departure.status))}</span></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <RecordTablePagination page={pagedDepartures.page} totalPages={pagedDepartures.totalPages} onPageChange={pagedDepartures.setPage} />
             </div>
           ) : (
             <div className="flex items-start gap-3 py-5">
