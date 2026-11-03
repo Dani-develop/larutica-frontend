@@ -2,7 +2,7 @@ import { ApiError } from '../api/errors';
 import { mapProviderFailure } from './provider-errors';
 
 // Official equivalent endpoints. Never send the server key to an arbitrary host.
-const origins = ['https://api.geoapify.com', 'https://api-eu.geoapify.com'];
+const origins = ['https://api-eu.geoapify.com', 'https://api.geoapify.com'];
 let preferred = 0;
 let preferredUntil = 0;
 
