@@ -1,4 +1,4 @@
-export const MAIL_LOGO_CID = "larutica-logo";
+export const MAIL_LOGO_URL = "https://larutica-cr.vercel.app/brand/apple-touch-icon.png";
 
 const forest = "#003b22";
 const accent = "#00df5b";
@@ -16,16 +16,30 @@ function escapeHtml(value: string) {
     .replaceAll('"', "&quot;");
 }
 
+export type BrandedMailLink = { href: string; label: string };
+
+function paragraphHtml(paragraph: string, link?: BrandedMailLink) {
+  const style = `margin:0 0 14px;font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:1.6;color:${secondary};`;
+  if (link && link.label && paragraph.endsWith(link.label)) {
+    const before = paragraph.slice(0, -link.label.length);
+    const anchor = `<a href="${escapeHtml(link.href)}" style="color:${forest};font-weight:700;text-decoration:underline;">${escapeHtml(link.label)}</a>`;
+    return `<p style="${style}">${escapeHtml(before)}${anchor}</p>`;
+  }
+  return `<p style="${style}">${escapeHtml(paragraph)}</p>`;
+}
+
 export function renderBrandedMail(input: {
   heading: string;
   paragraphs: string[];
   facts?: Array<[string, string]>;
+  link?: BrandedMailLink;
 }) {
   const facts = input.facts ?? [];
   const preheader = escapeHtml(input.paragraphs[0] || input.heading);
-  const paragraphs = input.paragraphs.map((paragraph) =>
-    `<p style="margin:0 0 14px;font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:1.6;color:${secondary};">${escapeHtml(paragraph)}</p>`,
-  ).join("");
+  const paragraphs = input.paragraphs.map((paragraph, index) => {
+    const link = index === input.paragraphs.length - 1 ? input.link : undefined;
+    return paragraphHtml(paragraph, link);
+  }).join("");
   const factRows = facts.map(([label, value]) => `
               <tr>
                 <td style="padding:12px 0;border-bottom:1px solid ${stroke};font-family:Arial,Helvetica,sans-serif;font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:${meta};vertical-align:top;width:46%;">${escapeHtml(label)}</td>
@@ -59,7 +73,7 @@ export function renderBrandedMail(input: {
               <table role="presentation" cellpadding="0" cellspacing="0">
                 <tr>
                   <td style="vertical-align:middle;">
-                    <img src="cid:${MAIL_LOGO_CID}" width="48" height="48" alt="LaRutica" style="display:block;border:0;border-radius:12px;width:48px;height:48px;">
+                    <img src="${MAIL_LOGO_URL}" width="48" height="48" alt="LaRutica" style="display:block;border:0;border-radius:12px;width:48px;height:48px;">
                   </td>
                   <td style="padding-left:14px;vertical-align:middle;">
                     <p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:22px;font-weight:700;line-height:1.2;letter-spacing:-.03em;color:${surface};">LaRutica</p>
