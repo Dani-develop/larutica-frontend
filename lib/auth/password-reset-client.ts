@@ -3,6 +3,7 @@ const STORAGE_KEY = "larutica.password-reset";
 export type PasswordResetDraft = {
   challengeId: string;
   email: string;
+  displayEmail?: string;
   resetGrant?: string;
 };
 
@@ -15,6 +16,7 @@ export function readPasswordResetDraft(): PasswordResetDraft | null {
     return {
       challengeId: parsed.challengeId,
       email: parsed.email,
+      ...(typeof parsed.displayEmail === "string" ? { displayEmail: parsed.displayEmail } : {}),
       ...(typeof parsed.resetGrant === "string" && parsed.resetGrant ? { resetGrant: parsed.resetGrant } : {}),
     };
   } catch {
@@ -26,6 +28,7 @@ export function writePasswordResetDraft(draft: PasswordResetDraft) {
   sessionStorage.setItem(STORAGE_KEY, JSON.stringify({
     challengeId: draft.challengeId,
     email: draft.email,
+    ...(draft.displayEmail !== undefined ? { displayEmail: draft.displayEmail } : {}),
     ...(draft.resetGrant ? { resetGrant: draft.resetGrant } : {}),
   }));
 }
