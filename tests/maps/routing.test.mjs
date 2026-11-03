@@ -108,3 +108,20 @@ test('fallo de red al calcular conserva un error recuperable, sin filtrar detall
   const response=await POST(request([places[3],places[0]],'walk'));assert.equal(response.status,502);
   const body=await response.json();assert.match(body.error,/Intenta nuevamente/);assert.doesNotMatch(body.error,/private-provider/);
 });
+
+test('la API no firma trazados alejados ni tiempos negativos o nulos',async()=>{
+  for(const [index,time] of [0,-10,1200].entries()){
+    const points=[{...places[0],lat:10.001+index/1000},places[1]];
+    globalThis.fetch=async()=>Response.json({features:[{geometry:{type:'MultiLineString',coordinates:[[[ -85,10],[-85,10.1]]]},properties:{distance:24000,time}}]});
+    const response=await POST(request(points,'walk'));const body=await response.json();
+    assert.equal(response.status,422);assert.equal(body.data,undefined);
+    if(index===2)assert.match(body.error,/salida/);
+  }
+});
+
+test('tiempo agotado del proveedor es recuperable y no ofrece un trazado para confirmar',async()=>{
+  globalThis.fetch=async(_url,options)=>{assert.ok(options.signal);throw new DOMException('internal host','TimeoutError');};
+  const response=await POST(request([{...places[3],lat:10.195},places[2]],'hike'));
+  assert.equal(response.status,504);const body=await response.json();assert.match(body.error,/tardó demasiado/);
+  assert.equal(body.data,undefined);assert.doesNotMatch(body.error,/internal host/);
+});

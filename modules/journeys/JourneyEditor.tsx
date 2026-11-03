@@ -93,7 +93,7 @@ export function JourneyEditor({value,onChange,meetingPoint,onMeetingPointChange,
     const timer=setTimeout(async()=>{
       try {
         const r=await fetch("/api/maps/route",{method:"POST",credentials:"same-origin",headers:{"content-type":"application/json"},
-          body:JSON.stringify({mode:j.mode,points:j.points}),signal:AbortSignal.any([controller.signal,AbortSignal.timeout(25000)])});
+          body:JSON.stringify({mode:j.mode,points:j.points}),signal:AbortSignal.any([controller.signal,AbortSignal.timeout(12000)])});
         const body=await r.json().catch(()=>null) as {data?: Journey; error?: string}|null;
         if(!r.ok)throw new Error(body?.error || "No se pudo calcular el trayecto. Reintenta en unos momentos.");
         if(!body?.data)throw new Error("El servicio no devolvió un trayecto completo. Reintenta el cálculo.");

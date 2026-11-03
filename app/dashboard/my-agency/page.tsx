@@ -169,7 +169,7 @@ export default function MyAgencyPage() {
       .join(", ");
 
   return (
-    <div className="mx-auto w-full max-w-[1180px]">
+    <div className="mx-auto min-w-0 w-full max-w-[1180px] text-foreground">
       <PageHeader
         title={t("Mi agencia")}
         description={t("Consulta y administra la información de tu agencia.")}
@@ -193,7 +193,6 @@ export default function MyAgencyPage() {
           ) : undefined
         }
       />
-
       {agency.status ===
         "PENDING" && (
         <div className="mb-4 flex items-start gap-3 rounded-xl border border-[#F1D49A] bg-[#FFF9EC] px-4 py-3">
@@ -210,7 +209,6 @@ export default function MyAgencyPage() {
           </div>
         </div>
       )}
-
       {agency.status ===
         "REJECTED" && (
         <div className="mb-4 rounded-xl border border-[#F2CACA] bg-[#FFF4F4] px-4 py-3">
@@ -225,10 +223,63 @@ export default function MyAgencyPage() {
           )}
         </div>
       )}
+      <header className="mb-6 flex flex-col-reverse gap-6 border-b border-border pb-6 lg:flex-row lg:items-center lg:justify-between">
+        <div className="min-w-0 flex-1">
+            <div className="flex flex-col gap-5">
+              <div className="flex min-w-0 items-start gap-4">
+                {/* LOGO */}
+                <div className="flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-border bg-background p-2">
+                  {agency.logoUrl ? (
+                    <img
+                      src={agency.logoUrl}
+                      alt="Logo de la agencia"
+                      className="h-full w-full object-contain"
+                    />
+                  ) : (
+                    <Building2
+                      size={30}
+                      className="text-[#075E36]"
+                    />
+                  )}
+                </div>
 
-      <section className="overflow-hidden rounded-[22px] border border-[#DCE5E0] bg-white shadow-[0_12px_35px_rgba(18,58,48,0.06)]">
-        {/* PORTADA */}
-        <div className="relative h-[220px] overflow-hidden bg-[#EEF4EF] sm:h-[250px]">
+                <div className="min-w-0 pt-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h2 className="!m-0 !text-2xl !font-semibold !leading-8 !tracking-normal min-w-0 max-w-full break-words text-foreground">
+                      {agency.commercialName}
+                    </h2>
+
+                    {agency.status ===
+                      "APPROVED" && (
+                      <BadgeCheck
+                        size={18}
+                        className="shrink-0 text-[#075E36]"
+                      />
+                    )}
+                  </div>
+
+                  <p className="mt-1 text-sm font-medium text-muted-foreground">
+                    {agency.agencyName}
+                  </p>
+
+                  {agency.description && (
+                    <p className="mt-3 max-w-[720px] text-sm leading-5 text-muted-foreground">
+                      {agency.description}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex shrink-0">
+                <AgencyStatusBadge
+                  status={
+                    agency.status
+                  }
+                />
+              </div>
+            </div>
+          </div>
+        <div className="relative h-40 w-full shrink-0 overflow-hidden rounded-lg bg-muted sm:h-44 lg:w-80">
           {agency.coverUrl ? (
             <img
               src={agency.coverUrl}
@@ -246,69 +297,10 @@ export default function MyAgencyPage() {
 
           <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-black/5 to-transparent" />
         </div>
-
-        {/* CONTENIDO */}
-        <div className="px-5 pb-6 sm:px-7">
-          {/* HEADER AGENCIA */}
-          <div className="-mt-12 rounded-[20px] border border-[#E4EBE7] bg-white/95 px-5 py-5 shadow-[0_8px_24px_rgba(18,58,48,0.08)] backdrop-blur-sm sm:px-6">
-            <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
-              <div className="flex min-w-0 items-start gap-4">
-                {/* LOGO */}
-                <div className="flex size-[92px] shrink-0 items-center justify-center overflow-hidden rounded-[20px] border border-[#DCE6E0] bg-white p-3 shadow-sm">
-                  {agency.logoUrl ? (
-                    <img
-                      src={agency.logoUrl}
-                      alt="Logo de la agencia"
-                      className="h-full w-full object-contain"
-                    />
-                  ) : (
-                    <Building2
-                      size={30}
-                      className="text-[#075E36]"
-                    />
-                  )}
-                </div>
-
-                <div className="min-w-0 pt-1">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <h2 className="!m-0 !text-[22px] !font-bold !leading-7 !tracking-[-0.015em] text-[#123A30]">
-                      {agency.commercialName}
-                    </h2>
-
-                    {agency.status ===
-                      "APPROVED" && (
-                      <BadgeCheck
-                        size={18}
-                        className="shrink-0 text-[#075E36]"
-                      />
-                    )}
-                  </div>
-
-                  <p className="mt-1 text-[11px] font-medium text-[#66706B]">
-                    {agency.agencyName}
-                  </p>
-
-                  {agency.description && (
-                    <p className="mt-3 max-w-[720px] text-[11px] leading-5 text-[#5F6C66]">
-                      {agency.description}
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              <div className="flex shrink-0">
-                <AgencyStatusBadge
-                  status={
-                    agency.status
-                  }
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* INFORMACIÓN PRINCIPAL */}
-          <div className="mt-5 grid gap-4 lg:grid-cols-3">
-            <InfoCard
+      </header>
+      <div className="grid min-w-0 gap-8 lg:grid-cols-[minmax(0,1fr)_320px]">
+        <div className="min-w-0 space-y-8">
+          <div className="grid min-w-0 gap-8 md:grid-cols-2"><InfoCard
               icon={
                 <Mail
                   size={17}
@@ -344,8 +336,7 @@ export default function MyAgencyPage() {
                   : null,
               ]}
             />
-
-            <InfoCard
+<InfoCard
               icon={
                 <MapPin
                   size={17}
@@ -380,18 +371,9 @@ export default function MyAgencyPage() {
                     }
                   : null,
               ]}
-            />
-
-            <StatusCard
-              status={
-                agency.status
-              }
-            />
-          </div>
-
-          {/* CATEGORÍAS / IDIOMAS */}
-          <div className="mt-5 grid gap-4 md:grid-cols-2">
-            <section className="rounded-2xl border border-[#E3E9E6] bg-[#FBFDFC] p-5">
+            /></div>
+          <div className="grid min-w-0 gap-8 border-t border-border pt-6 md:grid-cols-2">
+            <section className="min-w-0">
               <div className="flex items-start gap-3">
                 <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-[#EAF5ED] text-[#075E36]">
                   <Tags
@@ -400,9 +382,9 @@ export default function MyAgencyPage() {
                 </div>
 
                 <div>
-                  <p className="text-[12px] font-semibold text-[#252B28]">{t("Categorías ")}</p>
+                  <p className="text-sm font-semibold text-foreground">{t("Categorías ")}</p>
 
-                  <p className="mt-0.5 text-[9px] leading-4 text-[#7A837F]">{t("Tipos de servicios y experiencias que ofrece tu agencia. ")}</p>
+                  <p className="mt-0.5 text-xs leading-5 text-muted-foreground">{t("Tipos de servicios y experiencias que ofrece tu agencia. ")}</p>
                 </div>
               </div>
 
@@ -417,7 +399,7 @@ export default function MyAgencyPage() {
                         key={
                           category.id
                         }
-                        className="rounded-full border border-[#CFE3D6] bg-[#EFF8F3] px-3 py-1.5 text-[10px] font-medium text-[#075E36]"
+                        className="rounded-full border border-[#CFE3D6] bg-[#EFF8F3] px-3 py-1.5 text-xs font-medium text-[#075E36]"
                       >
                         {
                           category.name
@@ -431,7 +413,7 @@ export default function MyAgencyPage() {
               </div>
             </section>
 
-            <section className="rounded-2xl border border-[#E3E9E6] bg-[#FBFDFC] p-5">
+            <section className="min-w-0">
               <div className="flex items-start gap-3">
                 <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-[#EDF3F0] text-[#315F4C]">
                   <Languages
@@ -440,9 +422,9 @@ export default function MyAgencyPage() {
                 </div>
 
                 <div>
-                  <p className="text-[12px] font-semibold text-[#252B28]">{t("Idiomas ")}</p>
+                  <p className="text-sm font-semibold text-foreground">{t("Idiomas ")}</p>
 
-                  <p className="mt-0.5 text-[9px] leading-4 text-[#7A837F]">{t("Idiomas disponibles para atender a los viajeros. ")}</p>
+                  <p className="mt-0.5 text-xs leading-5 text-muted-foreground">{t("Idiomas disponibles para atender a los viajeros. ")}</p>
                 </div>
               </div>
 
@@ -457,7 +439,7 @@ export default function MyAgencyPage() {
                         key={
                           language.id
                         }
-                        className="rounded-full border border-[#DEE5E1] bg-white px-3 py-1.5 text-[10px] font-medium text-[#52615B]"
+                        className="rounded-full border border-[#DEE5E1] bg-white px-3 py-1.5 text-xs font-medium text-[#52615B]"
                       >
                         {
                           language.name
@@ -472,7 +454,12 @@ export default function MyAgencyPage() {
             </section>
           </div>
         </div>
-      </section>
+        <aside className="min-w-0 lg:border-l lg:border-border lg:pl-8"><StatusCard
+              status={
+                agency.status
+              }
+            /></aside>
+      </div>
     </div>
   );
 }
@@ -542,15 +529,15 @@ function PageHeader({
 }) {
   const { t } = usePreferences();
   return (
-    <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+    <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <div>
         <DashboardBreadcrumb className="mb-2" items={[{ label: "Mi agencia" }]} />
 
-        <h1 className="!m-0 !max-w-none lr-page-title">
+        <h1 className="!m-0 !max-w-none sm:!text-4xl lr-page-title">
           {t(title)}
         </h1>
 
-        <p className="mt-1 text-[11px] leading-5 text-[#66706B]">
+        <p className="mt-2 text-sm leading-6 text-muted-foreground">
           {t(description)}
         </p>
       </div>
@@ -639,18 +626,18 @@ function InfoCard({
     );
 
   return (
-    <div className="rounded-2xl border border-[#E3E9E6] bg-[#FBFDFC] p-5">
+    <div className="min-w-0">
       <div className="flex items-start gap-3">
         <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-[#EAF5ED] text-[#075E36]">
           {icon}
         </div>
 
         <div>
-          <p className="text-[12px] font-semibold text-[#252B28]">
+          <p className="text-sm font-semibold text-foreground">
             {t(title)}
           </p>
 
-          <p className="mt-0.5 text-[9px] leading-4 text-[#7A837F]">
+          <p className="mt-0.5 text-xs leading-5 text-muted-foreground">
             {t(description)}
           </p>
         </div>
@@ -666,7 +653,7 @@ function InfoCard({
             ) => (
               <div
                 key={`${item.text}-${index}`}
-                className="flex items-start gap-2.5 rounded-lg bg-white px-3 py-2.5 text-[10px] leading-4 text-[#5F6C66]"
+                className="flex min-w-0 items-start gap-2.5 text-sm leading-6 text-muted-foreground"
               >
                 <span className="mt-0.5 shrink-0 text-[#075E36]">
                   {
@@ -674,7 +661,7 @@ function InfoCard({
                   }
                 </span>
 
-                <span className="break-words">
+                <span className="min-w-0 break-words">
                   {
                     item.text
                   }
@@ -697,7 +684,7 @@ function StatusCard({
 }) {
   const { t } = usePreferences();
   return (
-    <div className="rounded-2xl border border-[#E3E9E6] bg-[#FBFDFC] p-5">
+    <div className="min-w-0">
       <div className="flex items-start gap-3">
         <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-[#EAF5ED] text-[#075E36]">
           <ShieldCheck
@@ -706,9 +693,9 @@ function StatusCard({
         </div>
 
         <div>
-          <p className="text-[12px] font-semibold text-[#252B28]">{t("Estado del perfil ")}</p>
+          <p className="text-sm font-semibold text-foreground">{t("Estado del perfil ")}</p>
 
-          <p className="mt-0.5 text-[9px] leading-4 text-[#7A837F]">{t("Situación actual de tu agencia dentro de LaRutica. ")}</p>
+          <p className="mt-0.5 text-xs leading-5 text-muted-foreground">{t("Situación actual de tu agencia dentro de LaRutica. ")}</p>
         </div>
       </div>
 
@@ -721,13 +708,13 @@ function StatusCard({
           </div>
 
           <div>
-            <p className="text-[10px] font-semibold text-[#252B28]">
+            <p className="text-sm font-semibold text-foreground">
               {getStatusTitle(
                 status,
               )}
             </p>
 
-            <p className="mt-0.5 text-[9px] leading-4 text-[#66706B]">
+            <p className="mt-0.5 text-xs leading-5 text-muted-foreground">
               {getStatusDescription(
                 status,
               )}
@@ -742,7 +729,7 @@ function StatusCard({
 function EmptyInlineText() {
   const { t } = usePreferences();
   return (
-    <span className="text-[9px] text-[#87908C]">{t("Sin información ")}</span>
+    <span className="text-sm text-muted-foreground">{t("Sin información ")}</span>
   );
 }
 
@@ -794,7 +781,7 @@ function AgencyStatusBadge({
   return (
     <span
       className={[
-        "inline-flex h-8 items-center rounded-full border px-3 text-[10px] font-semibold",
+        "inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium",
 
         styles[
           status

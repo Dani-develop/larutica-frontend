@@ -1,4 +1,5 @@
 "use client";
+import { durationLabel } from "@/lib/preferences/format";
 import { RecordTablePagination, usePagedRows } from "@/components/ui/table-pagination";
 import type { AdminPublicationDeparture } from "../../services/admin/admin-publication.service";
 
@@ -108,11 +109,11 @@ export default function AdminPublicationDetail({ publicationId }: AdminPublicati
             <div className="mt-5 flex flex-wrap items-center gap-x-8 gap-y-4">
               <div>
                 <p className="text-xs text-muted-foreground">{t("Precio por persona")}</p>
-                <p className="mt-1 text-2xl font-semibold text-primary">{publication.pricePerPerson !== null ? `$${publication.pricePerPerson.toFixed(2)}` : "—"}</p>
+                <p className="mt-1 text-2xl font-semibold text-primary">{publication.pricePerPerson !== null ? `USD ${publication.pricePerPerson.toFixed(2)}` : "—"}</p>
               </div>
               <dl className="flex flex-wrap gap-x-8 gap-y-4">
                 <InfoItem icon={<MapPin size={16} aria-hidden="true" />} label="Destino" value={publication.destination} />
-                <InfoItem icon={<Clock3 size={16} aria-hidden="true" />} label="Duración" value={publication.durationMinutes !== null ? `${publication.durationMinutes} min` : null} />
+                <InfoItem icon={<Clock3 size={16} aria-hidden="true" />} label="Duración" value={publication.durationMinutes !== null ? durationLabel(publication.durationMinutes) : null} />
                 <InfoItem icon={<Users size={16} aria-hidden="true" />} label="Capacidad" value={publication.defaultCapacity !== null ? `${publication.defaultCapacity} ${t("personas")}` : null} />
               </dl>
             </div>

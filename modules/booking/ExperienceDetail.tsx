@@ -1,5 +1,6 @@
 
 'use client';
+import { durationLabel } from '@/lib/preferences/format';
 import { usePreferences } from "@/lib/preferences/Preferences";
 import { CurrencyNotice } from "@/components/preferences/PreferenceControls";
 import Link from 'next/link';
@@ -25,10 +26,7 @@ function DetailShell({ children }: { children: ReactNode }) {
   return <PublicShell className="booking-detail-page" header={<SiteHeader />}>{children}</PublicShell>;
 }
 
-function durationLabel(minutes: number) {
-  const hours = Math.floor(minutes / 60), rest = minutes % 60;
-  return [hours ? `${hours} h` : '', rest ? `${rest} min` : ''].filter(Boolean).join(' ');
-}
+
 
 function ExperienceDetailSkeleton() {
   const { t } = usePreferences();

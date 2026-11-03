@@ -3,7 +3,7 @@ import { assertSameOrigin } from "@/lib/api/errors";
 import { proxyRemoteApiRequest } from "@/lib/api/remote-proxy";
 import { requireAppSession } from "@/lib/supabase/session";
 import type { Journey, JourneyPlace } from "@/modules/journeys/types";
-import { mapProviderFailure } from "./provider-errors";
+import { requestGeoapify } from './geoapify-request';
 
 export function mapKey(): string {
   const key = (process.env.GEOAPIFY_API_KEY ?? process.env.GEOAPIFY)?.trim();
@@ -29,20 +29,7 @@ export async function geoapify(endpoint: string, params: Record<string,string>) 
   const cacheKey = endpoint + JSON.stringify(params);
   const hit = cache.get(cacheKey);
   if (hit && hit.until > Date.now()) return hit.value;
-  const url = new URL(endpoint, "https://api.geoapify.com");
-  Object.entries(params).forEach(([name,value]) => url.searchParams.set(name,value));
-  url.searchParams.set("apiKey", mapKey());
-  let response: Response;
-  try { response = await fetch(url, { signal: AbortSignal.timeout(20000) }); }
-  catch { throw new ApiError("No se pudo contactar el servicio de mapas. Intenta nuevamente.", 502); }
-  if (!response.ok) {
-    const body = await response.json().catch(()=>null) as {message?:string;error?:string}|null;
-    const failure = mapProviderFailure(response.status,body?.message ?? body?.error ?? "",endpoint === "/v1/routing",params.mode);
-    throw new ApiError(failure.message,failure.status);
-  }
-  let data: unknown;
-  try { data = await response.json(); }
-  catch { throw new ApiError("El servicio de mapas devolvió una respuesta incompleta. Intenta nuevamente.",502); }
+  const data = await requestGeoapify(endpoint, params, mapKey());
   if (cache.size >= 150) cache.delete(cache.keys().next().value!);
   cache.set(cacheKey,{ until: Date.now()+300_000, value:data });
   return data;

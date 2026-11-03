@@ -1,4 +1,5 @@
 "use client";
+import { durationLabel } from "@/lib/preferences/format";
 import { usePreferences } from "@/lib/preferences/Preferences";
 
 import Link from "next/link";
@@ -602,11 +603,6 @@ export function TravelerExplorePage({ embedded = false, discovery = false, filte
               ) : null}
             </div>
 
-            <div className="landing-view-all-row">
-              <Link href={allExperiencesHref} className="landing-view-all-link">
-                {t("Ver todas las experiencias")} <span aria-hidden="true">→</span>
-              </Link>
-            </div>
           </>
         ) : (
           <div className="card-grid">
@@ -1287,7 +1283,7 @@ function TravelerTripCard({
           <p className="discovery-trip-meta">
             {t(publication.serviceType === "TRANSPORT" ? "Transporte" : "Excursión")}
             {" · "}
-            {publication.durationMinutes} {t("min")}
+            {durationLabel(publication.durationMinutes)}
           </p>
 
           {hasRating ? (
@@ -1347,7 +1343,7 @@ function TravelerTripCard({
         </p>
         <p>{publication.description}</p>
         <div className="card-footer">
-          <strong>{money(publication.pricePerPerson)}{t(" por persona ")}<span>· {publication.durationMinutes}{t(" min")}</span></strong>
+          <strong>{money(publication.pricePerPerson)}{t(" por persona ")}<span>· {durationLabel(publication.durationMinutes)}</span></strong>
           <div className="trip-actions">
             <Link className="button button-primary" href={`/experiencias/${publication.id}`}>{publication.departures?.some(d => d.available > 0) ? t("Ver fechas y reservar") : t("Ver detalles")}</Link>
           </div>

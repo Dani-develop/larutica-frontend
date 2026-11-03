@@ -112,7 +112,7 @@ export function RouteDetail({ id }: { id: string }) {
             </div>
             <div>
               <p className="text-muted-foreground">{t("Precio / persona")}</p>
-              <p className="font-medium">${route.priceUsd}</p>
+              <p className="font-medium">USD {route.priceUsd}</p>
             </div>
             <div>
               <p className="text-muted-foreground">{t("Asientos")}</p>

@@ -1,4 +1,5 @@
 import type { JourneyPlace, JourneyMode } from "./types";
+import { pointDistance } from './route-quality';
 
 const areas = new Set(["country", "state", "county", "postcode"]);
 export function isSpecificPlace(type?: string): boolean {
@@ -18,10 +19,10 @@ export function routeInputIssue(points: (JourneyPlace|null)[], mode: JourneyMode
   if (mode !== "locations") {
     for (let i = 1; i < points.length; i++) {
       const a = points[i-1]!, b = points[i]!;
-      if (Math.abs(a.lat-b.lat) < 0.000001 && Math.abs(a.lon-b.lon) < 0.000001) {
+      if (pointDistance(a,b) < 10) {
         return points.length === 2
-          ? "Salida y llegada coinciden. Añade una parada para definir un recorrido circular."
-          : "Hay dos puntos consecutivos en la misma ubicación. Cambia o elimina la parada repetida.";
+          ? "Salida y llegada coinciden o están a menos de 10 metros. Añade una parada para definir un recorrido circular."
+          : "Hay dos puntos consecutivos a menos de 10 metros. Cambia o elimina la parada repetida.";
       }
     }
   }
