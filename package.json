@@ -20,7 +20,7 @@
     "test:booking:integration": "node --env-file-if-exists=.env.local --test tests/booking.integration.mjs",
     "test:auth:cloud": "node --env-file-if-exists=.env.local --test tests/supabase-auth.integration.mjs",
     "test:auth:runtime": "node --experimental-strip-types --test tests/auth-runtime.test.mjs",
-    "test:maps": "node --import ./tests/maps/register.mjs --test tests/maps/routing.test.mjs tests/maps/route-quality.test.mjs",
+    "test:maps": "node --import ./tests/maps/register.mjs --test tests/maps/routing.test.mjs tests/maps/route-quality.test.mjs tests/maps/geoapify-request.test.mjs",
     "test:maps:e2e": "playwright test --config playwright.maps.config.ts",
     "test:maps:runtime": "playwright test --config playwright.maps.runtime.config.ts",
     "test:maps:live": "node --env-file-if-exists=.env.local --import ./tests/maps/register.mjs --test tests/maps/live.integration.mjs",
