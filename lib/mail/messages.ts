@@ -1,7 +1,7 @@
 import { dateLabel, money } from "../../modules/booking/types.ts";
 
 import type { MailMessage } from "./send";
-import { renderBrandedMail } from "./template.ts";
+import { renderBrandedMail, type BrandedMailLink } from "./template.ts";
 
 export type ReservationMailFacts = {
   id: string;
@@ -41,15 +41,19 @@ function mailMessage(
   subject: string,
   paragraphs: string[],
   facts: Array<[string, string]> = [],
+  link?: BrandedMailLink,
 ): MailMessage {
+  const lines = [...paragraphs, ...facts.map(([label, value]) => `${label}: ${value}`)];
+  if (link) lines.push(link.href);
   return {
     to,
     subject,
-    text: [...paragraphs, ...facts.map(([label, value]) => `${label}: ${value}`)].join("\n"),
+    text: lines.join("\n"),
     html: renderBrandedMail({
       heading: paragraphs[0] || subject,
       paragraphs: paragraphs.slice(1),
       facts,
+      link,
     }),
   };
 }
@@ -103,6 +107,19 @@ export function publicationDeactivationMessage(
     "Tu reserva fue cancelada.",
     "Si ya habías pagado, revisa el estado del reembolso en Mis reservas.",
   ], reservationFacts(facts));
+}
+
+const PASSWORD_CHANGED_RECOVERY_URL = "https://larutica-cr.vercel.app/forgot-password";
+
+export function passwordChangedMessage(to: string): MailMessage {
+  return mailMessage(to, "Tu contraseña cambió", [
+    "Tu contraseña cambió",
+    "La contraseña de tu cuenta de LaRutica acaba de cambiar.",
+    "¿No cambiaste la contraseña?, cambia la contraseña aquí",
+  ], [], {
+    href: PASSWORD_CHANGED_RECOVERY_URL,
+    label: "aquí",
+  });
 }
 
 export function passwordResetCodeMessage(to: string, code: string): MailMessage {

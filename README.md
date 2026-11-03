@@ -104,6 +104,11 @@ administrator operations always go through same-origin server APIs. The
 `SUPABASE_SECRET_KEY` remains server-only. The legacy
 `SUPABASE_SERVICE_ROLE_KEY` is accepted temporarily for existing projects.
 
+Password recovery sends a 5-digit code through the application mail, not a
+Supabase recovery link. Apply the migration
+`supabase/migrations/202610290002_password_reset_codes.sql` before the routes
+that read that table.
+
 ### Hosted backend
 
 The publishable backend address in `.env.development` and `.dev.vars` is safe to

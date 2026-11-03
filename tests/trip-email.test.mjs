@@ -6,6 +6,8 @@ import { deliverMail } from "../lib/mail/send.ts";
 import {
   departureCancellationMessage,
   departureDateChangeMessage,
+  passwordChangedMessage,
+  passwordResetCodeMessage,
   publicationDeactivationMessage,
   publicationDecisionMessage,
   reservationCode,
@@ -14,6 +16,7 @@ import {
 import {
   notifyDepartureCancellations,
   notifyDepartureDateChanges,
+  notifyPasswordChanged,
   notifyPublicationDeactivation,
   notifyPublicationDecision,
   notifyReservationCreated,
@@ -94,7 +97,7 @@ test("la confirmación repite la pantalla y la agencia ve quién reservó", () =
     assert.match(message.text, /15/);
   }
   assert.match(messages[1].text, /Ana Solís/);
-  assert.match(messages[0].html, /cid:larutica-logo/);
+  assert.match(messages[0].html, /https:\/\/larutica-cr\.vercel\.app\/brand\/apple-touch-icon\.png/);
   assert.match(messages[0].html, /LaRutica/);
   assert.match(messages[0].html, /#003b22/);
   assert.match(messages[0].html, /#00df5b/);
@@ -236,6 +239,45 @@ test("resolver una publicación avisa solo si estaba en revisión", async () => 
   assert.match(sent[0], /aceptada/);
   assert.match(sent[1], /Río Celeste/);
   assert.match(sent[1], /negada/);
+});
+
+test("el aviso de contraseña cambiada usa la plantilla y el enlace de recuperación", () => {
+  const message = passwordChangedMessage("persona@ejemplo.com");
+  const samplePassword = "ClaveEjemplo99";
+  for (const body of [message.text, message.html]) {
+    assert.match(body, /LaRutica/);
+    assert.match(body, /¿No cambiaste la contraseña\?, cambia la contraseña/);
+    assert.doesNotMatch(body, new RegExp(samplePassword));
+  }
+  assert.match(message.text, /¿No cambiaste la contraseña\?, cambia la contraseña aquí/);
+  assert.match(message.html, /Este mensaje lo envía LaRutica/);
+  assert.match(message.html, /<a href="https:\/\/larutica-cr\.vercel\.app\/forgot-password"[^>]*>aquí<\/a>/);
+  assert.match(message.text, /https:\/\/larutica-cr\.vercel\.app\/forgot-password/);
+  const code = passwordResetCodeMessage("persona@ejemplo.com", "01234");
+  for (const body of [code.text, code.html]) {
+    assert.doesNotMatch(body, /\/forgot-password|\/update-password/);
+  }
+  assert.doesNotMatch(code.text, /http/);
+});
+
+test("el aviso de contraseña se envía solo con correo y no falla si el envío lanza", async () => {
+  const seen = [];
+  await notifyPasswordChanged("persona@ejemplo.com", async (message) => {
+    seen.push(message);
+  });
+  assert.equal(seen.length, 1);
+  assert.equal(seen[0].to, "persona@ejemplo.com");
+
+  let calls = 0;
+  const count = async () => {
+    calls += 1;
+  };
+  await notifyPasswordChanged("  ", count);
+  await notifyPasswordChanged("", count);
+  assert.equal(calls, 0);
+  await assert.doesNotReject(() => notifyPasswordChanged("persona@ejemplo.com", async () => {
+    throw new Error("smtp");
+  }));
 });
 
 test("Mis reservas informa que la reserva de esa fecha ya quedó cancelada", async () => {

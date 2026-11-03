@@ -86,6 +86,19 @@ Pruebas aisladas realizadas: ver qa-reservas-2026-10-05.md. Sin publicación.
    devuelve de inmediato.
 5. Una reserva pagada no admite cambiar el número de personas.
 
+La agencia puede promocionar una publicación completa, con todas sus salidas,
+por 12 USD durante 7 días. `POST /api/publications/[id]/promotion/payment`
+crea la intención; el navegador no envía el monto. Al terminar el formulario,
+`POST /api/publications/[id]/promotion/payment/confirm` consulta a Onvo y solo
+entonces escribe `publications.promoted_until`. Si nadie paga, o Onvo no acepta
+el cobro, la publicación no queda promocionada. El mismo webhook de Onvo liquida
+ese intento cuando no pertenece a una reserva. Mientras la ventana sigue abierta
+no se cobra otro periodo; un cobro duplicado se reembolsa.
+
+Ejecutar supabase/migrations/202610290001_publication_promotions.sql **antes** de
+publicar este código: el catálogo y el cobro leen `promoted_until` y la tabla
+`publication_promotion_payments`, y fallan si no existen.
+
 Variables (solo servidor): `ONVO_TEST_API_KEY`, `ONVO_PUBLISHABLE_KEY`,
 `ONVO_WEBHOOK_SECRET`. Están en `.env.local` para desarrollo; en el alojamiento
 hay que configurarlas como secretos. Las claves actuales son de prueba.

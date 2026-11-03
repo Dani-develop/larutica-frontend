@@ -1,7 +1,4 @@
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
 import type { Transporter } from "nodemailer";
-import { MAIL_LOGO_CID } from "./template.ts";
 
 export type MailMessage = {
   to: string;
@@ -148,20 +145,6 @@ export async function callMailRelay(
   }
 }
 
-function mailLogo() {
-  try {
-    return readFileSync(join(process.cwd(), "public", "brand", "apple-touch-icon.png")).toString("base64");
-  } catch {
-    return undefined;
-  }
-}
-
-function prepareMail(message: MailMessage): PreparedMail {
-  if (!message.html) return message;
-  const inlineLogo = mailLogo();
-  return inlineLogo ? { ...message, inlineLogo } : message;
-}
-
 function mailPayload(from: string, message: PreparedMail) {
   return {
     from,
@@ -169,15 +152,6 @@ function mailPayload(from: string, message: PreparedMail) {
     subject: message.subject,
     text: message.text,
     ...(message.html ? { html: message.html } : {}),
-    ...(message.html && message.inlineLogo ? {
-      attachments: [{
-        filename: "larutica-logo.png",
-        content: Buffer.from(message.inlineLogo, "base64"),
-        cid: MAIL_LOGO_CID,
-        contentType: "image/png",
-        contentDisposition: "inline" as const,
-      }],
-    } : {}),
   };
 }
 
@@ -190,15 +164,14 @@ export async function deliverMail(
   if (!config) {
     return mailFailure({ code: "SMTP_CONFIG_INVALID" });
   }
-  const prepared = prepareMail(message);
   if (env.MAIL_RELAY_URL || env.MAIL_RELAY_TOKEN) {
-    const result = await callMailRelay("send", config, env, prepared, options.fetch);
+    const result = await callMailRelay("send", config, env, message, options.fetch);
     return "verified" in result ? mailFailure({ code: "MAIL_RELAY_FAILED" }) : result;
   }
   try {
     const createTransport = options.createTransport ?? (await import("nodemailer")).createTransport;
     const transport = createTransport(smtpTransportOptions(config));
-    const info = await transport.sendMail(mailPayload(config.from, prepared));
+    const info = await transport.sendMail(mailPayload(config.from, message));
     // A resolved Promise alone is not proof that a recipient was accepted.
     if (!info || !Array.isArray(info.accepted) || info.accepted.length === 0
       || (Array.isArray(info.rejected) && info.rejected.length > 0)) {
