@@ -51,3 +51,6 @@ yarn-error.log*
 /outputs/
 /work/
 tsconfig.tsbuildinfo
+
+# capturas y registros de Playwright MCP
+/.playwright-mcp/
