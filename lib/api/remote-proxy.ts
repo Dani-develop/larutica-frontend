@@ -40,6 +40,7 @@ function upstreamCookies(headers: Headers): string[] {
 export async function proxyRemoteApiRequest(request: Request): Promise<Response | null> {
   const localUrl = new URL(request.url);
   const sharedService = isSharedServiceRequest(request, localUrl);
+  const mapsRequest = localUrl.pathname.startsWith('/api/maps/');
   const remoteOrigin = remoteApiOrigin(sharedService);
   if (!remoteOrigin) return null;
 
@@ -78,6 +79,7 @@ export async function proxyRemoteApiRequest(request: Request): Promise<Response 
         ? undefined
         : await request.arrayBuffer(),
       redirect: "manual",
+      ...(mapsRequest ? {signal:AbortSignal.any([request.signal, AbortSignal.timeout(10000)])} : {}),
     });
     const responseHeaders = new Headers(upstream.headers);
     const cookies = upstreamCookies(upstream.headers);
@@ -95,7 +97,10 @@ export async function proxyRemoteApiRequest(request: Request): Promise<Response 
         responseHeaders.set("location", destination.toString());
       }
     }
-    responseHeaders.set("cache-control", "no-store");
+    // Basemap images are public. Keep their cache instead of downloading them on every pan.
+    if (!/^\/api\/maps\/tiles\//.test(localUrl.pathname) || !upstream.ok) {
+      responseHeaders.set("cache-control", "no-store");
+    }
 
     return new Response(upstream.body, {
       status: upstream.status,
@@ -103,6 +108,10 @@ export async function proxyRemoteApiRequest(request: Request): Promise<Response 
       headers: responseHeaders,
     });
   } catch (error) {
+    if (mapsRequest && error instanceof Error && error.name === 'TimeoutError') {
+      return Response.json({error:"El servicio de mapas tardó demasiado. Conservamos tus ubicaciones; intenta nuevamente."},
+        {status:504,headers:{'cache-control':'no-store'}});
+    }
     console.error("No se pudo contactar el backend compartido.", error);
     return Response.json(
       { error: "El backend compartido no está disponible temporalmente." },

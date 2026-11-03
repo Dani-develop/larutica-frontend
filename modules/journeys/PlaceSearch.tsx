@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useId, useRef, useState } from "react";
 import { Input } from "@/components/ui/input";
+import { Button } from '@/components/ui/button';
 import { placeContext, placeTypeLabel, type JourneyPlace } from "./types";
 import "./journey.css";
 
@@ -13,6 +14,7 @@ export function PlaceSearch({label,value,onChange,disabled=false}:{
   const [options,setOptions]=useState<JourneyPlace[]>([]);
   const [open,setOpen]=useState(false),[loading,setLoading]=useState(false),[error,setError]=useState("");
   const [active,setActive]=useState(-1);
+  const [retry,setRetry]=useState(0);
   const typing=useRef(false);
   useEffect(()=>{if(value){setQuery(value.name);typing.current=false;}else if(!typing.current)setQuery("");},[value]);
   useEffect(()=>{
@@ -24,7 +26,7 @@ export function PlaceSearch({label,value,onChange,disabled=false}:{
         const hit=cached.get(q.toLocaleLowerCase());
         let data=hit;
         if(!data) {
-          const r=await fetch("/api/maps/places?v=2&q="+encodeURIComponent(q),{signal:AbortSignal.any([controller.signal,AbortSignal.timeout(15000)]),credentials:"same-origin"});
+          const r=await fetch("/api/maps/places?v=2&q="+encodeURIComponent(q),{signal:AbortSignal.any([controller.signal,AbortSignal.timeout(12000)]),credentials:"same-origin"});
           const body=await r.json().catch(()=>null) as {data?: JourneyPlace[];error?: string}|null;
           if(!r.ok) throw new Error(body?.error || "No se pudieron buscar los lugares.");
           if(!Array.isArray(body?.data)) throw new Error("La búsqueda devolvió una respuesta incompleta. Intenta nuevamente.");
@@ -37,7 +39,7 @@ export function PlaceSearch({label,value,onChange,disabled=false}:{
       finally {if(!controller.signal.aborted)setLoading(false);}
     },400);
     return ()=>{clearTimeout(timer);controller.abort();};
-  },[query,value,open]);
+  },[query,value,open,retry]);
   function choose(place:JourneyPlace) {setQuery(place.name);setOpen(false);setOptions([]);onChange(place);}
   return <div className="lr-place-search">
     <label htmlFor={id}>{label}</label>
@@ -68,5 +70,8 @@ export function PlaceSearch({label,value,onChange,disabled=false}:{
       {loading?"Buscando lugares…":error || (value?(value.adjusted?"Ubicación ajustada en el mapa.":placeContext(value)||value.label):
         open && query.trim().length>=3 && !options.length?"Selecciona un resultado; si no aparece, precisa el nombre o la localidad.":"Escribe al menos 3 caracteres y selecciona una sugerencia.")}
     </p>
+    {error && !loading && <Button type="button" variant="outline" size="sm"
+      onMouseDown={event=>event.preventDefault()}
+      onClick={()=>{setOpen(true);setRetry(n=>n+1);}}>Reintentar búsqueda</Button>}
   </div>;
 }

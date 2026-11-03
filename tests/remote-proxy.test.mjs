@@ -144,3 +144,22 @@ test("un backend propio exige desactivar explícitamente el destino remoto", asy
   const { proxyRemoteApiRequest } = await import("../lib/api/remote-proxy.ts");
   assert.equal(await proxyRemoteApiRequest(new Request("http://localhost:3000/api/maps/route")), null);
 });
+
+test('mapas tienen límite de espera; imágenes públicas conservan su caché y búsquedas no', async () => {
+  const originalFetch=globalThis.fetch;
+  process.env.LARUTICA_REMOTE_API_ORIGIN='https://backend.example.com';
+  const {proxyRemoteApiRequest}=await import('../lib/api/remote-proxy.ts');
+  try {
+    globalThis.fetch=async(_url,options)=>{
+      assert.ok(options.signal);
+      return new Response('image',{headers:{'cache-control':'public, max-age=86400'}});
+    };
+    const tile=await proxyRemoteApiRequest(new Request('http://localhost:3000/api/maps/tiles/7/35/60'));
+    assert.equal(tile.headers.get('cache-control'),'public, max-age=86400');
+    const places=await proxyRemoteApiRequest(new Request('http://localhost:3000/api/maps/places?q=Nicoya'));
+    assert.equal(places.headers.get('cache-control'),'no-store');
+    globalThis.fetch=async()=>{throw new DOMException('private host','TimeoutError');};
+    const response=await proxyRemoteApiRequest(new Request('http://localhost:3000/api/maps/route',{method:'POST'}));
+    assert.equal(response.status,504);assert.match((await response.json()).error,/tardó demasiado/);
+  }finally {globalThis.fetch=originalFetch;}
+});

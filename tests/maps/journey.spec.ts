@@ -175,3 +175,16 @@ test('quitar una parada cancela su consulta de dirección pendiente y permite co
   await expect(confirm(page)).toBeEnabled();await confirm(page).click();release();
   expect((await state(page)).points.length).toBe(2);expect((await state(page)).confirmedAt).toBeTruthy();
 });
+
+test('búsqueda fallida termina el indicador y permite reintentar sin volver a escribir',async({page})=>{
+  let fail=true;
+  await page.route('**/api/maps/places?**',route=>route.fulfill(fail
+    ? {status:504,json:{error:'El servicio de mapas tardó demasiado. Intenta nuevamente.'}}
+    : {json:{data:[places[0]]}}));
+  await page.getByRole('combobox',{name:'A · Salida',exact:true}).fill('Heredia');
+  await expect(page.getByText('El servicio de mapas tardó demasiado. Intenta nuevamente.',{exact:true})).toBeVisible();
+  await expect(page.getByText('Buscando lugares…',{exact:true})).toHaveCount(0);
+  fail=false;await page.getByRole('button',{name:'Reintentar búsqueda',exact:true}).click();
+  await expect(page.getByRole('listbox').getByRole('option')).toContainText('Heredia');
+  await expect(page.getByRole('combobox',{name:'A · Salida',exact:true})).toHaveValue('Heredia');
+});

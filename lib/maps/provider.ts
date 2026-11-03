@@ -33,8 +33,13 @@ export async function geoapify(endpoint: string, params: Record<string,string>) 
   Object.entries(params).forEach(([name,value]) => url.searchParams.set(name,value));
   url.searchParams.set("apiKey", mapKey());
   let response: Response;
-  try { response = await fetch(url, { signal: AbortSignal.timeout(20000) }); }
-  catch { throw new ApiError("No se pudo contactar el servicio de mapas. Intenta nuevamente.", 502); }
+  try { response = await fetch(url, { signal: AbortSignal.timeout(8000) }); }
+  catch (error) {
+    if (error instanceof Error && error.name === 'TimeoutError') {
+      throw new ApiError("El servicio de mapas tardó demasiado. Conservamos tus ubicaciones; intenta nuevamente.", 504);
+    }
+    throw new ApiError("No se pudo contactar el servicio de mapas. Intenta nuevamente.", 502);
+  }
   if (!response.ok) {
     const body = await response.json().catch(()=>null) as {message?:string;error?:string}|null;
     const failure = mapProviderFailure(response.status,body?.message ?? body?.error ?? "",endpoint === "/v1/routing",params.mode);
