@@ -127,10 +127,17 @@ test("las reglas de contraseña rechazan el cambio y el permiso solo sirve una v
   const sessionAt = complete.indexOf("await createAppSession(");
   const consumeAt = complete.indexOf("await consumeResetGrant");
   assert.ok(prepareAt >= 0 && prepareAt < updateAt && updateAt < sessionAt && sessionAt < consumeAt);
+  assert.ok(updateAt < complete.indexOf("notifyPasswordChanged("));
+  assert.match(complete, /notifyPasswordChanged\(grant\?\.email/);
   assert.doesNotMatch(complete, /passwordReset/);
   const passwordRoute = await read("app/api/auth/password/route.ts");
   assert.match(passwordRoute, /requiresCurrentPassword/);
   assert.match(passwordRoute, /currentPassword/);
+  const passwordUpdateAt = passwordRoute.indexOf("updateUserById");
+  const passwordNotifyAt = passwordRoute.indexOf("notifyPasswordChanged(");
+  assert.ok(passwordUpdateAt >= 0 && passwordNotifyAt > passwordUpdateAt);
+  assert.match(passwordRoute, /notifyPasswordChanged\(current\.profile\.email/);
+  assert.doesNotMatch(passwordRoute, /notifyPasswordChanged\([^)]*body/);
 });
 
 test("el correo trae el código y no un enlace para elegir la contraseña", () => {
@@ -164,6 +171,12 @@ test("las rutas dejan el enlace de Supabase y comprueban el código en el servid
   assert.ok(store.indexOf("assessSendWindow") < store.indexOf('from("profiles")'));
   assert.match(store, /status === "Activo"/);
   assert.match(store, /deliverMail\(passwordResetCodeMessage/);
+  assert.doesNotMatch(store, /passwordChangedMessage|notifyPasswordChanged/);
+});
+
+test("crear un usuario no avisa de contraseña cambiada", async () => {
+  const adminUsers = await read("app/api/admin/users/route.ts");
+  assert.doesNotMatch(adminUsers, /notifyPasswordChanged|passwordChangedMessage/);
 });
 
 test("las pantallas guardan el reto fuera de la URL y traducen los textos nuevos", async () => {

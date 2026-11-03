@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { assertSameOrigin, ApiError, apiErrorResponse } from "@/lib/api/errors";
 import { proxyRemoteApiRequest } from "@/lib/api/remote-proxy";
+import { notifyPasswordChanged } from "@/lib/mail/notify";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin-client";
 import {
   authErrorMessage,
@@ -73,6 +74,8 @@ export async function PATCH(request: Request) {
       { password },
     );
     if (error) throw new ApiError(error.message, 400);
+
+    await notifyPasswordChanged(current.profile.email ?? "");
 
     const replacement = await createAppSession(current.session.userId);
     return jsonWithSession(

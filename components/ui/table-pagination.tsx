@@ -54,3 +54,31 @@ export function TablePagination({ page, pageSize, total, totalPages, onPageChang
     </nav>
   )
 }
+
+/** Controles extraídos de Gestión de usuarios; no alteran la paginación de cards. */
+export function RecordTablePagination({ page, totalPages, onPageChange, showSinglePage = false }: {
+  page: number
+  totalPages: number
+  onPageChange: (page: number) => void
+  showSinglePage?: boolean
+}) {
+  const { t } = usePreferences()
+  const lastPage = Math.max(1, totalPages)
+  const currentPage = Math.max(1, Math.min(page, lastPage))
+  if (!showSinglePage && lastPage <= 1) return null
+  const buttonClass = (enabled: boolean) => [
+    "flex size-9 items-center justify-center rounded-full border bg-background shadow-sm transition-colors",
+    enabled ? "cursor-pointer hover:bg-muted active:bg-muted" : "pointer-events-none opacity-40",
+  ].join(" ")
+  return <nav aria-label={t("Paginación")} className="flex w-full items-center justify-between gap-3">
+    <button type="button" aria-label={t("Ir a la página anterior")} disabled={currentPage <= 1}
+      onClick={() => onPageChange(Math.max(1, currentPage - 1))} className={buttonClass(currentPage > 1)}>
+      <ChevronLeft className="size-4" />
+    </button>
+    <span className="bg-muted/50 rounded-full border px-3 py-1 !text-sm !font-medium tabular-nums">{t("Pág. ")}{currentPage} / {lastPage}</span>
+    <button type="button" aria-label={t("Ir a la página siguiente")} disabled={currentPage >= lastPage}
+      onClick={() => onPageChange(Math.min(lastPage, currentPage + 1))} className={buttonClass(currentPage < lastPage)}>
+      <ChevronRight className="size-4" />
+    </button>
+  </nav>
+}

@@ -1,12 +1,11 @@
 "use client";
+import { RecordTablePagination } from "@/components/ui/table-pagination";
 import { usePreferences } from "@/lib/preferences/Preferences";
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import {
   Building2,
-  ChevronLeft,
-  ChevronRight,
   Eye,
   Home,
   MoreHorizontal,
@@ -143,15 +142,6 @@ function AgencyAvatar({ agency }: { agency: Agency }) {
         <Building2 className="size-4" aria-hidden="true" />
       )}
     </div>
-  );
-}
-
-function paginationBtnClass(enabled: boolean) {
-  return cn(
-    "flex size-9 items-center justify-center rounded-full border bg-background shadow-sm transition-colors",
-    enabled
-      ? "cursor-pointer hover:bg-muted active:bg-muted"
-      : "pointer-events-none opacity-40",
   );
 }
 
@@ -462,30 +452,7 @@ export default function AdminAgenciesPage() {
       </div>
 
       {!loading && sortedAgencies.length > 0 ? (
-        <div className="flex w-full items-center justify-between gap-3">
-          <button
-            type="button"
-            aria-label={t("Ir a la página anterior")}
-            disabled={currentPage <= 1}
-            onClick={() => setPage((current) => Math.max(1, current - 1))}
-            className={paginationBtnClass(currentPage > 1)}
-          >
-            <ChevronLeft className="size-4" />
-          </button>
-          <span className="bg-muted/50 rounded-full border px-3 py-1 !text-sm !font-medium tabular-nums">{t("Pág. ")}{currentPage} / {totalPages}
-          </span>
-          <button
-            type="button"
-            aria-label={t("Ir a la página siguiente")}
-            disabled={currentPage >= totalPages}
-            onClick={() =>
-              setPage((current) => Math.min(totalPages, current + 1))
-            }
-            className={paginationBtnClass(currentPage < totalPages)}
-          >
-            <ChevronRight className="size-4" />
-          </button>
-        </div>
+        <RecordTablePagination page={currentPage} totalPages={totalPages} onPageChange={setPage} showSinglePage />
       ) : null}
     </div>
   );

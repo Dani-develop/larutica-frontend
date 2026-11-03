@@ -41,7 +41,7 @@ export default function ForgotPasswordForm() {
           if (!response.ok || !payload.data?.challengeId) {
             throw new Error(payload.error ?? "No se pudo preparar la recuperación.");
           }
-          writePasswordResetDraft({ challengeId: payload.data.challengeId, email });
+          writePasswordResetDraft({ challengeId: payload.data.challengeId, email, displayEmail: String(form.get("email") ?? "") });
           router.push("/forgot-password/code");
         } catch (nextError) {
           setError(nextError instanceof Error ? nextError.message : "No se pudo preparar la recuperación.");

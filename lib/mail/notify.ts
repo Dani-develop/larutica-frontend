@@ -1,6 +1,7 @@
 import {
   departureCancellationMessage,
   departureDateChangeMessage,
+  passwordChangedMessage,
   publicationDeactivationMessage,
   publicationDecisionMessage,
   reservationConfirmationMessages,
@@ -67,6 +68,12 @@ export async function notifyPublicationDeactivation(
   });
   await deliverEach(messages, send);
   return rows;
+}
+
+export async function notifyPasswordChanged(to: string, send: MailSender = deliverMail) {
+  const address = to.trim();
+  if (!address) return;
+  await deliverEach([passwordChangedMessage(address)], send);
 }
 
 export async function notifyPublicationDecision(

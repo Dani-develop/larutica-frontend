@@ -2,6 +2,7 @@ import { assertSameOrigin, ApiError, apiErrorResponse } from "@/lib/api/errors";
 import { proxyRemoteApiRequest } from "@/lib/api/remote-proxy";
 import { preparePasswordChange } from "@/lib/auth/password-reset";
 import { consumeResetGrant, findResetGrant } from "@/lib/auth/password-reset-store";
+import { notifyPasswordChanged } from "@/lib/mail/notify";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin-client";
 import { createAppSession, jsonWithSession, sessionPayload } from "@/lib/supabase/session";
 
@@ -19,8 +20,9 @@ export async function POST(request: Request) {
     const resetGrant = String(body.resetGrant ?? "");
     const password = String(body.password ?? "");
     const confirmation = String(body.confirmation ?? "");
+    const grant = await findResetGrant(resetGrant);
     const decision = preparePasswordChange(
-      await findResetGrant(resetGrant),
+      grant,
       password,
       confirmation,
       Date.now(),
@@ -29,6 +31,8 @@ export async function POST(request: Request) {
 
     const { error } = await getSupabaseAdminClient().auth.admin.updateUserById(decision.userId, { password });
     if (error) throw new ApiError(error.message, 400);
+
+    await notifyPasswordChanged(grant?.email ?? "");
 
     const appSession = await createAppSession(decision.userId);
     const response = jsonWithSession(

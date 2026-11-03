@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { PageHeading } from "@/components/ui/page-heading";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { TablePagination, usePagedRows } from "@/components/ui/table-pagination";
+import { RecordTablePagination, usePagedRows } from "@/components/ui/table-pagination";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { usePreferences } from "@/lib/preferences/Preferences";
@@ -179,7 +179,7 @@ export function AdminPayments() {
             </TableBody>
           </Table>
         </div>
-        <TablePagination {...pagedBalances} onPageChange={pagedBalances.setPage} />
+        <RecordTablePagination {...pagedBalances} onPageChange={pagedBalances.setPage} />
       </TabsContent>
 
       <TabsContent value="payments">
@@ -201,7 +201,7 @@ export function AdminPayments() {
             </TableBody>
           </Table>
         </div>
-        <TablePagination {...pagedPayments} onPageChange={pagedPayments.setPage} />
+        <RecordTablePagination {...pagedPayments} onPageChange={pagedPayments.setPage} />
         {payments.length >= 500 ? <p className="text-sm text-muted-foreground">{t("Se muestran los 500 más recientes; usa los filtros para acotar.")}</p> : null}
       </TabsContent>
 
@@ -225,7 +225,7 @@ export function AdminPayments() {
             </TableBody>
           </Table>
         </div>
-        <TablePagination {...pagedSettlements} onPageChange={pagedSettlements.setPage} />
+        <RecordTablePagination {...pagedSettlements} onPageChange={pagedSettlements.setPage} />
       </TabsContent>
     </Tabs>
 
