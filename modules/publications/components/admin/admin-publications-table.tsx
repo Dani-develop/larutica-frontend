@@ -144,7 +144,7 @@ export default function AdminPublicationsTable({
                   <TableCell className="!py-3 !text-sm !font-medium whitespace-nowrap">
                     {publication.pricePerPerson !==
                     null
-                      ? `$${publication.pricePerPerson.toFixed(2)}`
+                      ? `USD ${publication.pricePerPerson.toFixed(2)}`
                       : "—"}
                   </TableCell>
 

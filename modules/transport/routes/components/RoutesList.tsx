@@ -69,7 +69,7 @@ export function RoutesList() {
               </CardHeader>
               <CardContent className="flex flex-wrap items-center justify-between gap-3 border-t pt-4">
                 <div className="text-sm">
-                  <span className="font-semibold">${route.priceUsd}</span>
+                  <span className="font-semibold">USD {route.priceUsd}</span>
                   <span className="text-muted-foreground">
                     {t(" ")}{t("por persona · ")}{route.duration}
                   </span>

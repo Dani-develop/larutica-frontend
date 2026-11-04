@@ -1,4 +1,5 @@
 "use client";
+import { durationLabel } from "@/lib/preferences/format";
 
 import { usePreferences } from "@/lib/preferences/Preferences";
 
@@ -14,7 +15,6 @@ import {
   Bus,
   Check,
   CheckCircle2,
-  Clock3,
   DollarSign,
   ImageIcon,
   Languages,
@@ -723,55 +723,41 @@ export function PublicationForm({
                 label="Duración"
                 required
               >
-                <div className="relative">
-                  <Clock3
-                    size={
-                      15
-                    }
-                    className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                  />
-
-                  <Input
-                    type="number"
-                    min={
-                      1
-                    }
-                    step={
-                      1
-                    }
-                    value={
-                      value.durationMinutes ??
-                      ""
-                    }
-                    onChange={(
-                      event,
-                    ) =>
-                      patch(
-                        "durationMinutes",
-                        event
-                          .target
-                          .value ===
-                          ""
-                          ? null
-                          : Number(
-                              event
-                                .target
-                                .value,
-                            ),
-                      )
-                    }
-                    placeholder={t(
-                      "240",
-                    )}
-                    className="pl-9"
-                  />
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="min-w-0 space-y-1">
+                    <label htmlFor="publication-duration-hours" className="text-sm text-muted-foreground">{t("Horas")}</label>
+                    <Input
+                      id="publication-duration-hours"
+                      type="number"
+                      min={0}
+                      step={1}
+                      value={value.durationMinutes === null || value.durationMinutes === undefined ? "" : Math.floor(value.durationMinutes / 60)}
+                      onChange={(event) => {
+                        const hours = Number(event.target.value);
+                        if (!Number.isInteger(hours) || hours < 0) return;
+                        patch("durationMinutes", hours * 60 + (value.durationMinutes ?? 0) % 60);
+                      }}
+                      placeholder="0"
+                    />
+                  </div>
+                  <div className="min-w-0 space-y-1">
+                    <label htmlFor="publication-duration-minutes" className="text-sm text-muted-foreground">{t("Minutos")}</label>
+                    <Input
+                      id="publication-duration-minutes"
+                      type="number"
+                      min={0}
+                      max={59}
+                      step={1}
+                      value={value.durationMinutes === null || value.durationMinutes === undefined ? "" : value.durationMinutes % 60}
+                      onChange={(event) => {
+                        const minutes = Number(event.target.value);
+                        if (!Number.isInteger(minutes) || minutes < 0 || minutes > 59) return;
+                        patch("durationMinutes", Math.floor((value.durationMinutes ?? 0) / 60) * 60 + minutes);
+                      }}
+                      placeholder="0"
+                    />
+                  </div>
                 </div>
-
-                <p className="mt-1 text-[11px] text-muted-foreground">
-                  {t(
-                    "Minutos",
-                  )}
-                </p>
               </FormField>
 
               <FormField
@@ -1224,7 +1210,7 @@ export function PublicationForm({
                 label="Duración"
                 value={
                   value.durationMinutes
-                    ? `${value.durationMinutes} minutos`
+                    ? durationLabel(value.durationMinutes)
                     : "Sin definir"
                 }
                 onEdit={() =>

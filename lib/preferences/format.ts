@@ -19,3 +19,8 @@ export function dateFormatter(language: Language) {
   const formatter = new Intl.DateTimeFormat(localeFor(language), {dateStyle:'medium',timeStyle:'short',timeZone:'America/Costa_Rica'});
   return (iso: string) => formatter.format(new Date(iso));
 }
+
+export function durationLabel(minutes: number) {
+  const hours = Math.floor(minutes / 60), rest = minutes % 60;
+  return [hours ? `${hours} h` : '', rest ? `${rest} min` : ''].filter(Boolean).join(' ');
+}

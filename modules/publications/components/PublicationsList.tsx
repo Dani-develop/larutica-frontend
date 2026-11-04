@@ -1,4 +1,5 @@
 "use client";
+import { durationLabel } from "@/lib/preferences/format";
 import { DashboardBreadcrumb } from "@/components/dashboard/DashboardBreadcrumb";
 import { usePreferences } from "@/lib/preferences/Preferences";
 
@@ -226,7 +227,7 @@ function PublicationsListContent({ canCreate = true, notice, agencyView = false 
                     <span className={agencyView ? "order-2 text-right text-sm font-semibold text-[var(--ink)]" : "shrink-0 text-sm font-semibold text-[var(--ink)]"}>
                       {publication.pricePerPerson !==
                       null
-                        ? `$${publication.pricePerPerson.toFixed(
+                        ? `USD ${publication.pricePerPerson.toFixed(
                             2,
                           )}`
                         : "Sin precio"}
@@ -253,7 +254,7 @@ function PublicationsListContent({ canCreate = true, notice, agencyView = false 
 
                       <p className="mt-0.5 font-medium">
                         {publication.durationMinutes
-                          ? `${publication.durationMinutes} min`
+                          ? durationLabel(publication.durationMinutes)
                           : "Sin definir"}
                       </p>
                     </div>

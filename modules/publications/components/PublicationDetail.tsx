@@ -1,4 +1,6 @@
 "use client";
+import { Tabs } from "radix-ui";
+import { durationLabel } from "@/lib/preferences/format";
 import { JourneyView } from "@/modules/journeys/JourneyView";
 import { DashboardBreadcrumb } from "@/components/dashboard/DashboardBreadcrumb";
 import { usePreferences } from "@/lib/preferences/Preferences";
@@ -31,6 +33,9 @@ import type {
 } from "../types/publication.types";
 
 import { PublicationStatusBadge } from "./PublicationStatusBadge";
+
+const tabClassName = "min-h-12 shrink-0 border-b-2 border-transparent px-1 py-3 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary data-[state=active]:border-primary data-[state=active]:text-primary";
+const panelClassName = "py-6 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary";
 
 export function PublicationDetail({
   id,
@@ -192,9 +197,14 @@ export function PublicationDetail({
   }
 
   return (
-    <div className="mx-auto w-full max-w-5xl">
-      {/* Volver */}
-      <div className="mb-5">
+    <div className="mx-auto min-w-0 w-full max-w-[1180px] text-foreground">
+      <header className="border-b border-border pb-6">
+        <div className="mb-5 flex flex-wrap items-center justify-between gap-3"><DashboardBreadcrumb className="mb-2" items={[{ label: "Publicaciones", href: "/dashboard/publications" }, { label: "Detalle" }]} /><PublicationStatusBadge
+              status={
+                publication.status
+              }
+            /></div>
+        <div className="mb-5 flex flex-wrap items-center justify-between gap-3"><div className="min-w-0">
         <Button
           variant="ghost"
           size="sm"
@@ -206,35 +216,7 @@ export function PublicationDetail({
               size={15}
             />{t("Volver a publicaciones ")}</Link>
         </Button>
-      </div>
-
-      {/* Encabezado */}
-      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div className="min-w-0">
-          <DashboardBreadcrumb className="mb-2" items={[{ label: "Publicaciones", href: "/dashboard/publications" }, { label: "Detalle" }]} />
-
-          <h1 className="!m-0 lr-page-title">
-            {publication.title ??
-              "Publicación sin título"}
-          </h1>
-
-          <div className="mt-3 flex flex-wrap items-center gap-2">
-            <PublicationStatusBadge
-              status={
-                publication.status
-              }
-            />
-
-            <span className="text-xs text-muted-foreground">
-              {t(publication.serviceType ===
-              "TRANSPORT"
-                ? "Transporte"
-                : "Excursión")}
-            </span>
-          </div>
-        </div>
-
-        <div className="flex flex-wrap gap-2">
+      </div><div className="flex flex-wrap gap-2">
           <Button
             variant="outline"
             size="sm"
@@ -274,51 +256,36 @@ export function PublicationDetail({
                 ? "Desactivando..."
                 : "Desactivar")}
           </Button>
-        </div>
-      </div>
-
-      {publication.status === "REJECTED" && publication.rejectionReason && (
-        <section className="mb-5 rounded-2xl border border-destructive/30 bg-destructive/5 p-5">
-          <h2 className="!m-0 !text-sm !font-semibold text-destructive">{t("Motivo del rechazo")}</h2>
-          <p className="mt-2 whitespace-pre-wrap break-words text-sm text-foreground">{publication.rejectionReason}</p>
-        </section>
-      )}
-
-      {/* Imagen */}
-      <div className="overflow-hidden rounded-2xl border border-black/10 bg-muted shadow-sm">
-        {publication.mainImageUrl ? (
-          /* eslint-disable-next-line @next/next/no-img-element */
-          <img
-            src={
-              publication.mainImageUrl
+        </div></div>
+        <div className="flex flex-col-reverse gap-6 sm:flex-row sm:items-center sm:justify-between">
+          <div className="min-w-0 flex-1">
+            <span className="mb-2 block text-xs font-semibold uppercase tracking-wider text-primary">
+              {t(publication.serviceType ===
+              "TRANSPORT"
+                ? "Transporte"
+                : "Excursión")}
+            </span>
+            <h1 className="!m-0 !max-w-none break-words sm:!text-4xl lr-page-title">
+            {publication.title ??
+              "Publicación sin título"}
+          </h1>
+            <div className="mt-5"><h2 className="!m-0 !text-sm !font-semibold !leading-5 !tracking-normal text-[var(--ink)]">{t("Información del servicio ")}</h2><div className="mt-3 grid grid-cols-2 gap-x-6 gap-y-4"><InfoItem
+            icon={
+              <CalendarDays
+                size={16}
+              />
             }
-            alt={
-              publication.title ??
-              "Publicación"
+            label="Precio"
+            value={
+              publication.pricePerPerson !==
+              null
+                ? `USD ${publication.pricePerPerson.toFixed(
+                    2,
+                  )}`
+                : "Sin definir"
             }
-            className="h-72 w-full object-cover"
           />
-        ) : (
-          <div className="flex h-64 items-center justify-center text-sm text-muted-foreground">{t("Sin imagen principal ")}</div>
-        )}
-      </div>
-
-      {/* Descripción */}
-      <section className="mt-5 rounded-2xl border border-black/10 bg-white p-5 shadow-sm">
-        <h2 className="!m-0 !text-sm !font-semibold !leading-5 !tracking-normal text-[var(--ink)]">{t("Descripción ")}</h2>
-
-        <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-muted-foreground">
-          {publication.description ??
-            "Sin descripción."}
-        </p>
-      </section>
-
-      {/* Información principal */}
-      <section className="mt-5 rounded-2xl border border-black/10 bg-white p-5 shadow-sm">
-        <h2 className="!m-0 !text-sm !font-semibold !leading-5 !tracking-normal text-[var(--ink)]">{t("Información del servicio ")}</h2>
-
-        <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          <InfoItem
+<InfoItem
             icon={
               <MapPin
                 size={16}
@@ -330,8 +297,7 @@ export function PublicationDetail({
               "Sin definir"
             }
           />
-
-          <InfoItem
+<InfoItem
             icon={
               <Clock3
                 size={16}
@@ -340,12 +306,11 @@ export function PublicationDetail({
             label="Duración"
             value={
               publication.durationMinutes
-                ? `${publication.durationMinutes} minutos`
+                ? durationLabel(publication.durationMinutes)
                 : "Sin definir"
             }
           />
-
-          <InfoItem
+<InfoItem
             icon={
               <Users
                 size={16}
@@ -357,36 +322,56 @@ export function PublicationDetail({
                 ? `${publication.defaultCapacity} personas`
                 : "Sin definir"
             }
-          />
-
-          <InfoItem
-            icon={
-              <CalendarDays
-                size={16}
-              />
+          /></div></div>
+          </div>
+          <div className="h-40 w-full shrink-0 overflow-hidden rounded-lg bg-muted sm:h-44 sm:w-64 lg:w-80">
+        {publication.mainImageUrl ? (
+          /* eslint-disable-next-line @next/next/no-img-element */
+          <img
+            src={
+              publication.mainImageUrl
             }
-            label="Precio"
-            value={
-              publication.pricePerPerson !==
-              null
-                ? `$${publication.pricePerPerson.toFixed(
-                    2,
-                  )} USD`
-                : "Sin definir"
+            alt={
+              publication.title ??
+              "Publicación"
             }
+            className="h-full w-full object-cover"
           />
+        ) : (
+          <div className="flex h-full items-center justify-center text-sm text-muted-foreground">{t("Sin imagen principal ")}</div>
+        )}
+      </div>
         </div>
-      </section>
+      </header>
+      {publication.status === "REJECTED" && publication.rejectionReason && (
+        <section className="mt-5 rounded-lg border border-destructive/30 bg-destructive/5 p-5">
+          <h2 className="!m-0 !text-sm !font-semibold text-destructive">{t("Motivo del rechazo")}</h2>
+          <p className="mt-2 whitespace-pre-wrap break-words text-sm text-foreground">{publication.rejectionReason}</p>
+        </section>
+      )}
+      <Tabs.Root defaultValue="overview" className="mt-3">
+        <Tabs.List aria-label={t("Información de la publicación")} className="flex gap-6 overflow-x-auto border-b border-border">
+          <Tabs.Trigger value="overview" className={tabClassName}>{t("Resumen")}</Tabs.Trigger>
+          <Tabs.Trigger value="details" className={tabClassName}>{t("Detalles del servicio")}</Tabs.Trigger>
+        </Tabs.List>
+        <Tabs.Content value="overview" className={panelClassName}>
+          <div className="grid min-w-0 gap-8 lg:grid-cols-[minmax(0,1fr)_320px]">
+            <section className="min-w-0">
+        <h2 className="!m-0 !text-sm !font-semibold !leading-6 !tracking-normal text-foreground">{t("Descripción ")}</h2>
 
-      {/* Idiomas */}
-      <section className="mt-5 rounded-2xl border border-black/10 bg-white p-5 shadow-sm">
+        <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-muted-foreground">
+          {publication.description ??
+            "Sin descripción."}
+        </p>
+      </section>
+            <aside className="min-w-0 lg:border-l lg:border-border lg:pl-8"><section className="min-w-0">
         <div className="flex items-center gap-2">
           <Languages
             size={16}
             className="text-[var(--primary)]"
           />
 
-          <h2 className="!m-0 !text-sm !font-semibold !leading-5 !tracking-normal text-[var(--ink)]">{t("Idiomas ")}</h2>
+          <h2 className="!m-0 !text-sm !font-semibold !leading-6 !tracking-normal text-foreground">{t("Idiomas ")}</h2>
         </div>
 
         <div className="mt-3 flex flex-wrap gap-2">
@@ -409,39 +394,19 @@ export function PublicationDetail({
             <p className="text-sm text-muted-foreground">{t("Sin idiomas definidos. ")}</p>
           )}
         </div>
-      </section>
-
-      {/* Incluye / no incluye */}
-      <section className="mt-5 grid gap-4 md:grid-cols-2">
-        <div className="rounded-2xl border border-black/10 bg-white p-5 shadow-sm">
-          <h2 className="!m-0 !text-sm !font-semibold !leading-5 !tracking-normal text-[var(--ink)]">{t("Qué incluye ")}</h2>
-
-          <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-muted-foreground">
-            {publication.included ??
-              "Sin información."}
-          </p>
-        </div>
-
-        <div className="rounded-2xl border border-black/10 bg-white p-5 shadow-sm">
-          <h2 className="!m-0 !text-sm !font-semibold !leading-5 !tracking-normal text-[var(--ink)]">{t("Qué no incluye ")}</h2>
-
-          <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-muted-foreground">
-            {publication.notIncluded ??
-              "Sin información."}
-          </p>
-        </div>
-      </section>
-
-      {publication.journey ? <section className="mt-5"><h2 className="lr-section-title">Trayecto</h2><JourneyView journey={publication.journey} meetingPoint={publication.meetingPoint}/></section> : null}
-      {/* Punto de encuentro */}
-      {!publication.journey ? <section className="mt-5 rounded-2xl border border-black/10 bg-white p-5 shadow-sm">
+      </section></aside>
+          </div>
+        </Tabs.Content>
+        <Tabs.Content value="details" className={panelClassName}>
+          {publication.journey ? <section className="mb-6 border-b border-border pb-6"><h2 className="lr-section-title">Trayecto</h2><JourneyView journey={publication.journey} meetingPoint={publication.meetingPoint}/></section> : null}
+          {!publication.journey ? <section className="mb-6 min-w-0 border-b border-border pb-6">
         <div className="flex items-center gap-2">
           <MapPin
             size={16}
             className="text-[var(--primary)]"
           />
 
-          <h2 className="!m-0 !text-sm !font-semibold !leading-5 !tracking-normal text-[var(--ink)]">{t("Punto de encuentro ")}</h2>
+          <h2 className="!m-0 !text-sm !font-semibold !leading-6 !tracking-normal text-foreground">{t("Punto de encuentro ")}</h2>
         </div>
 
         <p className="mt-3 text-sm leading-6 text-muted-foreground">
@@ -449,6 +414,27 @@ export function PublicationDetail({
             "Sin definir."}
         </p>
       </section> : null}
+          <section className="grid min-w-0 gap-8 md:grid-cols-2">
+        <div className="min-w-0">
+          <h2 className="!m-0 !text-sm !font-semibold !leading-6 !tracking-normal text-foreground">{t("Qué incluye ")}</h2>
+
+          <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-muted-foreground">
+            {publication.included ??
+              "Sin información."}
+          </p>
+        </div>
+
+        <div className="min-w-0">
+          <h2 className="!m-0 !text-sm !font-semibold !leading-6 !tracking-normal text-foreground">{t("Qué no incluye ")}</h2>
+
+          <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-muted-foreground">
+            {publication.notIncluded ??
+              "Sin información."}
+          </p>
+        </div>
+      </section>
+        </Tabs.Content>
+      </Tabs.Root>
     </div>
   );
 }
@@ -464,16 +450,16 @@ function InfoItem({
 }) {
   const { t } = usePreferences();
   return (
-    <div className="rounded-xl bg-muted/30 p-3">
-      <div className="flex items-center gap-2 text-[var(--primary)]">
+    <div className="min-w-0">
+      <div className="flex items-center gap-2 text-muted-foreground">
         {icon}
 
-        <span className="text-[11px] font-medium uppercase tracking-wide">
+        <span className="text-xs">
           {t(label)}
         </span>
       </div>
 
-      <p className="mt-2 text-sm font-medium text-foreground">
+      <p className={label === "Precio" ? "mt-1 break-words text-2xl font-semibold text-primary" : "mt-1 break-words text-sm font-medium text-foreground"}>
         {value}
       </p>
     </div>
