@@ -1,4 +1,10 @@
 export const bookingEnglish:Record<string,string>={
+  'Estamos procesando tu pago. Espera un momento…':'We are processing your payment. Please wait a moment…',
+  'Consulta tus próximos viajes y tu historial de reservas.':'Review your upcoming trips and booking history.',
+  'Próximas':'Upcoming',
+  'Próximas reservas':'Upcoming bookings',
+  'Aún no tienes viajes programados.':'You have no upcoming trips yet.',
+  'Aún no tienes reservas en tu historial.':'You have no bookings in your history yet.',
   'Corrige los datos de la tarjeta para continuar.':'Correct the card details to continue.',
   'Ingresa el nombre que aparece en la tarjeta.':'Enter the name shown on the card.',
   'Ingresa un número de tarjeta válido.':'Enter a valid card number.',

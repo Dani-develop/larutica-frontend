@@ -8,12 +8,13 @@ import { money as usd } from '@/modules/booking/types';
 import type { StartedPayment } from '../services/payment.service';
 import { loadOnvoSdk, type OnvoPaySdkInstance } from '../utils/onvoSdk';
 import { onvoFormMessages, onvoPaymentMessage } from '../utils/onvoErrors';
+import { preparePaymentSuccessSound, type PaymentSuccessSound } from '../utils/paymentFeedback';
 import './onvo-pay.css';
 
 type OnvoPaymentFormProps = {
   startKey: string;
   start: () => Promise<StartedPayment>;
-  confirm: (paymentIntentId: string) => Promise<void>;
+  confirm: (paymentIntentId: string) => Promise<void | boolean>;
   onPaid: () => void;
   onCancel?: () => void;
   onSubmitting?: (busy: boolean) => void;
@@ -41,6 +42,7 @@ export function OnvoPaymentForm({ startKey, start, confirm, onPaid, onCancel, on
   const [confirmPending, setConfirmPending] = useState(false);
   const instance = useRef<OnvoPaySdkInstance | null>(null);
   const busy = useRef(false);
+  const successSound = useRef<PaymentSuccessSound | null>(null);
   const onPaidRef = useRef(onPaid);
   useEffect(() => { onPaidRef.current = onPaid; }, [onPaid]);
   const submittingRef = useRef(onSubmitting);
@@ -71,7 +73,7 @@ export function OnvoPaymentForm({ startKey, start, confirm, onPaid, onCancel, on
             if (cancelled) return;
             busy.current = true;
             confirmRef.current(started.paymentIntentId)
-              .then(() => { if (!cancelled) {busy.current=false;setSubmitting(false);submittingRef.current?.(false);onPaidRef.current();} })
+              .then((successful) => { if (!cancelled) {busy.current=false;setSubmitting(false);submittingRef.current?.(false);if(successful!==false)successSound.current?.play();onPaidRef.current();} })
               .catch((cause) => {
                 if (cancelled) return;
                 busy.current = false;
@@ -124,6 +126,8 @@ export function OnvoPaymentForm({ startKey, start, confirm, onPaid, onCancel, on
       cleanup();
       instance.current = null;
       busy.current = false;
+      successSound.current?.dispose();
+      successSound.current = null;
       submittingRef.current?.(false);
       const target = container();
       if (target) target.innerHTML = '';
@@ -132,10 +136,11 @@ export function OnvoPaymentForm({ startKey, start, confirm, onPaid, onCancel, on
 
   function submit() {
     if (busy.current) return;
+    successSound.current ??= preparePaymentSuccessSound();
     if (confirmPending && payment) {
       busy.current = true;
       setSubmitting(true);submittingRef.current?.(true);setError('');
-      confirmRef.current(payment.paymentIntentId).then(()=>onPaidRef.current()).catch(cause=>setError(cause instanceof Error?cause.message:'No pudimos confirmar el pago.'))
+      confirmRef.current(payment.paymentIntentId).then((successful)=>{if(successful!==false)successSound.current?.play();onPaidRef.current();}).catch(cause=>setError(cause instanceof Error?cause.message:'No pudimos confirmar el pago.'))
         .finally(()=>{busy.current=false;setSubmitting(false);submittingRef.current?.(false);});
       return;
     }
@@ -163,10 +168,12 @@ export function OnvoPaymentForm({ startKey, start, confirm, onPaid, onCancel, on
     {error && <div ref={errorRef} className="booking-error" role="alert" tabIndex={-1}><p>{t(error)}</p>{fieldErrors.length > 0 && <ul>{fieldErrors.map(message => <li key={message}>{t(message)}</li>)}</ul>}</div>}
     <div className="booking-actions">
       {prepareFailed ? <Button type="button" onClick={()=>setRetry(n=>n+1)}>{t('Volver a preparar el pago')}</Button> : <Button type="button" disabled={!ready || submitting || loading} onClick={submit}>
+        {submitting && <span className="onvo-pay-spinner onvo-pay-button-spinner" aria-hidden="true" />}
         {submitting ? t('Procesando pago…') : confirmPending ? t('Comprobar pago') : `${t('Pagar')} ${payment ? usd(payment.amount) : ''}`.trim()}
       </Button>}
       {onCancel && <Button type="button" variant="outline" disabled={submitting} onClick={onCancel}>{t('Volver')}</Button>}
     </div>
+    {submitting && <p className="onvo-pay-progress" role="status">{t('Estamos procesando tu pago. Espera un momento…')}</p>}
     <p className="onvo-pay-secure"><Lock size={14} aria-hidden="true" />{t('Pago seguro con OnvoPAY. LaRutica no guarda los datos de tu tarjeta.')}</p>
   </div>;
 }

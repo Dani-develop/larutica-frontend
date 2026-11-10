@@ -121,7 +121,10 @@ a[data-slot="button"][data-variant="default"] {
 .trip-page-shell .reservation-card>div:first-child { min-width:0; flex:1 1 18rem; }
 .trip-page-shell .reservation-card h3 { margin:.4rem 0; line-height:1.35; }
 .trip-page-shell .reservation-card .trip-actions { width:auto; justify-content:flex-end; }
-.reservation-refresh { margin:0 0 1rem; color:var(--ink-muted); font-size:.95rem; }
+.trip-reservations-content { width:100%; min-width:0; }
+.trip-reservations-page .reservation-history > .empty-state { margin:0; padding:1.5rem; text-align:left; border:1px solid var(--line); border-radius:var(--radius-card); background:var(--surface-muted); }
+.trip-reservations-page .reservation-rating { min-width:0; }
+.trip-reservations-page .rating-stars { flex-wrap:wrap; }
 .reservation-history-item { display:flex; flex-direction:column; min-width:0; height:auto; scroll-margin-top:110px; }
 .reservation-history .experience-card { flex:none; height:auto; }
 .reservation-history .card-body { flex:none; }

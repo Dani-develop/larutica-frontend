@@ -1124,17 +1124,17 @@ export function TravelerReservationsPage() {
   }
 
   return (
-    <section className="page-shell trip-page-shell">
+    <section className="page-shell trip-page-shell trip-reservations-page">
+      <div className="trip-reservations-content">
       <TripHeading
         eyebrow={t("Mi viaje")}
         title={t("Mis reservas")}
-        lead={t("Revisa tus viajes reservados y la información de cada experiencia.")}
+        lead={t("Consulta tus próximos viajes y tu historial de reservas.")}
       />
       {error ? (
         <p className="notice" role="alert">{t(error)}</p>
       ) : null}
       {searchParams.get("existente") === "1" && <p className="notice" role="status">{t("Ya tienes una reserva para esta salida. No creamos una segunda reserva.")}</p>}
-      <p className="reservation-refresh">{t("El estado se actualiza solo, aproximadamente cada 30 segundos.")}</p>
       <div className="filter-row" role="tablist" aria-label={t("Filtrar reservas")}>
         <button
           type="button"
@@ -1142,18 +1142,18 @@ export function TravelerReservationsPage() {
           className={reservationView === "upcoming" ? "chip chip-active" : "chip"}
           aria-selected={reservationView === "upcoming"}
           onClick={() => setReservationView("upcoming")}
-        >{t("Por venir ")}</button>
+        >{t("Próximas")}</button>
         <button
           type="button"
           role="tab"
           className={reservationView === "past" ? "chip chip-active" : "chip"}
           aria-selected={reservationView === "past"}
           onClick={() => setReservationView("past")}
-        >{t("Historial ")}</button>
+        >{t("Historial")}</button>
       </div>
       {reservationView === "upcoming" ? <section className="reservation-history" aria-labelledby="upcoming-reservations-title">
-        <h2 id="upcoming-reservations-title" className="subheading">{t("Reservas por venir")}</h2>
-        {visibleReservations.length === 0 ? <p className="empty-state">{t(loading ? "Cargando reservas..." : error ? "El listado no está disponible." : "No tienes reservas por venir.")}</p> :
+        <h2 id="upcoming-reservations-title" className="subheading">{t("Próximas reservas")}</h2>
+        {visibleReservations.length === 0 ? <p className="empty-state">{t(loading ? "Cargando reservas..." : error ? "El listado no está disponible." : "Aún no tienes viajes programados.")}</p> :
           <div className="card-grid upcoming-reservations">{visibleReservations.map(reservation =>
             <div className="reservation-history-item" key={reservation.id}>
               <UpcomingReservationCard
@@ -1169,7 +1169,7 @@ export function TravelerReservationsPage() {
             ? t("Cargando reservas...")
             : error
               ? t("El listado no está disponible.")
-              : t("No tienes reservas en el historial.")
+              : t("Aún no tienes reservas en tu historial.")
         }
         reservations={visibleReservations}
         publicationImages={publicationImages}
@@ -1177,6 +1177,7 @@ export function TravelerReservationsPage() {
         onCancel={cancelReservation}
         cancellingReservationId={cancellingReservationId}
       />}
+      </div>
     </section>
   );
 }
