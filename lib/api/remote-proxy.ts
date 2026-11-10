@@ -1,4 +1,5 @@
 function isSharedServiceRequest(request: Request, url: URL): boolean {
+  if (url.pathname.startsWith('/api/checkouts')) return true;
   if (/^\/api\/(?:maps|payments)(?:\/|$)/.test(url.pathname)
     || /^\/api\/reservations\/[^/]+\/payment(?:\/|$)/.test(url.pathname)
     || /^\/api\/publications\/[^/]+\/promotion\/payment(?:\/|$)/.test(url.pathname)

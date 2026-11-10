@@ -37,6 +37,7 @@ export function loadOnvoSdk(): Promise<OnvoPaySdk> {
     const failed = () => reject(new Error('No pudimos cargar el formulario de pago. Revisa tu conexión e intenta de nuevo.'));
     const existing = document.querySelector<HTMLScriptElement>(`script[src="${ONVO_SDK_URL}"]`);
     if (existing) {
+      if (existing.getAttribute('data-load-failed') === 'true') { existing.remove(); return loadOnvoSdk().then(resolve,reject); }
       existing.addEventListener('load', ready);
       existing.addEventListener('error', failed);
       return;
@@ -45,7 +46,7 @@ export function loadOnvoSdk(): Promise<OnvoPaySdk> {
     script.src = ONVO_SDK_URL;
     script.async = true;
     script.onload = ready;
-    script.onerror = failed;
+    script.onerror = () => { script.setAttribute('data-load-failed','true'); failed(); };
     document.body.appendChild(script);
   });
 }

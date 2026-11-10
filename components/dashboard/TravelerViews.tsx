@@ -276,14 +276,15 @@ export function TravelerExplorePage({ embedded = false, discovery = false, filte
 
   const searchQuery = filters?.destination ?? search;
 
+  const bookingType=filters?.type,bookingBudget=filters?.budget,bookingDate=filters?.date,bookingPeople=filters?.people;
   const baseVisiblePublications = useMemo(() => publications.filter((publication) =>
     (!providerKey || publication.providerSlug === providerKey)
-    && (!filters?.type || publication.serviceType === filters.type)
-    && (!filters?.budget || publication.pricePerPerson < 50)
-    && (!filters?.date && !filters?.people || publication.departures?.some(d =>
-      d.available >= (filters?.people || 1) && (!filters?.date || new Intl.DateTimeFormat('en-CA', {timeZone:'America/Costa_Rica',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(d.startAt)) === filters.date)))
+    && (!bookingType || publication.serviceType === bookingType)
+    && (!bookingBudget || publication.pricePerPerson < 50)
+    && (!bookingDate && !bookingPeople || publication.departures?.some(d =>
+      d.available >= (bookingPeople || 1) && (!bookingDate || new Intl.DateTimeFormat('en-CA', {timeZone:'America/Costa_Rica',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(d.startAt)) === bookingDate)))
     && matchesQuery(`${publication.title} ${publication.destination} ${publication.description}`, searchQuery),
-  ), [filters?.budget, filters?.date, filters?.people, filters?.type, providerKey, publications, searchQuery]);
+  ), [bookingBudget, bookingDate, bookingPeople, bookingType, providerKey, publications, searchQuery]);
 
   const visiblePublications = useMemo(
     () => baseVisiblePublications.filter((publication) => matchesAdvancedFilters(publication, advancedFilters)),
@@ -373,27 +374,6 @@ export function TravelerExplorePage({ embedded = false, discovery = false, filte
     date: filters?.date ?? "",
     people: filters?.people ?? 0,
   });
-
-  const allExperiencesHref = useMemo(() => {
-    const params = new URLSearchParams();
-    const destinationQuery = advancedFilters.destination.trim() || searchQuery.trim();
-
-    if (destinationQuery) params.set("search", destinationQuery);
-    if (filters?.type) params.set("type", filters.type);
-    if (!filters?.type && advancedFilters.serviceTypes.length === 1) {
-      params.set("type", advancedFilters.serviceTypes[0]);
-    }
-    if (advancedFilters.minPrice) params.set("minPrice", advancedFilters.minPrice);
-    if (advancedFilters.maxPrice) params.set("maxPrice", advancedFilters.maxPrice);
-    if (advancedFilters.durations.length > 0) params.set("durations", advancedFilters.durations.join(","));
-    if (advancedFilters.availableOnly) params.set("available", "1");
-    if (filters?.budget) params.set("maxPrice", "50");
-    if (filters?.date) params.set("date", filters.date);
-    if (filters?.people) params.set("people", String(filters.people));
-
-    const query = params.toString();
-    return query ? `/experiencias?${query}` : "/experiencias";
-  }, [advancedFilters, filters?.budget, filters?.date, filters?.people, filters?.type, searchQuery]);
 
   const providerName = providerKey ? visiblePublications[0]?.providerName : undefined;
 
@@ -586,6 +566,7 @@ export function TravelerExplorePage({ embedded = false, discovery = false, filte
             <div className="landing-publication-rows">
               <LandingPublicationCarouselRow
                 publications={firstRow}
+                selection={filters}
                 savedIds={savedIds}
                 canSave={user?.role === "Viajero"}
                 onToggleSaved={toggleSaved}
@@ -595,6 +576,7 @@ export function TravelerExplorePage({ embedded = false, discovery = false, filte
               {secondRow.length > 0 ? (
                 <LandingPublicationCarouselRow
                   publications={secondRow}
+                  selection={filters}
                   savedIds={savedIds}
                   canSave={user?.role === "Viajero"}
                   onToggleSaved={toggleSaved}
@@ -610,6 +592,7 @@ export function TravelerExplorePage({ embedded = false, discovery = false, filte
               <TravelerTripCard
                 key={publication.id}
                 publication={publication}
+                selection={filters}
                 compact={discovery}
                 saved={savedIds.includes(publication.id)}
                 onToggleSaved={user?.role === "Viajero" ? () => void toggleSaved(publication) : undefined}
@@ -825,12 +808,14 @@ function LandingPublicationCarouselRow({
   canSave,
   onToggleSaved,
   resetKey,
+  selection,
 }: {
   publications: TravelerPublication[];
   savedIds: string[];
   canSave: boolean;
   onToggleSaved: (publication: TravelerPublication) => Promise<void>;
   resetKey: string;
+  selection?:{date:string;people:number};
 }) {
   const { t } = usePreferences();
   const rowRef = useRef<HTMLDivElement | null>(null);
@@ -894,6 +879,7 @@ function LandingPublicationCarouselRow({
           <TravelerTripCard
             key={publication.id}
             publication={publication}
+            selection={selection}
             compact
             saved={savedIds.includes(publication.id)}
             onToggleSaved={canSave ? () => void onToggleSaved(publication) : undefined}
@@ -995,7 +981,7 @@ export function TravelerReservationsPage() {
     async function load() {
       const id = ++request;
       try {
-        const data = await listReservations();
+        const data = await listReservations({mine:true});
         if (!active || id !== request) return;
         setReservations(data);
         setError(null);
@@ -1024,7 +1010,7 @@ export function TravelerReservationsPage() {
     if (selectedReservation) return;
     alignedSelection.current = null;
     focusedSelection.current = null;
-    setDetailHoldId(null);
+    queueMicrotask(()=>setDetailHoldId(null));
   }, [selectedReservation]);
 
   useEffect(() => {
@@ -1033,7 +1019,7 @@ export function TravelerReservationsPage() {
     if (!selected) return;
     alignedSelection.current = selectedReservation;
     const upcoming = isUpcomingReservation(selected, now);
-    if (upcoming !== (reservationView === "upcoming")) setReservationView(upcoming ? "upcoming" : "past");
+    if (upcoming !== (reservationView === "upcoming")) queueMicrotask(()=>setReservationView(upcoming ? "upcoming" : "past"));
   }, [loading, selectedReservation, reservations, now, reservationView]);
 
   useEffect(() => {
@@ -1132,9 +1118,6 @@ export function TravelerReservationsPage() {
         onCancel={() => void cancelReservation(selected)}
         busy={cancellingReservationId !== null}
         cancelling={cancellingReservationId === selected.id}
-        onPaid={() => setReservations((current) => current.map((item) =>
-          item.id === selected.id ? { ...item, status: "CONFIRMED", paymentStatus: "PAID" } : item,
-        ))}
         existing={searchParams.get("existente") === "1"}
       />
     );
@@ -1200,20 +1183,26 @@ export function TravelerReservationsPage() {
 
 function TravelerTripCard({
   publication,
+  selection,
   compact = false,
   saved = false,
   onToggleSaved,
 }: {
   publication: TravelerPublication;
   compact?: boolean;
+  selection?:{date:string;people:number};
   saved?: boolean;
   onToggleSaved?: () => void;
 }) {
   const { t, money, dateLabel } = usePreferences();
   const { user } = useAuth();
+  const selectedDeparture=publication.departures?.find(d=>d.available>=(selection?.people||1)&&(!selection?.date||new Intl.DateTimeFormat('en-CA',{timeZone:'America/Costa_Rica',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(d.startAt))===selection.date));
+  const bookingParams=new URLSearchParams();
+  if(selection?.date&&selectedDeparture)bookingParams.set('salida',selectedDeparture.id);
+  if(selection?.people)bookingParams.set('personas',String(selection.people));
+  const href=`/experiencias/${publication.id}${bookingParams.size?'?'+bookingParams:''}`;
   if (compact) {
-    const href = `/experiencias/${publication.id}`;
-    const departure = publication.departures?.find(
+    const departure = selectedDeparture ?? publication.departures?.find(
       (item) => item.available > 0,
     );
 
@@ -1345,7 +1334,7 @@ function TravelerTripCard({
         <div className="card-footer">
           <strong>{money(publication.pricePerPerson)}{t(" por persona ")}<span>· {durationLabel(publication.durationMinutes)}</span></strong>
           <div className="trip-actions">
-            <Link className="button button-primary" href={`/experiencias/${publication.id}`}>{publication.departures?.some(d => d.available > 0) ? t("Ver fechas y reservar") : t("Ver detalles")}</Link>
+            <Link className="button button-primary" href={href}>{publication.departures?.some(d => d.available > 0) ? t("Ver fechas y reservar") : t("Ver detalles")}</Link>
           </div>
         </div>
       </div>

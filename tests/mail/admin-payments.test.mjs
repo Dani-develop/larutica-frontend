@@ -1,4 +1,6 @@
 import assert from 'node:assert/strict';
+import {createCheckout} from '../../lib/booking/checkouts.ts';
+import {startCheckoutPayment,confirmCheckoutPayment} from '../../lib/payments/checkout.ts';
 import { test, before, beforeEach, after } from 'node:test';
 import { createDatabase, ids } from './database.mjs';
 import { getReservationRecord } from '../../lib/reservations/repository.ts';
@@ -26,23 +28,20 @@ function installOnvo() {
     const json = (data) => new Response(JSON.stringify(data), { status: 200, headers: { 'content-type': 'application/json' } });
     if (init.method === 'POST' && path === '/payment-intents') {
       const id = `pi_admin_${next++}`;
-      intents.set(id, { id, status: 'succeeded' });
+      intents.set(id, { id, status: 'succeeded',amount:JSON.parse(init.body).amount,currency:'USD' });
       return json(intents.get(id));
     }
     if (init.method === 'GET') return json(intents.get(path.split('/').pop()));
-    if (path === '/refunds') return json({ id: `re_admin_${next++}` });
+    if (path === '/refunds') return json({ id: `re_admin_${next++}`,status:'succeeded' });
     return new Response('{}', { status: 500 });
   };
 }
 
 async function paidReservation(people = 2) {
-  const { data } = await fixture.admin.rpc('create_reservation', {
-    p_passenger_id: ids.traveler, p_departure_id: ids.departure, p_number_of_people: people,
-  });
-  const reservation = await getReservationRecord(fixture.admin, data.id);
-  const started = await startReservationPayment(fixture.admin, reservation, ids.traveler);
-  await applyPaymentStatus(fixture.admin, started.paymentIntentId, 'paid', { source: 'test' });
-  return reservation;
+  const checkout=await createCheckout(fixture.admin,ids.traveler,ids.departure,people);
+  const started=await startCheckoutPayment(fixture.admin,checkout);
+  const result=await confirmCheckoutPayment(fixture.admin,checkout,started.paymentIntentId);
+  return getReservationRecord(fixture.admin,result.reservation.id);
 }
 const balance = async () => (await listAgencyBalances(fixture.admin)).find(row => row.agencyId === ids.agency);
 const call = (route, method, { user = ids.admin, body, query = '' } = {}) => route[method](new Request(`http://localhost/api/admin/x${query}`, {

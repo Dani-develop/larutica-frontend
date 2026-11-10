@@ -47,7 +47,7 @@ export default function Home() {
   const { session, user, loading: authLoading } = useAuth();
   const trip = parseTrip(searchParams.get("viaje"));
   const publicationId = searchParams.get("publicacion") ?? "";
-  const showTrip = Boolean(trip && !authLoading && session && user?.role === "Viajero");
+  const showTrip = Boolean(trip && !authLoading && session && user && (user.role === "Viajero" || trip === "reservas"));
   const tripMenuActive = trip === "guardados" || trip === "reservas" ? trip : null;
   const [view, setView] = useState<View>("explore");
   const [status, setStatus] = useState("Explora opciones seleccionadas para ti.");
@@ -103,7 +103,7 @@ export default function Home() {
       router.replace(`/login?next=${encodeURIComponent(next)}`);
       return;
     }
-    if (user?.role !== "Viajero") router.replace("/");
+    if (user?.role !== "Viajero" && trip !== "reservas") router.replace("/");
   }, [trip, authLoading, session, user?.role, router, searchParams]);
 
   function navigate(next: View, nextStatus?: string) {

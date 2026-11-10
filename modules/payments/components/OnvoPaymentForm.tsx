@@ -15,10 +15,11 @@ type OnvoPaymentFormProps = {
   confirm: (paymentIntentId: string) => Promise<void>;
   onPaid: () => void;
   onCancel?: () => void;
+  onSubmitting?: (busy: boolean) => void;
 };
 
 /** Formulario de tarjeta de OnvoPAY. El monto lo fija quien crea la intención, nunca este componente. */
-export function OnvoPaymentForm({ startKey, start, confirm, onPaid, onCancel }: OnvoPaymentFormProps) {
+export function OnvoPaymentForm({ startKey, start, confirm, onPaid, onCancel, onSubmitting }: OnvoPaymentFormProps) {
   const { t, language } = usePreferences();
   const titleRef = useRef(t('Formulario de pago seguro'));
   const startRef = useRef(start);
@@ -31,14 +32,20 @@ export function OnvoPaymentForm({ startKey, start, confirm, onPaid, onCancel }: 
   const [ready, setReady] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [retry, setRetry] = useState(0);
+  const [prepareFailed, setPrepareFailed] = useState(false);
+  const [confirmPending, setConfirmPending] = useState(false);
   const instance = useRef<OnvoPaySdkInstance | null>(null);
   const onPaidRef = useRef(onPaid);
   useEffect(() => { onPaidRef.current = onPaid; }, [onPaid]);
+  const submittingRef = useRef(onSubmitting);
+  useEffect(() => { submittingRef.current = onSubmitting; }, [onSubmitting]);
 
   useEffect(() => {
     let cancelled = false;
     const container = () => document.getElementById(`onvo-pay-${containerId}`);
     async function mount() {
+      setLoading(true);setReady(false);setError('');setPrepareFailed(false);setSubmitting(false);setConfirmPending(false);
       try {
         const started = await startRef.current();
         if (cancelled) return;
@@ -57,16 +64,19 @@ export function OnvoPaymentForm({ startKey, start, confirm, onPaid, onCancel }: 
           onSuccess: () => {
             if (cancelled) return;
             confirmRef.current(started.paymentIntentId)
-              .then(() => { if (!cancelled) onPaidRef.current(); })
+              .then(() => { if (!cancelled) {setSubmitting(false);submittingRef.current?.(false);onPaidRef.current();} })
               .catch((cause) => {
                 if (cancelled) return;
                 setSubmitting(false);
+                submittingRef.current?.(false);
+                setConfirmPending(true);
                 setError(cause instanceof Error ? cause.message : 'No pudimos confirmar el pago.');
               });
           },
           onError: (data) => {
             if (cancelled) return;
             setSubmitting(false);
+            submittingRef.current?.(false);
             const message = data && typeof data === 'object' && 'message' in data && typeof data.message === 'string' ? data.message : '';
             setError(message || 'No pudimos procesar el pago. Revisa los datos de tu tarjeta e intenta de nuevo.');
           },
@@ -84,7 +94,7 @@ export function OnvoPaymentForm({ startKey, start, confirm, onPaid, onCancel }: 
         markReady(); // The SDK may have inserted its iframe synchronously.
         cleanup = () => observer.disconnect();
       } catch (cause) {
-        if (!cancelled) setError(cause instanceof Error ? cause.message : 'No pudimos preparar el pago.');
+        if (!cancelled) {setPrepareFailed(true);setError(cause instanceof Error ? cause.message : 'No pudimos preparar el pago.');}
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -95,19 +105,28 @@ export function OnvoPaymentForm({ startKey, start, confirm, onPaid, onCancel }: 
       cancelled = true;
       cleanup();
       instance.current = null;
+      submittingRef.current?.(false);
       const target = container();
       if (target) target.innerHTML = '';
     };
-  }, [startKey, containerId, language]);
+  }, [startKey, containerId, language, retry]);
 
   function submit() {
+    if (submitting) return;
+    if (confirmPending && payment) {
+      setSubmitting(true);submittingRef.current?.(true);setError('');
+      confirmRef.current(payment.paymentIntentId).then(()=>onPaidRef.current()).catch(cause=>setError(cause instanceof Error?cause.message:'No pudimos confirmar el pago.'))
+        .finally(()=>{setSubmitting(false);submittingRef.current?.(false);});
+      return;
+    }
     if (!instance.current?.submitPayment) {
       setError('El formulario de pago todavía no está listo.');
       return;
     }
     setError('');
     setSubmitting(true);
-    instance.current.submitPayment();
+    submittingRef.current?.(true);
+    try {instance.current.submitPayment();} catch(cause) {setSubmitting(false);submittingRef.current?.(false);setError(cause instanceof Error?cause.message:'No pudimos enviar el pago.');}
   }
 
   return <div className="onvo-pay" aria-busy={loading}>
@@ -115,10 +134,10 @@ export function OnvoPaymentForm({ startKey, start, confirm, onPaid, onCancel }: 
     <div className="onvo-pay-form" hidden={loading}><div id={`onvo-pay-${containerId}`} /></div>
     {error && <p className="booking-error" role="alert">{t(error)}</p>}
     <div className="booking-actions">
-      <Button type="button" disabled={!ready || submitting || loading} onClick={submit}>
-        {submitting ? t('Procesando pago…') : `${t('Pagar')} ${payment ? usd(payment.amount) : ''}`.trim()}
-      </Button>
-      {onCancel && <Button type="button" variant="outline" disabled={submitting} onClick={onCancel}>{t('Pagar después')}</Button>}
+      {prepareFailed ? <Button type="button" onClick={()=>setRetry(n=>n+1)}>{t('Volver a preparar el pago')}</Button> : <Button type="button" disabled={!ready || submitting || loading} onClick={submit}>
+        {submitting ? t('Procesando pago…') : confirmPending ? t('Comprobar pago') : `${t('Pagar')} ${payment ? usd(payment.amount) : ''}`.trim()}
+      </Button>}
+      {onCancel && <Button type="button" variant="outline" disabled={submitting} onClick={onCancel}>{t('Volver')}</Button>}
     </div>
     <p className="onvo-pay-secure"><Lock size={14} aria-hidden="true" />{t('Pago seguro con OnvoPAY. LaRutica no guarda los datos de tu tarjeta.')}</p>
   </div>;

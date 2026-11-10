@@ -1,12 +1,9 @@
 import { ApiError, apiErrorResponse, assertSameOrigin } from "@/lib/api/errors";
-import { notifyReservationCreated } from "@/lib/mail/notify";
 import {
-  assertTravelerCanCreate,
   listScope,
-  parseCreateReservationBody,
   ReservationPolicyError,
 } from "@/lib/reservations/policy";
-import { createReservationRecord, listReservationRecords, toPublicReservation } from "@/lib/reservations/repository";
+import { listReservationRecords, toPublicReservation } from "@/lib/reservations/repository";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin-client";
 import { requireAppSession } from "@/lib/supabase/session";
 import { proxyRemoteApiRequest } from "@/lib/api/remote-proxy";
@@ -49,29 +46,5 @@ export async function GET(request: Request) {
   }
 }
 
-export async function POST(request: Request) {
-  const remote = await proxyRemoteApiRequest(request);
-  if (remote) return remote;
-
-  try {
-    assertSameOrigin(request);
-    const appSession = await requireAppSession(request);
-    guardPolicy(() => assertTravelerCanCreate(appSession.profile.role));
-    const body = await request.json().catch(() => { throw new ApiError("No pudimos leer la solicitud. Revisa los datos e intenta de nuevo.", 400); });
-    const input = guardPolicy(() => parseCreateReservationBody(body, appSession.session.userId));
-    const admin = getSupabaseAdminClient();
-    const created = await createReservationRecord(
-      admin,
-      appSession.session.userId,
-      input.departureId,
-      input.numberOfPeople,
-    );
-    if (created.record.total <= 0) await notifyReservationCreated(created.record, created.inserted);
-    return Response.json(
-      { data: toPublicReservation(created.record) },
-      { status: 201, headers: { "cache-control": "no-store" } },
-    );
-  } catch (error) {
-    return apiErrorResponse(error);
-  }
-}
+// Compatibility: an older client also creates a checkout, never an unpaid reservation.
+export { POST } from '../checkouts/route';

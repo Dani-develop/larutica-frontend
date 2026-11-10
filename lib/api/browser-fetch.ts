@@ -13,6 +13,7 @@ export function clearApiCache(preservePublicCatalog = false) {
 }
 export async function apiFetch(input: string, init: RequestInit = {}): Promise<Response> {
   const method = (init.method ?? 'GET').toUpperCase();
+  if (method === 'GET' && (init.cache === 'no-store' || /^\/api\/(?:reservations|checkouts)(?:[/?]|$)/.test(input))) return fetch(input, init);
   if (method !== 'GET') {
     clearApiCache();
     try { return await fetch(input, init); } finally { clearApiCache(); }

@@ -62,6 +62,7 @@ export function SiteHeader({ exploreActive = false, exploreCurrent = false, trip
           <button className={exploreActive ? "nav-active" : ""} onClick={explore} aria-current={exploreCurrent ? "page" : undefined}>{t("Explorar")}</button>
           <button onClick={destinations}>{t("Destinos")}</button>
           {!authLoading && user?.role === "Viajero" ? <TripMenu active={tripMenuActive} onSelect={selectTrip} /> : null}
+          {!authLoading && user && user.role !== 'Viajero' ? <button onClick={()=>selectTrip('reservas')}>{t('Mis reservas')}</button> : null}
           <button onClick={openHelp}>{t("Ayuda")}</button>
         </nav>
         <div className="header-actions">

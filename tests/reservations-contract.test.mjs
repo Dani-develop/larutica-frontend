@@ -83,7 +83,7 @@ test("cancelar conserva la fila, el viajero no la borra y no se cambia la salida
   const collection = await read("app/api/reservations/route.ts");
   const detail = await read("app/api/reservations/[id]/route.ts");
   const repository = await read("lib/reservations/repository.ts");
-  assert.match(collection, /assertTravelerCanCreate/);
+  assert.match(await read('app/api/checkouts/route.ts'), /assertTravelerCanCreate/);
   assert.match(collection, /requireAppSession/);
   assert.match(collection, /assertSameOrigin/);
   assert.match(collection, /getSupabaseAdminClient/);

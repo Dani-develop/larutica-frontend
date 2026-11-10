@@ -16,6 +16,7 @@ export type Reservation = {
   departureStatus?: string
   rating?: number | null
   paymentStatus?: 'UNPAID' | 'PAID' | 'REFUNDED'
+  refundStatus?: 'pending' | 'succeeded' | 'failed' | null
   publicationId: string
   publicationTitle: string
   destination: string | null
@@ -66,6 +67,7 @@ export async function listReservations(options: { mine?: boolean; departureId?: 
   const response = await apiFetch(`/api/reservations${params.size ? `?${params}` : ''}`, {
     method: 'GET',
     credentials: 'include',
+    cache: 'no-store',
   })
   const result = await parseResponse<ApiResponse<Reservation[]>>(response)
   return result.data

@@ -12,7 +12,7 @@ export const ids = {
   departure: '88888888-8888-4888-8888-888888888888',
 };
 
-export async function createDatabase() {
+export async function createDatabase({checkoutFlow=true}={}) {
   const db = new PGlite();
   await db.exec(`
     create role anon; create role authenticated; create role service_role;
@@ -28,12 +28,14 @@ export async function createDatabase() {
   for (const file of [
     'supabase/migrations/202609220002_reservations.sql',
     'supabase/migrations/202610050001_reservation_retries.sql',
-    'docs/sql/reservations-auto-confirm.sql',
     'supabase/migrations/202610200001_cancel_departure_reservations.sql',
     'supabase/migrations/202610210001_reservation_payments.sql',
     'supabase/migrations/202610210002_agency_settlements.sql',
     'supabase/migrations/202610290002_rejection_reasons.sql',
-  ]) await db.exec(await readFile(new URL('../../' + file, import.meta.url), 'utf8'));
+    'supabase/migrations/202610210003_cancel_reservations_on_trip_changes.sql',
+    'supabase/migrations/20261021205431_publication_journeys.sql',
+    'supabase/migrations/20261110105917_reservation_checkout_payment_flow.sql',
+  ].filter(file=>checkoutFlow||!file.includes('20261110105917'))) await db.exec(await readFile(new URL('../../' + file, import.meta.url), 'utf8'));
 
   const encode = value => value && typeof value === 'object' && !(value instanceof Date) ? JSON.stringify(value) : value;
   const path = (row, key) => key.split('.').reduce((value, field) => value?.[field], row);
@@ -42,6 +44,8 @@ export async function createDatabase() {
     select(selection) { this.selection = selection; return this; }
     eq(key, value) { this.filters.push(row => path(row, key) === value); return this; }
     neq(key, value) { this.filters.push(row => path(row, key) !== value); return this; }
+    is(key, value) { this.filters.push(row => (path(row, key) ?? null) === value); return this; }
+    gt(key, value) { this.filters.push(row => { const actual=path(row,key);return actual instanceof Date?actual.getTime()>Date.parse(value):actual>value; }); return this; }
     in(key, values) { this.filters.push(row => values.includes(path(row, key))); return this; }
     order(key, { ascending = true } = {}) { this.orders.push([key, ascending]); return this; }
     range(start, end) { this.offset = start; this.end = end + 1; return this; }
@@ -60,7 +64,7 @@ export async function createDatabase() {
           return { data: this.singleRow ? result.rows[0] ?? null : result.rows, error: null };
         }
         const tables = {};
-        for (const table of ['profiles', 'agencies', 'publications', 'publication_departures', 'reservations', 'reservation_payments', 'agency_settlements']) {
+        for (const table of ['profiles', 'agencies', 'publications', 'publication_departures', 'reservations', 'reservation_payments', 'agency_settlements', 'reservation_checkouts']) {
           tables[table] = (await db.query(`select * from public.${table}`)).rows;
         }
         const publication = row => row ? { ...row, agencies: tables.agencies.find(a => a.id === row.agency_id) } : null;
@@ -73,7 +77,7 @@ export async function createDatabase() {
         } : this.table === 'agency_settlements' ? { ...row,
           agencies: tables.agencies.find(a => a.id === row.agency_id),
           profiles: tables.profiles.find(p => p.id === row.created_by),
-        } : this.table === 'publication_departures' ? departure(row) : this.table === 'publications' ? publication(row) : row;
+        } : this.table === 'reservation_checkouts' ? {...row,publication_departures:departure(tables.publication_departures.find(d=>d.id===row.departure_id)),reservation_payments:tables.reservation_payments.filter(p=>p.checkout_id===row.id)} : this.table === 'publication_departures' ? departure(row) : this.table === 'publications' ? publication(row) : row;
         let rows = tables[this.table].map(embed).filter(row => this.filters.every(filter => filter(row)));
         rows.sort((a, b) => { for (const [key, asc] of this.orders) {
           const x = path(a, key), y = path(b, key);
@@ -98,6 +102,12 @@ export async function createDatabase() {
     from: table => new Query(table),
     async rpc(name, args = {}) {
       try {
+        const checkoutRpcs={create_reservation_checkout:['p_passenger_id','p_departure_id','p_number_of_people'],claim_checkout_payment:['p_checkout_id'],settle_reservation_checkout:['p_checkout_id','p_payment_id','p_amount','p_currency']};
+        if(checkoutRpcs[name]) {
+          const values=checkoutRpcs[name].map(key=>args[key]);
+          const result=await db.query(`select * from public.${name}(${values.map((_,i)=>'$'+(i+1)).join(',')})`,values);
+          return {data:name==='claim_checkout_payment'?result.rows[0].claim_checkout_payment:name==='settle_reservation_checkout'?result.rows[0].settle_reservation_checkout:result.rows[0],error:null};
+        }
         if (name === 'mark_elapsed_reservations_past') {
           await db.query('select public.mark_elapsed_reservations_past()');
           return { data: null, error: null };

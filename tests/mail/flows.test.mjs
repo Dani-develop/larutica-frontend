@@ -49,15 +49,15 @@ async function request(path, method = 'POST', body, actor = 'traveler', headers 
   return { status: response.status, body: await response.json() };
 }
 const book = async (actor = 'traveler', people = 2, pay = true) => {
-  const response = await request('/api/reservations', 'POST', { departureId: ids.departure, numberOfPeople: people }, actor);
+  const response = await request('/api/checkouts', 'POST', { departureId: ids.departure, numberOfPeople: people }, actor);
   if (response.status === 201 && pay) {
-    const { applyPaymentStatus } = await import('../../lib/payments/repository.ts');
-    const id = response.body.data.id;
-    const current = await fixture.db.query('select status from reservation_payments where reservation_id=$1', [id]);
-    if (!current.rows.length) {
-      await fixture.db.query("insert into reservation_payments(reservation_id,provider_payment_id,amount,currency,status) values($1,$2,$3,'USD','pending')",[id,'pi_'+id,response.body.data.total]);
-      await applyPaymentStatus(fixture.admin, 'pi_'+id, 'paid', {source:'verified-test'});
-    }
+    const {settleCheckoutPayment}=await import('../../lib/payments/checkout.ts');
+    const {getCheckout}=await import('../../lib/booking/checkouts.ts');
+    const c=response.body.data;
+    const intent={id:'pi_'+c.id,status:'succeeded',amount:Math.round(c.total*100),currency:'USD'};
+    const inserted=await fixture.admin.from('reservation_payments').insert({checkout_id:c.id,provider_payment_id:intent.id,amount:c.total,currency:'USD',status:'pending'});assert.ifError(inserted.error);
+    await settleCheckoutPayment(fixture.admin,intent);
+    response.body.data=(await getCheckout(fixture.admin,c.id,ids[actor])).reservation;
     response.body.data.status = 'CONFIRMED';
   }
   return response;
@@ -68,7 +68,8 @@ const reviewPath = `/api/admin/publications/${ids.publication}/status`;
 test('crear una reserva sin pago no la confirma ni envía correos', async () => {
   const response = await book('traveler', 2, false);
   assert.equal(response.status, 201);
-  assert.equal(response.body.data.status, 'PENDING');
+  assert.equal(response.body.data.status, 'ACTIVE');
+  assert.equal((await fixture.db.query('select count(*)::int n from reservations')).rows[0].n,0);
   assert.equal(smtp.received.length, 0);
 });
 
@@ -90,7 +91,8 @@ test('HTTP → reserva persistida → SMTP autenticado → correos al viajero y 
 });
 test('reintentar una reserva no duplica correos ni cupos', async () => {
   const first = await book(), second = await book();
-  assert.equal(first.body.data.id, second.body.data.id);
+  assert.equal(second.status,409);
+  assert.ok(first.body.data.id);
   assert.equal(smtp.received.length, 2);
 });
 test('sin correo de viajero todavía se notifica a la agencia', async () => {
