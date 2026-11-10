@@ -124,7 +124,7 @@ test("el cliente expone el CRUD y Mis reservas deja los datos fijos", async () =
   assert.match(state, /status === 'PENDING'/);
   assert.match(state, /status === 'PAST'/);
   assert.match(page, /reservation\.status === "PAST"/);
-  assert.match(reservationsPage, /No tienes reservas por venir/);
+  assert.match(reservationsPage, /Aún no tienes viajes programados/);
   assert.match(reservationsPage, /role="alert"/);
   assert.match(reservationsPage, /updateReservation\(reservation\.id, \{ status: "CANCELLED" \}\)/);
   assert.match(reservationsPage, /Cancelar viaje/);
