@@ -1,6 +1,8 @@
 'use client';
 
 import Link from 'next/link';
+import { ArrowLeft } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { useState } from 'react';
 import { PageHeading } from '@/components/ui/page-heading';
 import { CurrencyNotice } from '@/components/preferences/PreferenceControls';
@@ -28,7 +30,8 @@ export function UpcomingReservationDetail({ reservation: r, image, onCancel, bus
   const place = r.destination ?? t('Sin destino');
 
   return <section className="page-shell trip-page-shell">
-    <Link className="back-link" href={tripPath('reservas')}>{t('Volver a reservas por venir')}</Link>
+    <div className="reservation-detail-content">
+    <div className="reservation-detail-back"><Button asChild variant="outline"><Link href={tripPath('reservas')}><ArrowLeft size={18} aria-hidden="true" />{t('Volver a mis reservas')}</Link></Button></div>
     {existing ? <p className="notice" role="status">{t('Ya tienes una reserva para esta salida. No creamos una segunda reserva.')}</p> : null}
     <PageHeading
       className="trip-page-heading"
@@ -75,5 +78,6 @@ export function UpcomingReservationDetail({ reservation: r, image, onCancel, bus
         </div>
       </div>
     </article>
+    </div>
   </section>;
 }

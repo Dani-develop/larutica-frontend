@@ -19,6 +19,8 @@ La reserva se realiza al completar el pago. No existe la modalidad de pagar desp
 
 ## Migración y despliegue
 
+El panel administrativo abre publicaciones paginadas (12 por página), incluidas las aprobadas sin reservas. Cada publicación abre sus reservas paginadas (10 por página), con búsqueda de viajero/código, próximas, historial y estado. Los filtros y páginas se conservan en la URL. Las archivadas con cobros conservan acceso al historial. Los contactos se consultan en el detalle de una reserva. Las consultas SQL aplican el ámbito de agencia antes de paginar; Admin conserva su ámbito global. La migración `20261110204516_reservation_management_pages.sql` agrega estas consultas privadas para service_role.
+
 Aplicar `supabase/migrations/20261110105917_reservation_checkout_payment_flow.sql` antes de activar esta versión. Requiere las migraciones anteriores, incluidas pagos, liquidaciones, cambios de salida y trayectos.
 
 La migración agrega checkouts privados, funciones solo para service_role, el vínculo de pagos a checkout y las copias de fecha. Archiva como canceladas las reservas PENDING sin cobro, preserva sus referencias de pago en un checkout vencido y repara PENDING con cobro registrado. No elimina el historial ni solicita cobros o reembolsos al aplicar SQL. Un cobro posterior de una intención archivada se procesa por el webhook y se devuelve.

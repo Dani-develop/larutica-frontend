@@ -257,6 +257,14 @@ export async function getReservationRecord(admin: SupabaseClient, id: string): P
   return toReservationRecord(data as ReservationRow);
 }
 
+/** Only called with the bounded IDs returned by the scoped management query. */
+export async function getReservationRecordsByIds(admin: SupabaseClient, ids: string[]): Promise<ReservationRecord[]> {
+  if (!ids.length) return [];
+  const {data,error}=await admin.from('reservations').select(RESERVATION_SELECT).in('id',ids);
+  if(error)throw error;
+  return (data as ReservationRow[]).map(toReservationRecord);
+}
+
 export type CancelledDepartureReservation = {
   id: string;
   passengerEmail: string | null;

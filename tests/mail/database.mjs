@@ -35,7 +35,8 @@ export async function createDatabase({checkoutFlow=true}={}) {
     'supabase/migrations/202610210003_cancel_reservations_on_trip_changes.sql',
     'supabase/migrations/20261021205431_publication_journeys.sql',
     'supabase/migrations/20261110105917_reservation_checkout_payment_flow.sql',
-  ].filter(file=>checkoutFlow||!file.includes('20261110105917'))) await db.exec(await readFile(new URL('../../' + file, import.meta.url), 'utf8'));
+    'supabase/migrations/20261110204516_reservation_management_pages.sql',
+  ].filter(file=>checkoutFlow||(!file.includes('20261110105917')&&!file.includes('reservation_management_pages')))) await db.exec(await readFile(new URL('../../' + file, import.meta.url), 'utf8'));
 
   const encode = value => value && typeof value === 'object' && !(value instanceof Date) ? JSON.stringify(value) : value;
   const path = (row, key) => key.split('.').reduce((value, field) => value?.[field], row);
@@ -102,6 +103,7 @@ export async function createDatabase({checkoutFlow=true}={}) {
     from: table => new Query(table),
     async rpc(name, args = {}) {
       try {
+        const managementRpcs={reservation_publications_page:['p_owner','p_page','p_size','p_search','p_archived'],publication_reservations_page:['p_owner','p_publication','p_page','p_size','p_search','p_period','p_status']};if(managementRpcs[name]){const values=managementRpcs[name].map(key=>args[key]);const result=await db.query(`select public.${name}(${values.map((_,i)=>'$'+(i+1)).join(',')}) as result`,values);return {data:result.rows[0].result,error:null};}
         const checkoutRpcs={create_reservation_checkout:['p_passenger_id','p_departure_id','p_number_of_people'],claim_checkout_payment:['p_checkout_id'],settle_reservation_checkout:['p_checkout_id','p_payment_id','p_amount','p_currency']};
         if(checkoutRpcs[name]) {
           const values=checkoutRpcs[name].map(key=>args[key]);

@@ -9,8 +9,13 @@ import { useAuth } from '@/modules/auth/context/AuthContext';
 import { listReservations, updateReservation, type Reservation } from '@/modules/transport/reservations/services/reservation.service';
 import { reservationNotice } from './reservationState';
 import { statusLabel } from './types';
+import { ReservationManagement } from './ReservationManagement';
 
 export function Reservations({worker = false}: {worker?: boolean}) {
+  return worker ? <ReservationManagement /> : <PersonalReservations />;
+}
+
+function PersonalReservations({worker = false}: {worker?: boolean}) {
   const { t, money, dateLabel } = usePreferences();
   const now = useNow();
   const {user,loading:authLoading} = useAuth();
