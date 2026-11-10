@@ -7,11 +7,12 @@ export type OnvoPaySdkConfig = {
   branding?: boolean;
   onSuccess?: (data: unknown) => void;
   onError?: (data: unknown) => void;
+  onFormErrors?: (data: unknown) => void;
 };
 
 export type OnvoPaySdkInstance = {
-  render: (selector: string) => void;
-  submitPayment?: () => void;
+  render: (selector: string) => void | PromiseLike<unknown>;
+  submitPayment?: () => void | PromiseLike<unknown>;
 };
 
 export type OnvoPaySdk = {

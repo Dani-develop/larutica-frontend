@@ -7,6 +7,7 @@ import { usePreferences } from '@/lib/preferences/Preferences';
 import { money as usd } from '@/modules/booking/types';
 import type { StartedPayment } from '../services/payment.service';
 import { loadOnvoSdk, type OnvoPaySdkInstance } from '../utils/onvoSdk';
+import { onvoFormMessages, onvoPaymentMessage } from '../utils/onvoErrors';
 import './onvo-pay.css';
 
 type OnvoPaymentFormProps = {
@@ -32,10 +33,14 @@ export function OnvoPaymentForm({ startKey, start, confirm, onPaid, onCancel, on
   const [ready, setReady] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<string[]>([]);
+  const errorRef = useRef<HTMLDivElement>(null);
+  useEffect(() => { if (error) errorRef.current?.focus(); }, [error, fieldErrors]);
   const [retry, setRetry] = useState(0);
   const [prepareFailed, setPrepareFailed] = useState(false);
   const [confirmPending, setConfirmPending] = useState(false);
   const instance = useRef<OnvoPaySdkInstance | null>(null);
+  const busy = useRef(false);
   const onPaidRef = useRef(onPaid);
   useEffect(() => { onPaidRef.current = onPaid; }, [onPaid]);
   const submittingRef = useRef(onSubmitting);
@@ -45,7 +50,8 @@ export function OnvoPaymentForm({ startKey, start, confirm, onPaid, onCancel, on
     let cancelled = false;
     const container = () => document.getElementById(`onvo-pay-${containerId}`);
     async function mount() {
-      setLoading(true);setReady(false);setError('');setPrepareFailed(false);setSubmitting(false);setConfirmPending(false);
+      busy.current = false;
+      setLoading(true);setReady(false);setError('');setFieldErrors([]);setPrepareFailed(false);setSubmitting(false);setConfirmPending(false);
       try {
         const started = await startRef.current();
         if (cancelled) return;
@@ -63,10 +69,12 @@ export function OnvoPaymentForm({ startKey, start, confirm, onPaid, onCancel, on
           branding: true,
           onSuccess: () => {
             if (cancelled) return;
+            busy.current = true;
             confirmRef.current(started.paymentIntentId)
-              .then(() => { if (!cancelled) {setSubmitting(false);submittingRef.current?.(false);onPaidRef.current();} })
+              .then(() => { if (!cancelled) {busy.current=false;setSubmitting(false);submittingRef.current?.(false);onPaidRef.current();} })
               .catch((cause) => {
                 if (cancelled) return;
+                busy.current = false;
                 setSubmitting(false);
                 submittingRef.current?.(false);
                 setConfirmPending(true);
@@ -75,13 +83,23 @@ export function OnvoPaymentForm({ startKey, start, confirm, onPaid, onCancel, on
           },
           onError: (data) => {
             if (cancelled) return;
+            busy.current = false;
             setSubmitting(false);
             submittingRef.current?.(false);
-            const message = data && typeof data === 'object' && 'message' in data && typeof data.message === 'string' ? data.message : '';
-            setError(message || 'No pudimos procesar el pago. Revisa los datos de tu tarjeta e intenta de nuevo.');
+            setFieldErrors([]);
+            setError(onvoPaymentMessage(data));
+          },
+          onFormErrors: (data) => {
+            if (cancelled) return;
+            busy.current = false;
+            setSubmitting(false);
+            submittingRef.current?.(false);
+            setError('Corrige los datos de la tarjeta para continuar.');
+            setFieldErrors(onvoFormMessages(data));
           },
         });
-        instance.current.render(`#onvo-pay-${containerId}`);
+        await instance.current.render(`#onvo-pay-${containerId}`);
+        if (cancelled) return;
         const markReady = () => {
           const iframe = container()?.querySelector('iframe');
           if (iframe) {
@@ -105,6 +123,7 @@ export function OnvoPaymentForm({ startKey, start, confirm, onPaid, onCancel, on
       cancelled = true;
       cleanup();
       instance.current = null;
+      busy.current = false;
       submittingRef.current?.(false);
       const target = container();
       if (target) target.innerHTML = '';
@@ -112,11 +131,12 @@ export function OnvoPaymentForm({ startKey, start, confirm, onPaid, onCancel, on
   }, [startKey, containerId, language, retry]);
 
   function submit() {
-    if (submitting) return;
+    if (busy.current) return;
     if (confirmPending && payment) {
+      busy.current = true;
       setSubmitting(true);submittingRef.current?.(true);setError('');
       confirmRef.current(payment.paymentIntentId).then(()=>onPaidRef.current()).catch(cause=>setError(cause instanceof Error?cause.message:'No pudimos confirmar el pago.'))
-        .finally(()=>{setSubmitting(false);submittingRef.current?.(false);});
+        .finally(()=>{busy.current=false;setSubmitting(false);submittingRef.current?.(false);});
       return;
     }
     if (!instance.current?.submitPayment) {
@@ -124,15 +144,23 @@ export function OnvoPaymentForm({ startKey, start, confirm, onPaid, onCancel, on
       return;
     }
     setError('');
+    setFieldErrors([]);
+    busy.current = true;
     setSubmitting(true);
     submittingRef.current?.(true);
-    try {instance.current.submitPayment();} catch(cause) {setSubmitting(false);submittingRef.current?.(false);setError(cause instanceof Error?cause.message:'No pudimos enviar el pago.');}
+    const failed = () => {
+      busy.current = false;
+      setSubmitting(false);
+      submittingRef.current?.(false);
+      setError('No pudimos enviar el pago. Revisa tu conexión e intenta de nuevo.');
+    };
+    try { void Promise.resolve(instance.current.submitPayment()).catch(failed); } catch { failed(); }
   }
 
   return <div className="onvo-pay" aria-busy={loading}>
     {loading && <div className="onvo-pay-loading" role="status"><span className="onvo-pay-spinner" aria-hidden="true" />{t('Preparando el pago…')}</div>}
     <div className="onvo-pay-form" hidden={loading}><div id={`onvo-pay-${containerId}`} /></div>
-    {error && <p className="booking-error" role="alert">{t(error)}</p>}
+    {error && <div ref={errorRef} className="booking-error" role="alert" tabIndex={-1}><p>{t(error)}</p>{fieldErrors.length > 0 && <ul>{fieldErrors.map(message => <li key={message}>{t(message)}</li>)}</ul>}</div>}
     <div className="booking-actions">
       {prepareFailed ? <Button type="button" onClick={()=>setRetry(n=>n+1)}>{t('Volver a preparar el pago')}</Button> : <Button type="button" disabled={!ready || submitting || loading} onClick={submit}>
         {submitting ? t('Procesando pago…') : confirmPending ? t('Comprobar pago') : `${t('Pagar')} ${payment ? usd(payment.amount) : ''}`.trim()}
