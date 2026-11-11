@@ -17,18 +17,23 @@ import { canPayReservation, derivePaymentStatus } from "@/lib/payments/status";
 import { settlementTarget } from "@/lib/promotions/window";
 import { getReservationRecord, type ReservationRecord } from "@/lib/reservations/repository";
 import { notifyReservationCreated } from "@/lib/mail/notify";
+import { settleCheckoutPayment } from './checkout';
 
 const CURRENCY = "USD" as const;
-const PAYMENT_COLUMNS = "id, reservation_id, provider_payment_id, amount, currency, status, refunded_amount";
+const PAYMENT_COLUMNS = "id, reservation_id, checkout_id, provider_payment_id, amount, currency, status, refunded_amount, refund_status, provider_refund_id, notification_sent_at";
 
 type PaymentRow = {
   id: string;
-  reservation_id: string;
+  reservation_id: string | null;
+  checkout_id?: string | null;
   provider_payment_id: string;
   amount: number | string;
   currency: string;
   status: PaymentStatus;
   refunded_amount: number | string;
+  refund_status?: string | null;
+  provider_refund_id?: string | null;
+  notification_sent_at?: string | null;
 };
 
 export type StartedPayment = {
@@ -116,7 +121,24 @@ export async function applyPaymentStatus(
   if (error) throw error;
   const payment = data as PaymentRow | null;
   if (!payment) return null;
-  if (payment.status === "paid" || payment.status === "refunded" || payment.status === next) return payment;
+  if (next === 'paid' && payment.checkout_id) {
+    const intent = await fetchOnvoPaymentIntent(providerPaymentId);
+    await settleCheckoutPayment(admin, intent);
+    return payment;
+  }
+  if (payment.status === "refunded" || (payment.status === next && next !== 'paid')) return payment;
+  if (payment.status === 'paid' && next !== 'paid') return payment;
+  if(next==='paid') {
+    const intent=await fetchOnvoPaymentIntent(providerPaymentId);
+    if(mapOnvoStatus(intent.status)!=='paid')return payment;
+    if(!Number.isSafeInteger(intent.amount)||Number(intent.amount)<=0||!['USD','CRC'].includes(intent.currency??''))throw new ApiError('No pudimos verificar el importe del pago.',502);
+    const record=payment.reservation_id?await getReservationRecord(admin,payment.reservation_id):null;
+    if(fromMinorUnits(intent.amount!)!==money(payment.amount)||intent.currency!==payment.currency||!record||record.total!==money(payment.amount)) {
+      const invalid=await admin.from('reservation_payments').update({status:'failed',amount:fromMinorUnits(intent.amount!),currency:intent.currency,last_event:event}).eq('id',payment.id);
+      if(invalid.error)throw invalid.error;
+      await refundPayment(admin,payment.id);return payment;
+    }
+  }
 
   const patch: Record<string, unknown> = { status: next, last_event: event };
   if (next === "paid") patch.paid_at = new Date().toISOString();
@@ -125,39 +147,35 @@ export async function applyPaymentStatus(
   if (updateError) {
     // 23505: la reserva ya tenía otro cobro; este pago duplicado se devuelve completo.
     if (updateError.code === "23505" && next === "paid") {
-      await createOnvoRefund(providerPaymentId, money(payment.amount));
-      await admin.from("reservation_payments").update({
-        status: "refunded",
-        refunded_amount: money(payment.amount),
-        refunded_at: new Date().toISOString(),
-        last_event: event,
-      }).eq("id", payment.id);
+      const duplicate=await admin.from('reservation_payments').update({status:'failed',last_event:event}).eq('id',payment.id);
+      if(duplicate.error)throw duplicate.error;
+      await refundPayment(admin,payment.id);
       return payment;
     }
     throw updateError;
   }
-  if (!updated) return payment;
+  if (!updated && next !== 'paid') return payment;
 
   if (next === "paid") {
     const { data: reservation, error: reservationError } = await admin.from("reservations")
       .select("status").eq("id", payment.reservation_id).maybeSingle();
     if (reservationError) throw reservationError;
-    if (reservation?.status === "CANCELLED") {
-      await refundReservationPayment(admin, payment.reservation_id).catch((cause) => {
+    const record = payment.reservation_id ? await getReservationRecord(admin, payment.reservation_id) : null;
+    if (record && (record.status === 'CANCELLED' || (payment.status !== 'paid' && (record.departureStatus !== 'ACTIVE' || Date.parse(record.departureStartAt) <= Date.now())))) {
+      await refundPayment(admin, payment.id).catch((cause) => {
         console.error("No se pudo reembolsar un pago de una reserva cancelada", payment.reservation_id, cause);
       });
-    } else if (reservation) {
+    } else if (reservation && payment.reservation_id) {
       const { error: confirmError } = await admin.from("reservations").update({ status: "CONFIRMED" })
         .eq("id", payment.reservation_id).eq("status", "PENDING");
       if (confirmError) throw confirmError;
       const confirmed = await getReservationRecord(admin, payment.reservation_id);
       if (confirmed && confirmed.status !== "CANCELLED") {
-        await notifyReservationCreated({ ...confirmed, paymentReference: providerPaymentId,
-          paidAt: patch.paid_at as string }, true);
+        await notifySettledPayment(admin, payment.id, confirmed.id, providerPaymentId);
       }
     }
   }
-  return updated as PaymentRow;
+  return (updated ?? payment) as PaymentRow;
 }
 
 /** Confirma desde el navegador: consulta a Onvo, que es la fuente de verdad, nunca el cliente. */
@@ -186,7 +204,11 @@ export async function confirmReservationPayment(
     throw new ApiError("El pago todavía no está confirmado. Si se te cobró, se reflejará en unos minutos.", 409);
   }
   await applyPaymentStatus(admin, paymentIntentId, "paid", { source: "client-confirm", paymentIntent: intent });
-  return { paymentStatus: "PAID" };
+  const current = await getReservationRecord(admin, reservation.id);
+  if (!current || current.status === 'CANCELLED' || current.paymentStatus !== 'PAID') {
+    throw new ApiError('La reserva no se confirmó. Consulta el estado del reembolso.',409);
+  }
+  return { paymentStatus: current.paymentStatus };
 }
 
 /** Devuelve el monto cobrado (completo) de una reserva. No hace nada si no hay cobro pendiente de devolver. */
@@ -197,18 +219,40 @@ export async function refundReservationPayment(admin: SupabaseClient, reservatio
   const payment = data as PaymentRow | null;
   if (!payment) return false;
 
-  const remaining = money(money(payment.amount) - money(payment.refunded_amount));
-  if (remaining <= 0) return false;
-
-  const refund = await createOnvoRefund(payment.provider_payment_id, remaining);
-  const { error: updateError } = await admin.from("reservation_payments").update({
-    status: "refunded",
-    refunded_amount: money(payment.amount),
-    refunded_at: new Date().toISOString(),
-    provider_refund_id: refund.id ?? null,
-  }).eq("id", payment.id);
-  if (updateError) throw updateError;
+  await refundPayment(admin, payment.id);
   return true;
+}
+
+export async function notifySettledPayment(admin: SupabaseClient, paymentId: string, reservationId: string, providerPaymentId: string) {
+  const reservation = await getReservationRecord(admin, reservationId);
+  if (!reservation || !['CONFIRMED','PAST'].includes(reservation.status)) return;
+  const claimed = await admin.from('reservation_payments').update({ notification_sent_at: new Date().toISOString() })
+    .eq('id',paymentId).is('notification_sent_at',null).select('id').maybeSingle();
+  if (claimed.error) throw claimed.error;
+  if (claimed.data) await notifyReservationCreated({ ...reservation, paymentReference:providerPaymentId,paidAt:new Date().toISOString() },true);
+}
+
+/** Claim once before requesting an external refund; its final status comes from Onvo. */
+export async function refundPayment(admin: SupabaseClient, paymentId: string) {
+  const { data, error } = await admin.from('reservation_payments').select(PAYMENT_COLUMNS).eq('id',paymentId).maybeSingle();
+  if (error) throw error;
+  const payment = data as PaymentRow | null;
+  if (!payment || payment.status === 'refunded' || payment.refund_status) return;
+  const remaining = money(money(payment.amount)-money(payment.refunded_amount));
+  if (remaining<=0) return;
+  const claim = await admin.from('reservation_payments').update({refund_status:'pending'}).eq('id',paymentId).is('refund_status',null).select('id').maybeSingle();
+  if (claim.error) throw claim.error;
+  if (!claim.data) return;
+  try {
+    const refund = await createOnvoRefund(payment.provider_payment_id,remaining);
+    const succeeded = refund.status === 'succeeded';
+    const saved = await admin.from('reservation_payments').update({provider_refund_id:refund.id??null,
+      ...(succeeded ? {status:'refunded',refund_status:'succeeded',refunded_amount:money(payment.amount),refunded_at:new Date().toISOString()}: {})}).eq('id',paymentId);
+    if (saved.error) throw saved.error;
+  } catch (error) {
+    await admin.from('reservation_payments').update({refund_status:'failed'}).eq('id',paymentId);
+    throw error;
+  }
 }
 
 /** Reembolsa sin interrumpir la cancelación: la reserva ya quedó cancelada y el fallo se registra. */
@@ -226,10 +270,6 @@ export async function handleOnvoWebhook(admin: SupabaseClient, payload: Record<s
   if (eventType === "refund.succeeded" || eventType === "refund.failed") {
     const paymentIntentId = extractString(payload, ["data.paymentIntentId", "data.object.paymentIntentId", "paymentIntentId"]);
     if (!paymentIntentId) return;
-    if (eventType === "refund.failed") {
-      console.error("OnvoPAY reportó un reembolso fallido; revisar en el panel de Onvo.", paymentIntentId);
-      return;
-    }
     const { data, error } = await admin.from("reservation_payments").select(PAYMENT_COLUMNS)
       .eq("provider_payment_id", paymentIntentId).maybeSingle();
     if (error) throw error;
@@ -238,15 +278,22 @@ export async function handleOnvoWebhook(admin: SupabaseClient, payload: Record<s
       await applyPromotionRefundEvent(admin, paymentIntentId, payload);
       return;
     }
+    if (eventType === 'refund.failed') {
+      const failed = await admin.from('reservation_payments').update({refund_status:'failed',last_event:payload}).eq('id',payment.id).neq('status','refunded');
+      if (failed.error) throw failed.error;
+      return;
+    }
     const minor = extractNumber(payload, ["data.amount", "data.object.amount", "amount"]);
     const refunded = Math.max(money(payment.refunded_amount), minor === undefined ? 0 : fromMinorUnits(minor));
-    await admin.from("reservation_payments").update({
+    const saved = await admin.from("reservation_payments").update({
       refunded_amount: refunded,
       refunded_at: new Date().toISOString(),
       provider_refund_id: extractString(payload, ["data.id", "data.object.id", "refundId"]) ?? null,
       status: refunded >= money(payment.amount) ? "refunded" : payment.status,
+      refund_status: refunded >= money(payment.amount) ? 'succeeded' : 'pending',
       last_event: payload,
     }).eq("id", payment.id);
+    if (saved.error) throw saved.error;
     return;
   }
 

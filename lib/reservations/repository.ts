@@ -3,7 +3,6 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { ApiError } from "@/lib/api/errors";
 import { derivePaymentStatus, type ReservationPaymentStatus } from "@/lib/payments/status";
 import { refundReservationPaymentSafely } from "@/lib/payments/repository";
-import { reservationWasInserted } from "@/lib/reservations/departure-cancel";
 import {
   canReadReservation,
   listScope,
@@ -12,6 +11,7 @@ import {
 
 const RESERVATION_SELECT = `
   id,
+  departure_start_at_snapshot,
   journey_snapshot,
   meeting_point_snapshot,
   journey_snapshot_captured,
@@ -41,7 +41,7 @@ const RESERVATION_SELECT = `
     rating
   ),
   reservation_payments (
-    status
+    status, refund_status
   )
 `;
 
@@ -59,6 +59,7 @@ export type ReservationRecord = {
   departureStatus: string;
   rating: number | null;
   paymentStatus: ReservationPaymentStatus;
+  refundStatus?: 'pending' | 'succeeded' | 'failed' | null;
   publicationId: string;
   publicationTitle: string;
   destination: string | null;
@@ -89,6 +90,7 @@ type DepartureEmbed = {
   publications: PublicationEmbed | PublicationEmbed[] | null;
 };
 type ReservationRow = {
+  departure_start_at_snapshot?: string | null;
   journey_snapshot?: Journey | null;
   meeting_point_snapshot?: string | null;
   journey_snapshot_captured?: boolean;
@@ -103,7 +105,7 @@ type ReservationRow = {
   profiles?: { full_name: string; email: string; phone: string | null } | { full_name: string; email: string; phone: string | null }[] | null;
   publication_departures: DepartureEmbed | DepartureEmbed[] | null;
   reservation_ratings: { rating: number } | { rating: number }[] | null;
-  reservation_payments?: { status: string }[] | null;
+  reservation_payments?: { status: string; refund_status?: 'pending' | 'succeeded' | 'failed' | null }[] | null;
 };
 
 function one<T>(value: T | T[] | null | undefined): T | null {
@@ -145,9 +147,10 @@ export function toReservationRecord(row: ReservationRow): ReservationRecord {
     status: row.status,
     rating: one(row.reservation_ratings)?.rating ?? null,
     paymentStatus: derivePaymentStatus(row.reservation_payments),
+    refundStatus: row.reservation_payments?.find(payment => payment.refund_status)?.refund_status ?? null,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
-    departureStartAt: departure?.start_at ?? "",
+    departureStartAt: row.departure_start_at_snapshot ?? departure?.start_at ?? "",
     departureStatus: departure?.status ?? "",
     publicationId: publication?.id ?? "",
     publicationTitle: publication?.title ?? "Reserva",
@@ -176,6 +179,7 @@ export function toPublicReservation(record: ReservationRecord) {
     status: record.status,
     rating: record.rating,
     paymentStatus: record.paymentStatus,
+    refundStatus: record.refundStatus,
     createdAt: record.createdAt,
     updatedAt: record.updatedAt,
     departureStartAt: record.departureStartAt,
@@ -235,7 +239,9 @@ export async function listReservationRecords(
   }
   const records = rows
     .map(toReservationRecord)
-    .filter((reservation) => canReadReservation(role, userId, reservation));
+    .filter((reservation) => canReadReservation(role, userId, reservation)
+      && reservation.status !== 'PENDING'
+      && reservation.paymentStatus !== 'UNPAID');
   return records;
 }
 
@@ -251,47 +257,12 @@ export async function getReservationRecord(admin: SupabaseClient, id: string): P
   return toReservationRecord(data as ReservationRow);
 }
 
-export async function createReservationRecord(
-  admin: SupabaseClient,
-  passengerId: string,
-  departureId: string,
-  numberOfPeople: number,
-): Promise<{ record: ReservationRecord; inserted: boolean }> {
-  // A retry belongs to this passenger, never to another user's reservation.
-  const { data: existing, error: existingError } = await admin.from("reservations")
-    .select(RESERVATION_SELECT).eq("passenger_id", passengerId).eq("departure_id", departureId)
-    .in("status", ["PENDING", "CONFIRMED"]).order("created_at", { ascending: false }).limit(1).maybeSingle();
-  if (existingError) throw existingError;
-  if (existing) {
-    return { record: toReservationRecord(existing as ReservationRow), inserted: reservationWasInserted(existing.status) };
-  }
-  const { data: departure, error: availabilityError } = await admin.from("publication_departures")
-    .select("publications!inner(agencies!inner(status))").eq("id", departureId)
-    .eq("publications.agencies.status", "APPROVED").maybeSingle();
-  if (availabilityError) throw availabilityError;
-  if (!departure) throw new ApiError("El proveedor ya no está disponible para recibir reservas.", 409);
-  const { data, error } = await admin.rpc("create_reservation", {
-    p_passenger_id: passengerId,
-    p_departure_id: departureId,
-    p_number_of_people: numberOfPeople,
-  });
-  if (error) throwDatabaseError(error);
-  const created = data as { id?: string } | null;
-  if (!created?.id) throw new ApiError("No se pudo crear la reserva.", 500);
-  const record = await getReservationRecord(admin, created.id);
-  if (!record) throw new ApiError("No se pudo crear la reserva.", 500);
-  // Paid services stay pending until Onvo verifies the payment.
-  if (record.total > 0 && record.status === "CONFIRMED") {
-    await updateReservationStatus(admin, record.id, "PENDING", "CONFIRMED");
-    record.status = "PENDING";
-  }
-  if (record.total <= 0 && record.status === "PENDING") {
-    await updateReservationStatus(admin, record.id, "CONFIRMED", "PENDING");
-    const confirmed = await getReservationRecord(admin, record.id);
-    if (!confirmed) throw new ApiError("No se pudo consultar la reserva.", 500);
-    return { record: confirmed, inserted: reservationWasInserted(null) };
-  }
-  return { record, inserted: reservationWasInserted(null) };
+/** Only called with the bounded IDs returned by the scoped management query. */
+export async function getReservationRecordsByIds(admin: SupabaseClient, ids: string[]): Promise<ReservationRecord[]> {
+  if (!ids.length) return [];
+  const {data,error}=await admin.from('reservations').select(RESERVATION_SELECT).in('id',ids);
+  if(error)throw error;
+  return (data as ReservationRow[]).map(toReservationRecord);
 }
 
 export type CancelledDepartureReservation = {

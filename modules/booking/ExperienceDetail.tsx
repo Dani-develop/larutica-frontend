@@ -5,18 +5,19 @@ import { usePreferences } from "@/lib/preferences/Preferences";
 import { CurrencyNotice } from "@/components/preferences/PreferenceControls";
 import Link from 'next/link';
 import { type ReactNode, useEffect, useRef, useState } from 'react';
-import { Building2, CheckCircle2, Clock, MapPin } from 'lucide-react';
+import { Building2, Clock, MapPin } from 'lucide-react';
 import { useNow } from './useNow';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/modules/auth/context/AuthContext';
-import { createReservation, listReservations, type Reservation } from '@/modules/transport/reservations/services/reservation.service';
+import { listReservations, type Reservation } from '@/modules/transport/reservations/services/reservation.service';
 import { PublicShell } from './PublicShell';
 import { SiteHeader } from '@/modules/landing/components/SiteHeader';
 import { type Experience } from './types';
 import './experience-detail.css';
 import { JourneyView } from '@/modules/journeys/JourneyView';
 import { reservationPath } from '@/modules/landing/lib/travelerRoutes';
-import { ReservationPayment } from '@/modules/payments/components/ReservationPayment';
+import {createCheckout,findCheckout,type Checkout} from './checkout.service';
+import {CheckoutScreen} from './CheckoutScreen';
 
 function EmbeddedShell({ children }: { children: ReactNode }) {
   return <div className="booking-site booking-embedded booking-detail-page">{children}</div>;
@@ -63,8 +64,7 @@ export function ExperienceDetail({ id, embedded = false }: { id: string; embedde
   const {user, loading: authLoading} = useAuth();
   const [item,setItem] = useState<Experience|null>(null), [loading,setLoading] = useState(true), [error,setError] = useState('');
   const [departureId,setDepartureId] = useState(''), [people,setPeople] = useState(1), [step,setStep] = useState<'choose'|'review'>('choose');
-  const [busy,setBusy] = useState(false), [created,setCreated] = useState<Reservation|null>(null), [reload,setReload] = useState(0);
-  const [paymentState,setPaymentState] = useState<'pending'|'paid'>('pending');
+  const [busy,setBusy] = useState(false), [created,setCreated] = useState<Checkout|null>(null), [reload,setReload] = useState(0);
   const submitting = useRef(false);
   const panelRef = useRef<HTMLElement|null>(null);
   useEffect(() => {if (panelRef.current) panelRef.current.scrollTop = 0;},[step]);
@@ -74,20 +74,21 @@ export function ExperienceDetail({ id, embedded = false }: { id: string; embedde
     window.addEventListener('focus', refresh);
     return () => window.removeEventListener('focus', refresh);
   },[]);
-  const [personalCheck, setPersonalCheck] = useState<{ key: string; reservation: Reservation | null; error: string }>({key:'',reservation:null,error:''});
+  const [personalCheck, setPersonalCheck] = useState<{ key: string; reservation: Reservation | null; checkout:Checkout|null; error: string }>({key:'',reservation:null,checkout:null,error:''});
   const checkKey = user && departureId ? `${user.id}:${departureId}` : '';
   useEffect(() => {
     if (!user || !departureId) return;
     let current = true;
     const key = `${user.id}:${departureId}`;
-    listReservations({mine:true,departureId}).then(rows => {
-      if (current) setPersonalCheck({key,reservation:rows.find(r => r.passengerId === user.id && ['PENDING','CONFIRMED'].includes(r.status)) ?? null,error:''});
+    Promise.all([listReservations({mine:true,departureId}),findCheckout(departureId)]).then(([rows,checkout]) => {
+      if (current) {const reservation=rows.find(r=>r.passengerId===user.id&&r.status==='CONFIRMED')??null;if(checkout)setPeople(checkout.numberOfPeople);else if(reservation)setPeople(reservation.numberOfPeople);setPersonalCheck({key,reservation,checkout,error:''});}
     }).catch(() => {
-      if (current) setPersonalCheck({key,reservation:null,error:'No pudimos consultar tus reservas. Intenta de nuevo para continuar.'});
+      if (current) setPersonalCheck({key,reservation:null,checkout:null,error:'No pudimos consultar tus reservas. Intenta de nuevo para continuar.'});
     });
     return () => {current = false;};
   },[user,departureId,reload]);
   const existingReservation = personalCheck.key === checkKey ? personalCheck.reservation : null;
+  const existingCheckout=personalCheck.key === checkKey ? personalCheck.checkout:null;
   const checkError = personalCheck.key === checkKey ? personalCheck.error : '';
   const checkingReservation = !!checkKey && personalCheck.key !== checkKey;
   useEffect(() => { const controller = new AbortController(); queueMicrotask(() => {if (!controller.signal.aborted) {setLoading(true); setError('');}});
@@ -105,8 +106,10 @@ export function ExperienceDetail({ id, embedded = false }: { id: string; embedde
     return () => controller.abort();
   },[id,reload]);
   const departure = item?.departures.find(d => d.id === departureId);
-  const valid = !!departure && Number.isSafeInteger(people) && people > 0 && people <= departure.available && Date.parse(departure.startAt) > now;
+  const selectedUnitPrice=existingCheckout?.unitPrice??existingReservation?.unitPrice??item?.price??0;
+  const valid = selectedUnitPrice>0 && !!departure && Number.isSafeInteger(people) && people > 0 && people <= departure.available && Date.parse(departure.startAt) > now;
   const blockedReason = existingReservation ? 'Ya tienes una reserva activa para esta salida. Puedes consultar su estado en Mis reservas.'
+    : selectedUnitPrice<=0 ? 'Esta experiencia no tiene un precio válido para reservar.'
     : !item?.departures.length ? 'Por ahora no hay nuevas fechas disponibles para esta experiencia. Puedes explorar otros planes o volver más adelante.'
     : !departure ? 'Selecciona una fecha de salida para continuar.'
     : Date.parse(departure.startAt) <= now ? 'Esta salida ya comenzó. Selecciona otra fecha.'
@@ -114,39 +117,22 @@ export function ExperienceDetail({ id, embedded = false }: { id: string; embedde
     : !Number.isSafeInteger(people) || people < 1 ? 'Indica un número entero de personas, mayor que cero.'
     : people > departure.available ? `${t("Cupos disponibles:")} ${departure.available}. ${t("Reduce el número de personas o elige otra fecha.")}`
     : checkingReservation ? 'Buscando tus reservas para esta fecha…' : checkError;
-  const canContinue = valid && !existingReservation && !checkingReservation && !checkError;
+  const canContinue = !checkingReservation && !checkError && (!!existingReservation || !!existingCheckout || valid);
   const returnTo = `/experiencias/${id}?salida=${encodeURIComponent(departureId)}&personas=${people}`;
   async function send() {
     if (submitting.current || !canContinue || !user) return;
     submitting.current = true; setBusy(true); setError('');
     try {
-      // Recover a successful request whose response was lost before offering another submission.
-      const existing = (await listReservations({mine:true,departureId})).find(r => r.passengerId === user.id && r.departureId === departureId && ['PENDING','CONFIRMED'].includes(r.status));
-      if (existing) { if (existing.paymentStatus === 'PAID') window.location.assign(reservationPath(existing.id, true)); else { setPaymentState('pending'); setCreated(existing); } return; }
-      const reservation = await createReservation({departureId, numberOfPeople: people});
-      setPaymentState('pending'); setCreated(reservation); window.scrollTo({top:0,behavior:'smooth'});
-    } catch(e) { setError(e instanceof Error ? e.message : 'No pudimos enviar la solicitud. Revisa Mis reservas antes de volver a intentarlo.'); }
+      if(existingReservation){window.location.assign(reservationPath(existingReservation.id));return;}
+      const checkout=existingCheckout??await createCheckout(departureId,people);
+      setCreated(checkout);window.scrollTo({top:0,behavior:'smooth'});
+    } catch(e) { setError(e instanceof Error ? e.message : 'No pudimos iniciar el pago. Vuelve a comprobar la disponibilidad.'); }
     finally { submitting.current = false; setBusy(false); }
   }
-  const completed = !!created && (created.total <= 0 || created.paymentStatus === 'PAID' || paymentState === 'paid');
   const Shell = embedded ? EmbeddedShell : DetailShell;
   const Content = embedded ? 'section' : 'main';
   return <Shell><Content id="contenido" tabIndex={-1} className={embedded ? "booking-container booking-embedded" : "booking-container"}>
-    {created ? <section className="booking-success">
-      {completed && <CheckCircle2 size={42} color="var(--primary)" aria-hidden="true"/>}
-      <h1>{t(completed ? "Reserva realizada" : "Completa el pago")}</h1>
-      <span className="booking-status">{t(completed ? "Reservada" : "Pendiente de pago")}</span>
-      <CurrencyNotice usd={created.total}/>
-      <p className="mt-5">{t(completed ? "Tu reserva está lista. Revisa los datos de tu viaje en Mis reservas." : "Para confirmar tu reserva, completa el pago seguro con OnvoPAY.")}</p>
-      <dl className="booking-summary">
-        <div><dt>{t("Experiencia")}</dt><dd>{created.publicationTitle}</dd></div>
-        <div><dt>{t("Salida")}</dt><dd>{dateLabel(created.departureStartAt)}</dd></div>
-        <div><dt>{t("Personas")}</dt><dd>{created.numberOfPeople}</dd></div>
-        <div className="booking-total"><dt>{t("Total")}</dt><dd>{money(created.total)}</dd></div>
-      </dl>
-      {!completed && <ReservationPayment reservationId={created.id} onPaid={() => setPaymentState('paid')}/>}
-      {completed && <><p>{created.total <= 0 ? t("No se realizó ningún cobro. Guarda el número de reserva: ") : t("Pago recibido. Guarda el número de reserva: ")}<strong>{created.id.slice(0,8).toUpperCase()}</strong>.</p><Button asChild><Link href={reservationPath(created.id)}>{t("Ver mi reserva")}</Link></Button></>}
-    </section>
+    {created ? <CheckoutScreen key={created.id} checkout={created} onBack={()=>{setCreated(null);setPersonalCheck({key:'',reservation:null,checkout:null,error:''});setStep('choose');setReload(n=>n+1);}}/>
     : loading && !item ? <ExperienceDetailSkeleton /> : !item ? <div className="booking-empty" role="alert"><h1>{t("No pudimos abrir esta experiencia")}</h1><p>{t(error)}</p><Button onClick={() => setReload(n => n+1)}>{t("Volver a intentar")}</Button></div> : <>
     <div className="booking-detail-heading">
       <nav className="booking-detail-breadcrumb" aria-label={t("Ruta de navegación")}>
@@ -186,14 +172,12 @@ export function ExperienceDetail({ id, embedded = false }: { id: string; embedde
           <p>{t("Tu reserva se confirma cuando completas el pago seguro con OnvoPAY. Después podrás consultar sus detalles y cancelar desde Mis reservas antes de la salida.")}</p>
         </section>
       </div>
-    <aside ref={panelRef} className="booking-panel" aria-label={t("Solicitar reserva")}><p className="booking-price-from"><span>{t("Desde")}</span><strong>{money(item.price)}</strong><span>{t("por persona")}</span></p><CurrencyNotice usd={item.price*(people || 0)}/><ol className="booking-steps"><li aria-current={step === 'choose' ? 'step' : undefined}>{t("1. Elige tu salida")}</li><li aria-current={step === 'review' ? 'step' : undefined}>{t("2. Revisa y envía")}</li></ol><h2>{step === 'choose' ? t("Haz espacio para tu próximo viaje") : t("Revisa tu solicitud")}</h2>
+    <aside ref={panelRef} className="booking-panel" aria-label={t("Solicitar reserva")}><p className="booking-price-from"><span>{t("Desde")}</span><strong>{money(selectedUnitPrice)}</strong><span>{t("por persona")}</span></p><CurrencyNotice usd={selectedUnitPrice*(people || 0)}/><ol className="booking-steps"><li aria-current={step === 'choose' ? 'step' : undefined}>{t("1. Elige tu salida")}</li><li aria-current={step === 'review' ? 'step' : undefined}>{t("2. Revisa y paga")}</li></ol><h2>{step === 'choose' ? t("Haz espacio para tu próximo viaje") : t("Revisa tu compra")}</h2>
     <p id="booking-block-reason" className={blockedReason ? 'booking-notice' : 'sr-only'} role="status">{t(blockedReason) || t("Puedes continuar con tu solicitud.")}</p>
-    {existingReservation && (existingReservation.paymentStatus === 'UNPAID' && existingReservation.total > 0
-      ? <Button className="w-full mb-4" onClick={() => { setPaymentState('pending'); setCreated(existingReservation); }}>{t("Completa el pago")}</Button>
-      : <Button asChild variant="outline" className="w-full mb-4"><Link href={reservationPath(existingReservation.id)}>{t("Ver mi reserva")}</Link></Button>)}
+    {existingCheckout?<p className="booking-notice">{t('Tienes un pago en curso para esta salida.')} {existingCheckout.numberOfPeople} {t('personas')} · {money(existingCheckout.total)}. {t('Retoma ese pago antes de que venza; todavía no hay una reserva realizada.')}</p>:null}
     {!item.departures.length && <div className="booking-actions mb-4"><Button asChild variant="outline"><Link href={embedded ? "/" : "/#experiencias"}>{t("Explorar otras experiencias")}</Link></Button><Button variant="outline" onClick={() => setReload(n => n+1)}>{t("Consultar fechas de nuevo")}</Button></div>}
-    {checkError && <Button variant="outline" className="mb-4" onClick={() => {setPersonalCheck({key:'',reservation:null,error:''}); setReload(n => n+1);}}>{t("Volver a comprobar")}</Button>}
-    {!item.departures.length ? null : step === 'choose' ? <form onSubmit={e => {e.preventDefault(); setError(''); if (canContinue) setStep('review');}}><label>{t("Fecha y hora de salida")}<select value={departureId} onChange={e => setDepartureId(e.target.value)} required disabled={!item.departures.length}><option value="" disabled>{t("Selecciona una salida")}</option>{item.departures.map(d => <option key={d.id} value={d.id} disabled={d.available < 1 && d.id !== existingReservation?.departureId}>{dateLabel(d.startAt)} · {d.available ? `${d.available} ${t("cupos")}` : t("Sin cupo")}</option>)}</select></label><label>{t("Personas")}<input type="number" min="1" max={departure?.available || 1} step="1" value={people || ''} onChange={e => setPeople(Number(e.target.value))} required aria-describedby="booking-availability"/></label><p id="booking-availability" className="text-sm">{departure ? `${departure.available} ${t("cupos disponibles. Se vuelven a comprobar al enviar.")}` : t("No hay salidas disponibles para reservar.")}</p><dl className="booking-summary"><div><dt>{money(item.price)} × {people || 0}{t(" personas")}</dt><dd>{money(item.price*(people || 0))}</dd></div><div className="booking-total"><dt>{t("Total")}</dt><dd>{money(item.price*(people || 0))}</dd></div></dl><Button className="w-full" disabled={!canContinue} aria-describedby="booking-block-reason">{existingReservation ? t("Ya tienes una reserva") : t("Revisar reserva")}</Button></form> : <><dl className="booking-summary"><div><dt>{t("Salida")}</dt><dd>{departure && dateLabel(departure.startAt)}</dd></div><div><dt>{t("Personas")}</dt><dd>{people}</dd></div><div><dt>{t("A nombre de")}</dt><dd>{user?.name || t("Inicia sesión para continuar")}</dd></div><div className="booking-total"><dt>{t("Total")}</dt><dd>{money(item.price*people)}</dd></div></dl><p className="booking-notice">{t("Al confirmar, reservas estos cupos para la salida elegida. El pago con tarjeta es el siguiente paso.")}</p>{authLoading ? <p role="status">{t("Validando tu sesión…")}</p> : !user ? <Button className="w-full" asChild><Link href={`/login?next=${encodeURIComponent(returnTo)}`}>{t("Iniciar sesión para reservar")}</Link></Button> : <Button className="w-full" onClick={send} disabled={busy || !canContinue} aria-describedby="booking-block-reason">{busy ? t("Reservando…") : t("Continuar al pago")}</Button>}<Button variant="outline" className="w-full mt-3" disabled={busy} onClick={() => setStep('choose')}>{t("Modificar fecha o personas")}</Button></>}
+    {checkError && <Button variant="outline" className="mb-4" onClick={() => {setPersonalCheck({key:'',reservation:null,checkout:null,error:''}); setReload(n => n+1);}}>{t("Volver a comprobar")}</Button>}
+    {!item.departures.length ? null : step === 'choose' ? <form onSubmit={e => {e.preventDefault(); setError(''); if (canContinue&&!busy) {if(existingReservation||existingCheckout)void send();else setStep('review');}}}><label>{t("Fecha y hora de salida")}<select value={departureId} onChange={e => setDepartureId(e.target.value)} required disabled={!item.departures.length}><option value="" disabled>{t("Selecciona una salida")}</option>{item.departures.map(d => <option key={d.id} value={d.id} disabled={d.available < 1 && d.id !== existingReservation?.departureId && d.id !== existingCheckout?.departureId}>{dateLabel(d.startAt)} · {d.available ? `${d.available} ${t("cupos")}` : t("Sin cupo")}</option>)}</select></label><label>{t("Personas")}<input type="number" min="1" max={departure?.available || existingCheckout?.numberOfPeople || 1} step="1" disabled={!!existingCheckout||!!existingReservation} value={people || ''} onChange={e => setPeople(Number(e.target.value))} required aria-describedby="booking-availability"/></label><p id="booking-availability" className="text-sm">{departure ? `${departure.available} ${t("cupos disponibles. Se vuelven a comprobar al enviar.")}` : t("No hay salidas disponibles para reservar.")}</p><dl className="booking-summary"><div><dt>{money(selectedUnitPrice)} × {people || 0}{t(" personas")}</dt><dd>{money(selectedUnitPrice*(people || 0))}</dd></div><div className="booking-total"><dt>{t("Total")}</dt><dd>{money(selectedUnitPrice*(people || 0))}</dd></div></dl><Button className="w-full" disabled={busy || !canContinue} aria-describedby="booking-block-reason">{existingReservation ? t('Ver mi reserva') : existingCheckout ? t('Retomar pago') : t('Revisar reserva')}</Button></form> : <><dl className="booking-summary"><div><dt>{t("Salida")}</dt><dd>{departure && dateLabel(departure.startAt)}</dd></div><div><dt>{t("Personas")}</dt><dd>{people}</dd></div><div><dt>{t("A nombre de")}</dt><dd>{user?.name || t("Inicia sesión para continuar")}</dd></div><div className="booking-total"><dt>{t("Total")}</dt><dd>{money(selectedUnitPrice*people)}</dd></div></dl><p className="booking-notice">{t("La reserva se realiza al completar el pago. Tendrás 15 minutos para terminar; después se liberan los cupos.")}</p>{authLoading ? <p role="status">{t("Validando tu sesión…")}</p> : !user ? <Button className="w-full" asChild><Link href={`/login?next=${encodeURIComponent(returnTo)}`}>{t("Iniciar sesión para reservar")}</Link></Button> : <Button className="w-full" onClick={send} disabled={busy || !canContinue} aria-describedby="booking-block-reason">{busy ? t('Preparando pago…') : t("Continuar al pago")}</Button>}<Button variant="outline" className="w-full mt-3" disabled={busy} onClick={() => setStep('choose')}>{t("Modificar fecha o personas")}</Button></>}
     {error && <div role="alert" className="booking-error">{t(error)}<p><Link href={reservationPath()}>{t("Consultar mis reservas")}</Link></p><Button variant="outline" disabled={busy} onClick={() => {setStep('choose'); setReload(n => n+1);}}>{t("Consultar fechas de nuevo")}</Button></div>}
     </aside></div></>}
   </Content></Shell>;

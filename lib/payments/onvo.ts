@@ -108,7 +108,7 @@ export async function createOnvoRefund(paymentIntentId: string, amount: number):
 
 export function mapOnvoStatus(status?: string): PaymentStatus {
   const value = status?.toLowerCase() ?? "";
-  if (/paid|succeeded|success|completed|^complete$/.test(value)) return "paid";
+  if (['paid','succeeded','success','completed','complete'].includes(value)) return "paid";
   if (value.includes("cancel")) return "canceled";
   if (value.includes("fail")) return "failed";
   if (value.includes("expir")) return "expired";
@@ -116,8 +116,8 @@ export function mapOnvoStatus(status?: string): PaymentStatus {
 }
 
 export function mapOnvoEvent(eventType: string | undefined, status?: string): PaymentStatus {
-  if (eventType === "payment-intent.succeeded" || eventType === "checkout-session.succeeded") return "paid";
-  if (eventType === "payment-intent.failed") return "failed";
+  if (eventType === "payment-intent.succeeded" || eventType === 'payment_intent.succeeded' || eventType === "checkout-session.succeeded" || eventType === 'checkout_session.succeeded') return "paid";
+  if (eventType === "payment-intent.failed" || eventType === 'payment_intent.failed') return "failed";
   if (eventType === "payment-intent.deferred") return "pending";
   return mapOnvoStatus(status);
 }

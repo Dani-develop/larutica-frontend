@@ -53,12 +53,14 @@ export function reservationCanBePaid(reservation: Reservation, now: number) {
 
 /** Etiqueta corta del cobro; null cuando no hay nada que decir (por ejemplo, reserva gratuita o vencida). */
 export function paymentStatusText(reservation: Reservation, now: number) {
+  if (reservation.refundStatus === 'failed') return 'Reembolso requiere revisión';
   if (reservation.paymentStatus === 'PAID') return reservation.status === 'CANCELLED' ? 'Reembolso en proceso' : 'Pagada';
   if (reservation.paymentStatus === 'REFUNDED') return 'Reembolsada';
   return reservationCanBePaid(reservation, now) ? 'Pago pendiente' : null;
 }
 
 export function paymentNotice(reservation: Reservation, now: number) {
+  if (reservation.refundStatus === 'failed') return 'No se pudo completar la devolución. Contacta a LaRutica con el número de reserva para revisar el reembolso.';
   if (reservation.paymentStatus === 'PAID' && reservation.status === 'CANCELLED') {
     return 'Esta reserva pagada se canceló. Estamos devolviendo tu dinero; si no lo ves en tu tarjeta en unos días, escríbenos.';
   }

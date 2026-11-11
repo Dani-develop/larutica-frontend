@@ -20,6 +20,7 @@ import {
 } from "@/lib/reservations/repository";
 
 import { requireAppSession } from "@/lib/supabase/session";
+import {usedDepartureSeats} from '@/lib/traveler/availability';
 
 type RouteContext = {
   params: Promise<{
@@ -403,6 +404,10 @@ export async function PATCH(
         "La capacidad debe ser mayor que cero.",
         400,
       );
+    }
+    if(status==='ACTIVE'&&capacity<departure.capacity&&Date.parse(startAt)===Date.parse(departure.start_at)) {
+      const used=await usedDepartureSeats(supabase,[departure.id]);
+      if(capacity<(used.get(departure.id)??0))throw new ApiError('La capacidad no puede ser menor que los cupos reservados o en proceso de pago.',400);
     }
 
     if (

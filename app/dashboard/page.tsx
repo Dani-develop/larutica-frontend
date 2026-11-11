@@ -18,7 +18,6 @@ import { useAgency } from "@/modules/agency/hooks/useAgency";
 import {
   BarChart3,
   Building2,
-  ClipboardCheck,
   FileText,
   MapPin,
   Megaphone,
@@ -73,12 +72,6 @@ const quickLinks = [
     title: "Promociones",
     description: "Servicios destacados en resultados.",
     icon: Megaphone,
-  },
-  {
-    href: "/dashboard/reviews",
-    title: "Pendientes",
-    description: "Contenido que requiere revisión.",
-    icon: ClipboardCheck,
   },
 ];
 

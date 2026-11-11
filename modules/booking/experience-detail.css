@@ -36,6 +36,10 @@
 .booking-site.booking-detail-page .booking-notice { background:#fff; border:1px solid var(--detail-line); border-left:4px solid var(--detail-green); border-radius:var(--radius-field); color:var(--text-secondary); }
 .booking-site.booking-detail-page [data-slot=button] { min-height:48px; border-radius:var(--radius-pill); font-size:15px; font-weight:700; }
 .booking-site.booking-detail-page .booking-success { border-color:var(--detail-line); border-radius:var(--radius-card); box-shadow:0 4px 24px #002c1614; }
+.booking-site.booking-detail-page .booking-success { min-width:0; overflow-wrap:anywhere; }
+.booking-site.booking-detail-page .booking-success .booking-summary > div { min-width:0; flex-wrap:wrap; gap:8px 16px; }
+.booking-site.booking-detail-page .booking-success .booking-summary dd { min-width:0; }
+.booking-site.booking-detail-page .booking-success .booking-actions { flex-wrap:wrap; }
 .booking-site.booking-detail-page .booking-empty { border:1px solid var(--detail-line); border-radius:var(--radius-card); }
 
 .detail-skeleton .skeleton-block { display:block; max-width:100%; border-radius:var(--radius-field); background:linear-gradient(90deg,#eef1ee 0%,#f7f8f7 40%,#eef1ee 80%) 0 0/200% 100%; animation:detail-shimmer 1.4s ease-in-out infinite; }

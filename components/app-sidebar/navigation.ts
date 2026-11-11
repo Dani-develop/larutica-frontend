@@ -4,7 +4,6 @@ import {
   CalendarDays,
   Building2,
   Bus,
-  ClipboardCheck,
   FileText,
   Home,
   MapPin,
@@ -131,12 +130,6 @@ export const navGroups: NavGroup[] = [
         roles: ["Agencia"],
         primary: true,
       },
-      {
-        href: "/dashboard/reviews",
-        label: "Pendientes",
-        icon: ClipboardCheck,
-        roles: ["Agencia"],
-      },
     ],
   },
 
@@ -212,12 +205,6 @@ export const navGroups: NavGroup[] = [
         href: "/dashboard/promotions",
         label: "Promociones",
         icon: Megaphone,
-        roles: ["Admin"],
-      },
-      {
-        href: "/dashboard/reviews",
-        label: "Pendientes",
-        icon: ClipboardCheck,
         roles: ["Admin"],
       },
     ],

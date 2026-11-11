@@ -19,6 +19,13 @@ export async function usedDepartureSeats(admin: SupabaseClient, ids: string[]) {
       for (const row of data ?? []) used.set(row.departure_id, (used.get(row.departure_id) ?? 0) + Number(row.number_of_people));
       if (!data || data.length < 1000) break;
     }
+    for (let from = 0; ; from += 1000) {
+      const { data, error } = await admin.from('reservation_checkouts').select('departure_id,number_of_people')
+        .in('departure_id', chunk).eq('status', 'ACTIVE').gt('expires_at', new Date().toISOString()).order('id').range(from, from + 999);
+      if (error) throw error;
+      for (const row of data ?? []) used.set(row.departure_id, (used.get(row.departure_id) ?? 0) + Number(row.number_of_people));
+      if (!data || data.length < 1000) break;
+    }
   }};
   await Promise.all(Array.from({ length: Math.min(4, Math.ceil(unique.length / ID_CHUNK)) }, load));
   return used;

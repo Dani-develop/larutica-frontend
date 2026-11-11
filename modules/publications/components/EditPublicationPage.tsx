@@ -191,7 +191,7 @@ export function EditPublicationPage({
     );
 
     router.push(
-      `/dashboard/publications/${updated.id}`,
+      "/dashboard/publications",
     );
   }
 
@@ -324,14 +324,14 @@ export function EditPublicationPage({
           className="-ml-2 mb-5 h-8 gap-1.5 px-2 text-xs text-muted-foreground"
         >
           <Link
-            href={`/dashboard/publications/${publication.id}`}
+            href="/dashboard/publications"
           >
             <ArrowLeft
               size={15}
             />
 
             {t(
-              "Volver al detalle",
+              "Volver a publicaciones",
             )}
           </Link>
         </Button>
@@ -426,14 +426,14 @@ export function EditPublicationPage({
           className="-ml-2 h-8 gap-1.5 px-2 text-xs text-muted-foreground"
         >
           <Link
-            href={`/dashboard/publications/${publication.id}`}
+            href="/dashboard/publications"
           >
             <ArrowLeft
               size={15}
             />
 
             {t(
-              "Volver al detalle",
+              "Volver a publicaciones",
             )}
           </Link>
         </Button>
@@ -449,13 +449,6 @@ export function EditPublicationPage({
                   "Publicaciones",
                 href:
                   "/dashboard/publications",
-              },
-              {
-                label:
-                  publication.title ||
-                  "Detalle",
-                href:
-                  `/dashboard/publications/${publication.id}`,
               },
               {
                 label:
@@ -477,19 +470,6 @@ export function EditPublicationPage({
           </p>
         </div>
 
-        <Button
-          variant="outline"
-          asChild
-          className="self-start"
-        >
-          <Link
-            href={`/dashboard/publications/${publication.id}`}
-          >
-            {t(
-              "Ver publicación",
-            )}
-          </Link>
-        </Button>
       </div>
 
       <div className="mb-6 border-b">
@@ -559,7 +539,7 @@ export function EditPublicationPage({
           submitLabel="Enviar a revisión"
           onCancel={() =>
             router.push(
-              `/dashboard/publications/${publication.id}`,
+              "/dashboard/publications",
             )
           }
           onSubmit={
