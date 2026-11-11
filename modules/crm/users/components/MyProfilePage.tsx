@@ -2,18 +2,11 @@
 import { usePreferences } from "@/lib/preferences/Preferences";
 
 import { useState } from "react";
-import { Building2, Home, Mail, Phone, Shield, UserRound } from "lucide-react";
+import { Building2, Mail, Phone, Shield, UserRound } from "lucide-react";
 import { parsePhoneNumber } from "react-phone-number-input";
 import { getInitials } from "@/components/app-sidebar/user-avatar-utils";
 import type { DashboardRole } from "@/components/dashboard/dashboard-role-context";
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
+import { DashboardBreadcrumb } from "@/components/dashboard/DashboardBreadcrumb";
 import { Button } from "@/components/ui/button";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
@@ -314,21 +307,7 @@ export function MyProfilePage({ appearance = "dashboard" }: { appearance?: "dash
   return (
     <div className={landing ? "page-shell trip-profile" : "mx-auto flex w-full max-w-3xl flex-col gap-6"}>
       {landing ? null : (
-        <Breadcrumb>
-          <BreadcrumbList className="!text-sm">
-            <BreadcrumbItem>
-              <BreadcrumbLink
-                href="/dashboard"
-                className="flex items-center gap-1.5 !text-sm"
-              >
-                <Home className="size-3.5" />{t("Inicio ")}</BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbPage className="!text-sm">{t("Mi perfil")}</BreadcrumbPage>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
+        <DashboardBreadcrumb items={[{ label: "Mi perfil" }]} />
       )}
 
       <div className={landing ? "trip-profile-heading" : undefined}>

@@ -1,9 +1,9 @@
 "use client";
 import { usePreferences } from "@/lib/preferences/Preferences";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import { DashboardBreadcrumb } from "@/components/dashboard/DashboardBreadcrumb";
 import { useDashboardRole } from "@/components/dashboard/dashboard-role-context";
 import { emptyUserInput } from "../models/User";
 import { useUsers } from "../hooks/useUsers";
@@ -30,11 +30,8 @@ export function CreateUserPage() {
   return (
     <div className="mx-auto max-w-3xl space-y-6">
       <div>
-        <p className="text-sm font-medium text-primary">
-          <Link href="/dashboard/users" className="hover:underline">{t("Usuarios ")}</Link>
-          <span className="text-muted-foreground">{t(" / Nuevo")}</span>
-        </p>
-        <h1 className="mt-1 lr-page-title">{t("Nuevo usuario ")}</h1>
+        <DashboardBreadcrumb className="mb-2" items={[{ label: "Usuarios", href: "/dashboard/users" }, { label: "Nuevo usuario" }]} />
+        <h1 className="lr-page-title">{t("Nuevo usuario ")}</h1>
         <p className="mt-1 text-sm text-muted-foreground">{t("Crea una cuenta real en Supabase Auth y su perfil asociado. ")}</p>
       </div>
 

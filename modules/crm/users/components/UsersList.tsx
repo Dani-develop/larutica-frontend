@@ -7,7 +7,6 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import {
   Eye,
-  Home,
   MoreHorizontal,
   Pencil,
   Search,
@@ -17,15 +16,8 @@ import {
   UserX,
 } from "lucide-react";
 import { getInitials } from "@/components/app-sidebar/user-avatar-utils";
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
+import { DashboardBreadcrumb } from "@/components/dashboard/DashboardBreadcrumb";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
   DropdownMenu,
@@ -199,18 +191,7 @@ export function UsersList() {
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
-      <Breadcrumb>
-        <BreadcrumbList className="!text-sm">
-          <BreadcrumbItem>
-            <BreadcrumbLink href="/dashboard" className="flex items-center gap-1.5 !text-sm">
-              <Home className="size-3.5" />{t("Inicio ")}</BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbPage className="!text-sm">{t("Usuarios")}</BreadcrumbPage>
-          </BreadcrumbItem>
-        </BreadcrumbList>
-      </Breadcrumb>
+      <DashboardBreadcrumb items={[{ label: "Usuarios" }]} />
 
       <div className="flex flex-row items-start justify-between gap-4">
         <div>
