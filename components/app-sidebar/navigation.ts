@@ -177,12 +177,6 @@ export const navGroups: NavGroup[] = [
         primary: true,
       },
       {
-        href: "/dashboard/destinations",
-        label: "Destinos",
-        icon: MapPin,
-        roles: ["Admin"],
-      },
-      {
         href: "/dashboard/payments",
         label: "Pagos",
         icon: Wallet,

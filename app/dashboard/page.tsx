@@ -19,7 +19,6 @@ import {
   BarChart3,
   Building2,
   FileText,
-  MapPin,
   Megaphone,
   Users,
   CalendarDays,
@@ -39,7 +38,6 @@ const metrics = [
   { label: "Usuarios", value: "286", note: "+24 este mes", href: "/dashboard/users", icon: Users },
   { label: "Agencias", value: "38", note: "32 verificadas", href: "/dashboard/agencies", icon: Building2 },
   { label: "Publicaciones", value: "124", note: "2 por revisar", href: "/dashboard/publications", icon: FileText },
-  { label: "Destinos", value: "18", note: "3 provincias nuevas", href: "/dashboard/destinations", icon: MapPin },
 ];
 
 const quickLinks = [
@@ -60,12 +58,6 @@ const quickLinks = [
     title: "Publicaciones",
     description: "Excursiones y servicios de transporte.",
     icon: FileText,
-  },
-  {
-    href: "/dashboard/destinations",
-    title: "Destinos",
-    description: "Crea y actualiza lugares.",
-    icon: MapPin,
   },
   {
     href: "/dashboard/promotions",
