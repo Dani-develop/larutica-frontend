@@ -4,7 +4,7 @@ import { DashboardBreadcrumb } from "@/components/dashboard/DashboardBreadcrumb"
 import { usePreferences } from "@/lib/preferences/Preferences";
 
 import Link from "next/link";
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { useDashboardRole } from "@/components/dashboard/dashboard-role-context";
 import { useAgency } from "@/modules/agency/hooks/useAgency";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 import { usePublications } from "../hooks/usePublications";
 
@@ -58,30 +59,19 @@ function PublicationsListContent({ canCreate = true, notice, agencyView = false 
     error,
     remove,
   } = usePublications();
+  const [toDeactivate, setToDeactivate] = useState<{ id: string; title: string | null } | null>(null);
   const paged = usePagedRows(publications);
   const visiblePublications = agencyView ? paged.pageRows : publications;
 
-  async function handleDelete(
-    id: string,
-    title: string | null,
-  ) {
-    const confirmed =
-      window.confirm(
-        `¿Desactivar "${title ?? "esta publicación"}"?`,
-      );
-
-    if (!confirmed) {
-      return;
-    }
+  async function handleDelete() {
+    if (!toDeactivate) return;
 
     try {
-      await remove(id);
+      await remove(toDeactivate.id);
     } catch (deleteError) {
-      window.alert(
-        deleteError instanceof Error
-          ? deleteError.message
-          : "No se pudo desactivar la publicación.",
-      );
+      throw deleteError instanceof Error
+        ? deleteError
+        : new Error(t("No se pudo desactivar la publicación."));
     }
   }
 
@@ -306,10 +296,10 @@ function PublicationsListContent({ canCreate = true, notice, agencyView = false 
                         "INACTIVE"
                       }
                       onClick={() =>
-                        void handleDelete(
-                          publication.id,
-                          publication.title,
-                        )
+                        setToDeactivate({
+                          id: publication.id,
+                          title: publication.title,
+                        })
                       }
                     >
                       <Trash2 size={14} />
@@ -329,6 +319,18 @@ function PublicationsListContent({ canCreate = true, notice, agencyView = false 
       {agencyView && paged.totalPages > 1 && <div className="mt-4">
         <TablePagination {...paged} onPageChange={paged.setPage} />
       </div>}
+
+      <ConfirmDialog
+        open={toDeactivate !== null}
+        onOpenChange={(open) => {
+          if (!open) setToDeactivate(null);
+        }}
+        title={t("Desactivar publicación")}
+        description={`${t("¿Desactivar")} "${toDeactivate?.title ?? t("esta publicación")}"?`}
+        confirmLabel={t("Desactivar")}
+        pendingLabel={t("Desactivando...")}
+        onConfirm={handleDelete}
+      />
     </div>
   );
 }

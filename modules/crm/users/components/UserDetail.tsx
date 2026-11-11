@@ -3,11 +3,12 @@ import { usePreferences } from "@/lib/preferences/Preferences";
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Pencil, Trash2 } from "lucide-react";
 import { parsePhoneNumber } from "react-phone-number-input";
 import { useDashboardRole } from "@/components/dashboard/dashboard-role-context";
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
   Card,
   CardContent,
@@ -29,6 +30,7 @@ function formatPhone(phone: string): string {
 export function UserDetail({ id }: { id: string }) {
   const { t } = usePreferences();
   const router = useRouter();
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const { role } = useDashboardRole();
   const { getById, remove, loading } = useUsers();
   const user = getById(id);
@@ -60,6 +62,18 @@ export function UserDetail({ id }: { id: string }) {
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
+      <ConfirmDialog
+        open={confirmDelete}
+        onOpenChange={setConfirmDelete}
+        title={t("Eliminar usuario")}
+        description={`${t("¿Eliminar a")} “${user.name}”? ${t("Esta acción no se puede deshacer.")}`}
+        confirmLabel={t("Eliminar")}
+        pendingLabel={t("Eliminando…")}
+        onConfirm={async () => {
+          await remove(user.id);
+          router.push("/dashboard/users");
+        }}
+      />
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <p className="text-sm font-medium text-primary">
@@ -83,12 +97,7 @@ export function UserDetail({ id }: { id: string }) {
             variant="outline"
             size="sm"
             className="gap-1.5 text-destructive hover:text-destructive"
-            onClick={async () => {
-              if (window.confirm(`¿Eliminar a “${user.name}”?`)) {
-                await remove(user.id);
-                router.push("/dashboard/users");
-              }
-            }}
+            onClick={() => setConfirmDelete(true)}
           >
             <Trash2 className="size-3.5" />{t("Eliminar ")}</Button>
         </div>

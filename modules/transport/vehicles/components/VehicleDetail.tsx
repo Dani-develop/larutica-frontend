@@ -2,9 +2,11 @@
 import { usePreferences } from "@/lib/preferences/Preferences";
 
 import Link from "next/link";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
   Card,
   CardContent,
@@ -18,6 +20,7 @@ import { VehicleStatusBadge } from "./VehicleStatusBadge";
 export function VehicleDetail({ id }: { id: string }) {
   const { t } = usePreferences();
   const router = useRouter();
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const { getById, remove } = useVehicles();
   const vehicle = getById(id);
 
@@ -34,6 +37,17 @@ export function VehicleDetail({ id }: { id: string }) {
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
+      <ConfirmDialog
+        open={confirmDelete}
+        onOpenChange={setConfirmDelete}
+        title={t("Eliminar vehículo")}
+        description={`${t("¿Eliminar")} “${vehicle.name}”?`}
+        confirmLabel={t("Eliminar")}
+        onConfirm={() => {
+          remove(vehicle.id);
+          router.push("/dashboard/agencies");
+        }}
+      />
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <p className="text-sm font-medium text-primary">
@@ -60,12 +74,7 @@ export function VehicleDetail({ id }: { id: string }) {
             variant="outline"
             size="sm"
             className="gap-1.5 text-destructive hover:text-destructive"
-            onClick={() => {
-              if (window.confirm(`¿Eliminar “${vehicle.name}”?`)) {
-                remove(vehicle.id);
-                router.push("/dashboard/agencies");
-              }
-            }}
+            onClick={() => setConfirmDelete(true)}
           >
             <Trash2 className="size-3.5" />{t("Eliminar ")}</Button>
         </div>

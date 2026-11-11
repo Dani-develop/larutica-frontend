@@ -15,7 +15,6 @@ import {
   Trash2,
   User,
   UserX,
-  X,
 } from "lucide-react";
 import { getInitials } from "@/components/app-sidebar/user-avatar-utils";
 import {
@@ -27,6 +26,7 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -120,90 +120,6 @@ function UserAvatar({ user }: { user: SystemUser }) {
   );
 }
 
-function DeleteUserDialog({
-  user,
-  deleting,
-  error,
-  onCancel,
-  onConfirm,
-}: {
-  user: SystemUser;
-  deleting: boolean;
-  error: string | null;
-  onCancel: () => void;
-  onConfirm: () => void;
-}) {
-  const { t } = usePreferences();
-  useEffect(() => {
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape" && !deleting) onCancel();
-    };
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [deleting, onCancel]);
-
-  return (
-    <div
-      className="fixed inset-0 z-[80] grid place-items-center bg-slate-950/45 p-4 backdrop-blur-[2px]"
-      role="presentation"
-      onMouseDown={(event) => {
-        if (event.target === event.currentTarget && !deleting) onCancel();
-      }}
-    >
-      <section
-        aria-describedby="delete-user-description"
-        aria-labelledby="delete-user-title"
-        aria-modal="true"
-        className="bg-background w-full max-w-md rounded-2xl border p-6 shadow-2xl"
-        role="alertdialog"
-      >
-        <div className="flex items-start gap-4">
-          <span className="bg-destructive/10 text-destructive flex size-11 shrink-0 items-center justify-center rounded-full">
-            <Trash2 aria-hidden="true" className="size-5" />
-          </span>
-          <div className="min-w-0 flex-1">
-            <h2
-              id="delete-user-title"
-              className="!m-0 !max-w-none !text-base !leading-6 !font-semibold !tracking-normal"
-            >{t("Eliminar usuario ")}</h2>
-            <p
-              id="delete-user-description"
-              className="text-muted-foreground mt-2 !text-sm !leading-5"
-            >{t("Se eliminará la cuenta de")}{t(" ")}
-              <strong className="text-foreground font-semibold">{user.name}</strong>{t(" ")}{t("y perderá el acceso a LaRutica. Esta acción no se puede deshacer. ")}</p>
-          </div>
-          <Button
-            aria-label={t("Cerrar confirmación")}
-            disabled={deleting}
-            onClick={onCancel}
-            size="icon-sm"
-            type="button"
-            variant="ghost"
-          >
-            <X aria-hidden="true" />
-          </Button>
-        </div>
-
-        {error ? (
-          <p
-            className="bg-destructive/10 text-destructive mt-4 rounded-lg px-3 py-2 text-sm"
-            role="alert"
-          >
-            {t(error)}
-          </p>
-        ) : null}
-
-        <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-          <Button disabled={deleting} onClick={onCancel} type="button" variant="outline">{t("Cancelar ")}</Button>
-          <Button disabled={deleting} onClick={onConfirm} type="button" variant="destructive">
-            {t(deleting ? "Eliminando…" : "Sí, eliminar usuario")}
-          </Button>
-        </div>
-      </section>
-    </div>
-  );
-}
-
 export function UsersList() {
   const { t } = usePreferences();
   const router = useRouter();
@@ -218,8 +134,6 @@ export function UsersList() {
   const [limit, setLimit] = useState(10);
   const [page, setPage] = useState(1);
   const [userToDelete, setUserToDelete] = useState<SystemUser | null>(null);
-  const [deleting, setDeleting] = useState(false);
-  const [actionError, setActionError] = useState<string | null>(null);
 
   useEffect(() => {
     if (role !== "Admin") router.replace("/dashboard/profile");
@@ -274,20 +188,7 @@ export function UsersList() {
 
   const confirmDelete = async () => {
     if (!userToDelete) return;
-    try {
-      setDeleting(true);
-      setActionError(null);
-      await remove(userToDelete.id);
-      setUserToDelete(null);
-    } catch (nextError) {
-      setActionError(
-        nextError instanceof Error
-          ? nextError.message
-          : "No se pudo eliminar el usuario.",
-      );
-    } finally {
-      setDeleting(false);
-    }
+    await remove(userToDelete.id);
   };
 
   if (role !== "Admin") {
@@ -562,18 +463,23 @@ export function UsersList() {
         <RecordTablePagination page={currentPage} totalPages={totalPages} onPageChange={setPage} showSinglePage />
       ) : null}
 
-      {userToDelete ? (
-        <DeleteUserDialog
-          deleting={deleting}
-          error={actionError}
-          onCancel={() => {
-            setActionError(null);
-            setUserToDelete(null);
-          }}
-          onConfirm={() => void confirmDelete()}
-          user={userToDelete}
-        />
-      ) : null}
+      <ConfirmDialog
+        open={userToDelete !== null}
+        onOpenChange={(open) => {
+          if (!open) setUserToDelete(null);
+        }}
+        title={t("Eliminar usuario")}
+        description={
+          <>
+            {t("Se eliminará la cuenta de")}{" "}
+            <strong className="font-semibold text-foreground">{userToDelete?.name}</strong>{" "}
+            {t("y perderá el acceso a LaRutica. Esta acción no se puede deshacer.")}
+          </>
+        }
+        confirmLabel={t("Sí, eliminar usuario")}
+        pendingLabel={t("Eliminando…")}
+        onConfirm={confirmDelete}
+      />
     </div>
   );
 }

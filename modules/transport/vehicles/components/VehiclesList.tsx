@@ -1,9 +1,11 @@
 "use client";
 import { usePreferences } from "@/lib/preferences/Preferences";
 
+import { useState } from "react";
 import Link from "next/link";
 import { Pencil, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
   Card,
   CardContent,
@@ -12,12 +14,13 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useVehicles } from "../hooks/useVehicles";
-import { vehicleLabel } from "../models/Vehicle";
+import { vehicleLabel, type TransportVehicle } from "../models/Vehicle";
 import { VehicleStatusBadge } from "./VehicleStatusBadge";
 
 export function VehiclesList() {
   const { t } = usePreferences();
   const { vehicles, remove } = useVehicles();
+  const [vehicleToDelete, setVehicleToDelete] = useState<TransportVehicle | null>(null);
 
   return (
     <div className="mx-auto max-w-7xl space-y-6">
@@ -91,15 +94,7 @@ export function VehiclesList() {
                     variant="outline"
                     size="sm"
                     className="gap-1.5 text-destructive hover:text-destructive"
-                    onClick={() => {
-                      if (
-                        window.confirm(
-                          `¿Eliminar “${vehicle.name}”? Esta acción es solo de ejemplo.`,
-                        )
-                      ) {
-                        remove(vehicle.id);
-                      }
-                    }}
+                    onClick={() => setVehicleToDelete(vehicle)}
                   >
                     <Trash2 className="size-3.5" />{t("Eliminar ")}</Button>
                 </div>
@@ -108,6 +103,19 @@ export function VehiclesList() {
           ))}
         </div>
       )}
+
+      <ConfirmDialog
+        open={vehicleToDelete !== null}
+        onOpenChange={(open) => {
+          if (!open) setVehicleToDelete(null);
+        }}
+        title={t("Eliminar vehículo")}
+        description={`${t("¿Eliminar")} “${vehicleToDelete?.name ?? ""}”? ${t("Esta acción es solo de ejemplo.")}`}
+        confirmLabel={t("Eliminar")}
+        onConfirm={() => {
+          if (vehicleToDelete) remove(vehicleToDelete.id);
+        }}
+      />
     </div>
   );
 }

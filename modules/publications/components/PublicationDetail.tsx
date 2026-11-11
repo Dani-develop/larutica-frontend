@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 import { usePublications } from "../hooks/usePublications";
 
@@ -75,8 +76,8 @@ export function PublicationDetail({
     );
 
   const [
-    deleting,
-    setDeleting,
+    confirmDelete,
+    setConfirmDelete,
   ] =
     useState(false);
 
@@ -127,35 +128,19 @@ export function PublicationDetail({
       return;
     }
 
-    const confirmed =
-      window.confirm(
-        `¿Desactivar "${publication.title ?? "esta publicación"}"?`,
-      );
-
-    if (!confirmed) {
-      return;
-    }
-
-    setDeleting(true);
-
     try {
       await remove(
         publication.id,
       );
-
-      router.push(
-        "/dashboard/publications",
-      );
     } catch (deleteError) {
-      window.alert(
-        deleteError instanceof
-          Error
-          ? deleteError.message
-          : "No se pudo desactivar la publicación.",
-      );
-    } finally {
-      setDeleting(false);
+      throw deleteError instanceof Error
+        ? deleteError
+        : new Error(t("No se pudo desactivar la publicación."));
     }
+
+    router.push(
+      "/dashboard/publications",
+    );
   }
 
   if (loading) {
@@ -198,6 +183,15 @@ export function PublicationDetail({
 
   return (
     <div className="mx-auto min-w-0 w-full max-w-[1180px] text-foreground">
+      <ConfirmDialog
+        open={confirmDelete}
+        onOpenChange={setConfirmDelete}
+        title={t("Desactivar publicación")}
+        description={`${t("¿Desactivar")} "${publication.title ?? t("esta publicación")}"?`}
+        confirmLabel={t("Desactivar")}
+        pendingLabel={t("Desactivando...")}
+        onConfirm={handleDelete}
+      />
       <header className="border-b border-border pb-6">
         <div className="mb-5 flex flex-wrap items-center justify-between gap-3"><DashboardBreadcrumb className="mb-2" items={[{ label: "Publicaciones", href: "/dashboard/publications" }, { label: "Detalle" }]} /><PublicationStatusBadge
               status={
@@ -236,13 +230,12 @@ export function PublicationDetail({
             variant="outline"
             size="sm"
             disabled={
-              deleting ||
               publication.status ===
                 "INACTIVE"
             }
             className="gap-1.5 text-destructive hover:text-destructive"
             onClick={() =>
-              void handleDelete()
+              setConfirmDelete(true)
             }
           >
             <Trash2
@@ -252,9 +245,7 @@ export function PublicationDetail({
             {t(publication.status ===
             "INACTIVE"
               ? "Inactiva"
-              : deleting
-                ? "Desactivando..."
-                : "Desactivar")}
+              : "Desactivar")}
           </Button>
         </div></div>
         <div className="flex flex-col-reverse gap-6 sm:flex-row sm:items-center sm:justify-between">

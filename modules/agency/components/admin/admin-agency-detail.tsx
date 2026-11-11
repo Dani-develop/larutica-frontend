@@ -17,6 +17,7 @@ import {
 import { Tabs } from "radix-ui";
 import { DashboardBreadcrumb } from "@/components/dashboard/DashboardBreadcrumb";
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -199,6 +200,7 @@ export default function AdminAgencyDetail({
     reject,
   } = useAdminAgency(agencyId);
   const [rejectOpen, setRejectOpen] = useState(false);
+  const [approveOpen, setApproveOpen] = useState(false);
   const [rejectionReason, setRejectionReason] = useState("");
   const rejectButtonRef = useRef<HTMLButtonElement>(null);
   const [lightbox, setLightbox] = useState<{
@@ -234,13 +236,7 @@ export default function AdminAgencyDetail({
       setRejectOpen(true);
       return;
     }
-    const action = status === "APPROVED" ? "¿Deseas aprobar la agencia" : "¿Deseas rechazar la agencia";
-    if (!window.confirm(`${t(action)} "${agency.commercialName}"?`)) return;
-    try {
-      await approve();
-    } catch {
-      // The hook displays the error and preserves the agency status.
-    }
+    setApproveOpen(true);
   }
 
   async function rejectAgency() {
@@ -259,6 +255,18 @@ export default function AdminAgencyDetail({
 
   return (
     <div className="mx-auto w-full max-w-[1180px] text-foreground">
+      <ConfirmDialog
+        open={approveOpen}
+        onOpenChange={setApproveOpen}
+        title={t("Aprobar agencia")}
+        description={`${t("¿Deseas aprobar la agencia")} "${agency.commercialName}"?`}
+        confirmLabel={t("Aprobar")}
+        pendingLabel={t("Procesando…")}
+        destructive={false}
+        onConfirm={async () => {
+          await approve();
+        }}
+      />
       <Dialog open={rejectOpen} onOpenChange={(open) => { if (!reviewing) setRejectOpen(open); }}>
         <DialogContent aria-busy={reviewing} onCloseAutoFocus={(event) => { event.preventDefault(); rejectButtonRef.current?.focus(); }}>
           <DialogTitle>{t("Rechazar agencia")}</DialogTitle>

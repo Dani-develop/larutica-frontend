@@ -5,6 +5,7 @@ import type { AdminPublicationDeparture } from "../../services/admin/admin-publi
 
 import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { JourneyView } from "@/modules/journeys/JourneyView";
@@ -29,6 +30,7 @@ export default function AdminPublicationDetail({ publicationId }: AdminPublicati
   const { t, language } = usePreferences();
   const { publication, loading, reviewing, error, loadPublication, approve, reject } = useAdminPublication(publicationId);
   const [rejectOpen, setRejectOpen] = useState(false);
+  const [approveOpen, setApproveOpen] = useState(false);
   const [rejectionReason, setRejectionReason] = useState("");
   const pagedDepartures = usePagedRows(publication?.departures ?? emptyDepartures);
   const rejectButtonRef = useRef<HTMLButtonElement>(null);
@@ -60,13 +62,7 @@ export default function AdminPublicationDetail({ publicationId }: AdminPublicati
       setRejectOpen(true);
       return;
     }
-    const action = status === "APPROVED" ? "¿Deseas aprobar la publicación" : "¿Deseas rechazar la publicación";
-    if (!window.confirm(`${t(action)} "${publication.title ?? t("Sin título")}"?`)) return;
-    try {
-      await approve();
-    } catch {
-      // The hook displays the review error and keeps the current publication.
-    }
+    setApproveOpen(true);
   }
 
   async function rejectPublication() {
@@ -82,6 +78,16 @@ export default function AdminPublicationDetail({ publicationId }: AdminPublicati
 
   return (
     <div className="mx-auto w-full max-w-[1180px] text-foreground">
+      <ConfirmDialog
+        open={approveOpen}
+        onOpenChange={setApproveOpen}
+        title={t("Aprobar publicación")}
+        description={`${t("¿Deseas aprobar la publicación")} "${publication.title ?? t("Sin título")}"?`}
+        confirmLabel={t("Aprobar")}
+        pendingLabel={t("Procesando…")}
+        destructive={false}
+        onConfirm={approve}
+      />
       <Dialog open={rejectOpen} onOpenChange={(open) => { if (!reviewing) setRejectOpen(open); }}>
         <DialogContent aria-busy={reviewing} onCloseAutoFocus={(event) => { event.preventDefault(); rejectButtonRef.current?.focus(); }}>
           <DialogTitle>{t("Rechazar publicación")}</DialogTitle>

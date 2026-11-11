@@ -1,9 +1,11 @@
 "use client";
 import { usePreferences } from "@/lib/preferences/Preferences";
 
+import { useState } from "react";
 import Link from "next/link";
 import { Pencil, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
   Card,
   CardContent,
@@ -12,12 +14,13 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useRoutes } from "../hooks/useRoutes";
-import { routeTitle } from "../models/Route";
+import { routeTitle, type TransportRoute } from "../models/Route";
 import { RouteStatusBadge } from "./RouteStatusBadge";
 
 export function RoutesList() {
   const { t } = usePreferences();
   const { routes, remove } = useRoutes();
+  const [routeToDelete, setRouteToDelete] = useState<TransportRoute | null>(null);
 
   return (
     <div className="mx-auto max-w-7xl space-y-6">
@@ -91,15 +94,7 @@ export function RoutesList() {
                     variant="outline"
                     size="sm"
                     className="gap-1.5 text-destructive hover:text-destructive"
-                    onClick={() => {
-                      if (
-                        window.confirm(
-                          `¿Eliminar “${routeTitle(route)}”? Esta acción es solo de ejemplo.`,
-                        )
-                      ) {
-                        remove(route.id);
-                      }
-                    }}
+                    onClick={() => setRouteToDelete(route)}
                   >
                     <Trash2 className="size-3.5" />{t("Eliminar ")}</Button>
                 </div>
@@ -108,6 +103,19 @@ export function RoutesList() {
           ))}
         </div>
       )}
+
+      <ConfirmDialog
+        open={routeToDelete !== null}
+        onOpenChange={(open) => {
+          if (!open) setRouteToDelete(null);
+        }}
+        title={t("Eliminar ruta")}
+        description={`${t("¿Eliminar")} “${routeToDelete ? routeTitle(routeToDelete) : ""}”? ${t("Esta acción es solo de ejemplo.")}`}
+        confirmLabel={t("Eliminar")}
+        onConfirm={() => {
+          if (routeToDelete) remove(routeToDelete.id);
+        }}
+      />
     </div>
   );
 }
