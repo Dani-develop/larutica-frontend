@@ -310,16 +310,6 @@ export async function PATCH(
       );
     }
 
-    if (
-      departure.status ===
-      "CANCELLED"
-    ) {
-      throw new ApiError(
-        "No puedes editar una salida cancelada.",
-        409,
-      );
-    }
-
     let payload:
       UpdateDeparturePayload;
 
@@ -331,6 +321,24 @@ export async function PATCH(
       throw new ApiError(
         "El cuerpo de la solicitud no es válido.",
         400,
+      );
+    }
+
+    /*
+     * Una salida cancelada solo admite reactivarse.
+     * Las reservas que se cancelaron al desactivarla
+     * no se restauran: la salida queda abierta para
+     * nuevas reservas.
+     */
+    if (
+      departure.status ===
+        "CANCELLED" &&
+      payload.status !==
+        "ACTIVE"
+    ) {
+      throw new ApiError(
+        "No puedes editar una salida cancelada.",
+        409,
       );
     }
 
