@@ -1,4 +1,5 @@
 "use client";
+import { DashboardBreadcrumb } from "@/components/dashboard/DashboardBreadcrumb";
 
 import Link from "next/link";
 import { Megaphone } from "lucide-react";
@@ -38,6 +39,7 @@ function AgencyPromotionList() {
   return (
     <div className="mx-auto min-w-0 w-full max-w-7xl space-y-4">
       <PageHeading
+        eyebrow={<DashboardBreadcrumb className="mb-2" items={[{ label: "Promociones" }]} />}
         title={t("Promociones")}
         description={t("Destaca una publicación durante 7 días. El impulso cubre todas sus fechas de salida.")}
       />

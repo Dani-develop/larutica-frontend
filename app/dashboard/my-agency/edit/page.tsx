@@ -1,14 +1,13 @@
 "use client";
+import { DashboardBreadcrumb } from "@/components/dashboard/DashboardBreadcrumb";
 import { usePreferences } from "@/lib/preferences/Preferences";
 
-import Link from "next/link";
 import {
   useRouter,
 } from "next/navigation";
 
 import {
   AlertTriangle,
-  ArrowLeft,
   Ban,
   Clock3,
 } from "lucide-react";
@@ -57,6 +56,7 @@ export default function EditAgencyPage() {
   ) {
     return (
       <div className="mx-auto w-full max-w-[1180px]">
+        <DashboardBreadcrumb className="mb-3" items={[{ label: "Mi agencia", href: "/dashboard/my-agency" }, { label: "Editar agencia" }]} />
         <div className="rounded-xl border border-red-200 bg-red-50 p-5">
           <h1 className="!m-0 text-red-800 lr-page-title">{t("No se pudo cargar la agencia ")}</h1>
 
@@ -64,11 +64,6 @@ export default function EditAgencyPage() {
             {error ??
               "No encontramos una agencia asociada a tu cuenta."}
           </p>
-
-          <Link
-            href="/dashboard/my-agency"
-            className="mt-4 inline-block text-sm font-medium text-[#075E36] hover:underline"
-          >{t("Volver a Mi agencia ")}</Link>
         </div>
       </div>
     );
@@ -87,12 +82,6 @@ export default function EditAgencyPage() {
         }
         title={t("Tu agencia está en revisión")}
         description={t("Mientras administración revisa la información enviada, no puedes modificar el perfil. Cuando finalice la revisión podrás continuar según el resultado.")}
-        buttonText="Volver a Mi agencia"
-        onBack={() =>
-          router.push(
-            "/dashboard/my-agency",
-          )
-        }
       />
     );
   }
@@ -110,31 +99,13 @@ export default function EditAgencyPage() {
         }
         title={t("La agencia está inactiva")}
         description={t("Una agencia inactiva no puede modificarse desde este formulario.")}
-        buttonText="Volver a Mi agencia"
-        onBack={() =>
-          router.push(
-            "/dashboard/my-agency",
-          )
-        }
       />
     );
   }
 
   return (
     <div className="mx-auto w-full max-w-[1180px]">
-      <button
-        type="button"
-        onClick={() =>
-          router.push(
-            "/dashboard/my-agency",
-          )
-        }
-        className="mb-3 inline-flex items-center gap-1.5 text-[11px] font-medium text-[#52615B] transition hover:text-[#075E36]"
-      >
-        <ArrowLeft
-          size={14}
-        />{t("Volver a Mi agencia ")}</button>
-
+      <DashboardBreadcrumb className="mb-3" items={[{ label: "Mi agencia", href: "/dashboard/my-agency" }, { label: "Editar agencia" }]} />
       <div className="mb-3">
         <h1 className="!m-0 !max-w-none lr-page-title">{t("Editar agencia ")}</h1>
 
@@ -200,8 +171,6 @@ function BlockedEditState({
   icon,
   title,
   description,
-  buttonText,
-  onBack,
 }: {
   icon:
     React.ReactNode;
@@ -209,14 +178,11 @@ function BlockedEditState({
   title: string;
 
   description: string;
-
-  buttonText: string;
-
-  onBack: () => void;
 }) {
   const { t } = usePreferences();
   return (
     <div className="mx-auto w-full max-w-[760px]">
+      <DashboardBreadcrumb className="mb-3" items={[{ label: "Mi agencia", href: "/dashboard/my-agency" }, { label: "Editar agencia" }]} />
       <div className="rounded-xl border border-[#DDE2DF] bg-white px-6 py-10 text-center">
         <div className="mx-auto flex size-12 items-center justify-center rounded-xl bg-[#EAF5ED] text-[#075E36]">
           {icon}
@@ -229,16 +195,6 @@ function BlockedEditState({
         <p className="mx-auto mt-2 max-w-[540px] text-[11px] leading-5 text-[#66706B]">
           {t(description)}
         </p>
-
-        <button
-          type="button"
-          onClick={
-            onBack
-          }
-          className="mt-5 inline-flex h-9 items-center justify-center rounded-lg bg-[#075E36] px-5 text-[11px] font-semibold text-white transition hover:bg-[#064D2D]"
-        >
-          {buttonText}
-        </button>
       </div>
     </div>
   );

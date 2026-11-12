@@ -1,5 +1,5 @@
 "use client";
-import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
+import { DashboardBreadcrumb } from "@/components/dashboard/DashboardBreadcrumb";
 import { usePreferences } from "@/lib/preferences/Preferences";
 
 import {
@@ -9,7 +9,6 @@ import {
 
 import {
 
-  Home,
   Search,
   SlidersHorizontal,
 } from "lucide-react";
@@ -106,13 +105,7 @@ export default function AdminPublicationsPage() {
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
-      <Breadcrumb>
-        <BreadcrumbList className="!text-sm">
-          <BreadcrumbItem><BreadcrumbLink href="/dashboard" className="flex items-center gap-1.5 !text-sm"><Home className="size-3.5" />{t("Inicio ")}</BreadcrumbLink></BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem><BreadcrumbPage className="!text-sm">{t("Publicaciones")}</BreadcrumbPage></BreadcrumbItem>
-        </BreadcrumbList>
-      </Breadcrumb>
+      <DashboardBreadcrumb items={[{ label: "Publicaciones" }]} />
       <div className="flex flex-row items-start justify-between gap-4">
         <div>
 

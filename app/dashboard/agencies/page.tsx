@@ -1,4 +1,5 @@
 "use client";
+import { DashboardBreadcrumb } from "@/components/dashboard/DashboardBreadcrumb";
 import { RecordTablePagination } from "@/components/ui/table-pagination";
 import { usePreferences } from "@/lib/preferences/Preferences";
 
@@ -7,20 +8,11 @@ import { useMemo, useState } from "react";
 import {
   Building2,
   Eye,
-  Home,
   MoreHorizontal,
   Search,
   SlidersHorizontal,
   UserX,
 } from "lucide-react";
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -193,21 +185,7 @@ export default function AdminAgenciesPage() {
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
-      <Breadcrumb>
-        <BreadcrumbList className="!text-sm">
-          <BreadcrumbItem>
-            <BreadcrumbLink
-              href="/dashboard"
-              className="flex items-center gap-1.5 !text-sm"
-            >
-              <Home className="size-3.5" />{t("Inicio ")}</BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbPage className="!text-sm">{t("Agencias")}</BreadcrumbPage>
-          </BreadcrumbItem>
-        </BreadcrumbList>
-      </Breadcrumb>
+      <DashboardBreadcrumb items={[{ label: "Agencias" }]} />
 
       <div className="flex flex-row items-start justify-between gap-4">
         <div>

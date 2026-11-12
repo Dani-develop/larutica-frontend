@@ -7,6 +7,7 @@ export type Experience = {
   journey?: Journey | null;
   agency: string; departures: Departure[];
   promoted: boolean;
+  ratingAverage?: number | null; ratingCount?: number; bookingCount?: number;
 };
 export const money = (n: number) => new Intl.NumberFormat('es-CR', { style: 'currency', currency: 'USD', currencyDisplay: 'code', maximumFractionDigits: 2 }).format(n);
 export const dateLabel = (s: string) => new Intl.DateTimeFormat('es-CR', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'America/Costa_Rica' }).format(new Date(s));

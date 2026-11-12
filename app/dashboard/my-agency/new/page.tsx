@@ -1,4 +1,5 @@
 "use client";
+import { DashboardBreadcrumb } from "@/components/dashboard/DashboardBreadcrumb";
 import { usePreferences } from "@/lib/preferences/Preferences";
 
 import { useEffect, useState } from "react";
@@ -32,6 +33,7 @@ export default function NewAgencyPage() {
       ].join(" ")}
     >
       <header className="mb-4">
+        <DashboardBreadcrumb className="mb-2" items={[{ label: "Mi agencia", href: "/dashboard/my-agency" }, { label: "Registrar agencia" }]} />
         <h1 className="!m-0 !max-w-none lr-page-title">{t("Registrar mi agencia ")}</h1>
 
         <p className="mt-1 !text-[12px] leading-5 text-muted-foreground">{t("Completa la información de tu negocio para comenzar a publicar experiencias y servicios en LaRutica. ")}</p>

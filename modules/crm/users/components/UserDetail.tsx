@@ -55,9 +55,6 @@ export function UserDetail({ id }: { id: string }) {
       <div className="mx-auto max-w-3xl space-y-4">
         <DashboardBreadcrumb className="mb-2" items={[{ label: "Usuarios", href: "/dashboard/users" }, { label: "Detalle" }]} />
         <h1 className="lr-page-title">{t("Usuario no encontrado")}</h1>
-        <Button asChild variant="outline">
-          <Link href="/dashboard/users">{t("Volver al listado")}</Link>
-        </Button>
       </div>
     );
   }

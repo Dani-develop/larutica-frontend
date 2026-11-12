@@ -1,6 +1,6 @@
 "use client";
 import { usePreferences } from "@/lib/preferences/Preferences";
-import Link from "next/link";
+import { DashboardBreadcrumb } from "@/components/dashboard/DashboardBreadcrumb";
 import { PageHeading } from "@/components/ui/page-heading";
 import {
   Card,
@@ -22,10 +22,7 @@ export function DashboardSectionPage({
   const { t } = usePreferences();
   return (
     <div className="mx-auto max-w-7xl space-y-4">
-      <PageHeading title={t(title)} description={t(description)} eyebrow={<p className="mb-2 text-sm font-medium text-primary">
-          <Link href="/dashboard" className="hover:underline">{t("Dashboard ")}</Link>
-          <span className="text-muted-foreground"> / {t(title)}</span>
-        </p>} />
+      <PageHeading title={t(title)} description={t(description)} eyebrow={<DashboardBreadcrumb className="mb-2" items={[{ label: title }]} />} />
       <Card className="shadow-xs">
         <CardHeader>
           <CardTitle>{t("En construcción")}</CardTitle>

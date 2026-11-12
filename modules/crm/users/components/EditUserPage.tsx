@@ -1,12 +1,10 @@
 "use client";
 import { usePreferences } from "@/lib/preferences/Preferences";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { DashboardBreadcrumb } from "@/components/dashboard/DashboardBreadcrumb";
 import { useDashboardRole } from "@/components/dashboard/dashboard-role-context";
-import { Button } from "@/components/ui/button";
 import { useUsers } from "../hooks/useUsers";
 import { UserForm } from "./UserForm";
 
@@ -36,9 +34,6 @@ export function EditUserPage({ id }: { id: string }) {
       <div className="mx-auto max-w-3xl space-y-4">
         <DashboardBreadcrumb className="mb-2" items={[{ label: "Usuarios", href: "/dashboard/users" }, { label: "Editar usuario" }]} />
         <h1 className="lr-page-title">{t("Usuario no encontrado")}</h1>
-        <Button asChild variant="outline">
-          <Link href="/dashboard/users">{t("Volver al listado")}</Link>
-        </Button>
       </div>
     );
   }

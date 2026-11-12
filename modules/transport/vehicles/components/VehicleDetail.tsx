@@ -1,4 +1,5 @@
 "use client";
+import { DashboardBreadcrumb } from "@/components/dashboard/DashboardBreadcrumb";
 import { usePreferences } from "@/lib/preferences/Preferences";
 
 import Link from "next/link";
@@ -27,10 +28,8 @@ export function VehicleDetail({ id }: { id: string }) {
   if (!vehicle) {
     return (
       <div className="mx-auto max-w-3xl space-y-4">
+        <DashboardBreadcrumb items={[{ label: "Vehículos", href: "/dashboard/agencies" }, { label: "Detalle del vehículo" }]} />
         <h1 className="lr-page-title">{t("Vehículo no encontrado")}</h1>
-        <Button asChild variant="outline">
-          <Link href="/dashboard/agencies">{t("Volver al listado")}</Link>
-        </Button>
       </div>
     );
   }
@@ -50,10 +49,7 @@ export function VehicleDetail({ id }: { id: string }) {
       />
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <p className="text-sm font-medium text-primary">
-            <Link href="/dashboard/agencies" className="hover:underline">{t("Vehículos ")}</Link>
-            <span className="text-muted-foreground">{t(" / Detalle")}</span>
-          </p>
+          <DashboardBreadcrumb items={[{ label: "Vehículos", href: "/dashboard/agencies" }, { label: "Detalle del vehículo" }]} />
           <h1 className="mt-1 lr-page-title">
             {vehicle.name}
           </h1>

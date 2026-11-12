@@ -9,7 +9,6 @@ import {
   useState,
 } from "react";
 
-import Link from "next/link";
 
 import {
   useRouter,
@@ -17,7 +16,6 @@ import {
 } from "next/navigation";
 
 import {
-  ArrowLeft,
   CalendarDays,
   ImageIcon,
   Info,
@@ -283,6 +281,7 @@ export function EditPublicationPage({
   ) {
     return (
       <div className="mx-auto w-full max-w-7xl">
+        <DashboardBreadcrumb className="mb-3" items={[{ label: "Publicaciones", href: "/dashboard/publications" }, { label: "Editar publicación" }]} />
         <div className="rounded-2xl border border-red-200 bg-red-50 p-6">
           <h1 className="!m-0 text-red-800 lr-page-title">
             {t(
@@ -295,17 +294,7 @@ export function EditPublicationPage({
               "La publicación no existe."}
           </p>
 
-          <Button
-            variant="outline"
-            asChild
-            className="mt-4"
-          >
-            <Link href="/dashboard/publications">
-              {t(
-                "Volver al listado",
-              )}
-            </Link>
-          </Button>
+          
         </div>
       </div>
     );
@@ -317,24 +306,7 @@ export function EditPublicationPage({
   ) {
     return (
       <div className="mx-auto w-full max-w-7xl">
-        <Button
-          variant="ghost"
-          size="sm"
-          asChild
-          className="-ml-2 mb-5 h-8 gap-1.5 px-2 text-xs text-muted-foreground"
-        >
-          <Link
-            href="/dashboard/publications"
-          >
-            <ArrowLeft
-              size={15}
-            />
-
-            {t(
-              "Volver a publicaciones",
-            )}
-          </Link>
-        </Button>
+        <DashboardBreadcrumb className="mb-3" items={[{ label: "Publicaciones", href: "/dashboard/publications" }, { label: "Editar publicación" }]} />
 
         <div className="rounded-2xl border border-amber-200 bg-amber-50 p-6">
           <h1 className="!m-0 text-amber-900 lr-page-title">
@@ -418,26 +390,6 @@ export function EditPublicationPage({
 
   return (
     <div className="mx-auto w-full max-w-7xl">
-      <div className="mb-5">
-        <Button
-          variant="ghost"
-          size="sm"
-          asChild
-          className="-ml-2 h-8 gap-1.5 px-2 text-xs text-muted-foreground"
-        >
-          <Link
-            href="/dashboard/publications"
-          >
-            <ArrowLeft
-              size={15}
-            />
-
-            {t(
-              "Volver a publicaciones",
-            )}
-          </Link>
-        </Button>
-      </div>
 
       <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div className="min-w-0">

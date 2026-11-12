@@ -135,6 +135,25 @@ function matchesAdvancedFilters(
   return true;
 }
 
+type CatalogSort = "recommended" | "booked" | "rating";
+
+const SORT_OPTIONS: { value: CatalogSort; label: string }[] = [
+  { value: "recommended", label: "Recomendados" },
+  { value: "booked", label: "Más reservados" },
+  { value: "rating", label: "Mejor calificados" },
+];
+
+/** Ordena sin alterar el original; los empates conservan el orden del catálogo. */
+function sortPublications(publications: TravelerPublication[], sort: CatalogSort): TravelerPublication[] {
+  if (sort === "recommended") return publications;
+  const rating = (publication: TravelerPublication) => publication.ratingAverage ?? -1;
+  const count = (publication: TravelerPublication) => publication.ratingCount ?? 0;
+  const booked = (publication: TravelerPublication) => publication.bookingCount ?? 0;
+  return [...publications].sort((a, b) => sort === "booked"
+    ? booked(b) - booked(a) || rating(b) - rating(a)
+    : rating(b) - rating(a) || count(b) - count(a) || booked(b) - booked(a));
+}
+
 function splitIntoTwoRows(
   publications: TravelerPublication[],
 ): [TravelerPublication[], TravelerPublication[]] {
@@ -189,6 +208,7 @@ export function TravelerExplorePage({ embedded = false, discovery = false, filte
   const [advancedFilters, setAdvancedFilters] = useState<LandingAdvancedFilters>(EMPTY_ADVANCED_FILTERS);
   const [draftFilters, setDraftFilters] = useState<LandingAdvancedFilters>(EMPTY_ADVANCED_FILTERS);
   const [destinationSearch, setDestinationSearch] = useState("");
+  const [sort, setSort] = useState<CatalogSort>("recommended");
   const filterTriggerRef = useRef<HTMLButtonElement | null>(null);
   const filterDialogRef = useRef<HTMLElement | null>(null);
   const filterCloseRef = useRef<HTMLButtonElement | null>(null);
@@ -287,8 +307,11 @@ export function TravelerExplorePage({ embedded = false, discovery = false, filte
   ), [bookingBudget, bookingDate, bookingPeople, bookingType, providerKey, publications, searchQuery]);
 
   const visiblePublications = useMemo(
-    () => baseVisiblePublications.filter((publication) => matchesAdvancedFilters(publication, advancedFilters)),
-    [advancedFilters, baseVisiblePublications],
+    () => sortPublications(
+      baseVisiblePublications.filter((publication) => matchesAdvancedFilters(publication, advancedFilters)),
+      sort,
+    ),
+    [advancedFilters, baseVisiblePublications, sort],
   );
 
   const destinationOptions = useMemo(
@@ -368,6 +391,7 @@ export function TravelerExplorePage({ embedded = false, discovery = false, filte
 
   const filterResetKey = JSON.stringify({
     ...advancedFilters,
+    sort,
     searchQuery,
     type: filters?.type ?? "",
     budget: Boolean(filters?.budget),
@@ -506,15 +530,19 @@ export function TravelerExplorePage({ embedded = false, discovery = false, filte
                 {activeFilterCount > 0 ? <span className="landing-filter-count">{activeFilterCount}</span> : null}
               </button>
 
-              <button
-                type="button"
-                className="landing-catalog-control landing-sort-placeholder"
-                title={t("El ordenamiento estará disponible próximamente")}
-                aria-label={t("Ordenar por: Recomendados. Disponible próximamente")}
-              >
-                <span>{t("Ordenar por: Recomendados")}</span>
+              <label className="landing-catalog-control landing-sort-control">
+                <span className="landing-sort-label">{t("Ordenar por")}:</span>
+                <select
+                  value={sort}
+                  onChange={(event) => setSort(event.target.value as CatalogSort)}
+                  aria-label={t("Ordenar por")}
+                >
+                  {SORT_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>{t(option.label)}</option>
+                  ))}
+                </select>
                 <ChevronDown size={17} aria-hidden="true" />
-              </button>
+              </label>
             </div>
           </div>
 
@@ -1207,20 +1235,10 @@ function TravelerTripCard({
       (item) => item.available > 0,
     );
 
-    /*
-     * La proyección pública actual todavía no expone
-     * una calificación agregada. La UI queda preparada
-     * para mostrarla si el catálogo la incorpora después,
-     * sin inventar datos.
-     */
-    const ratingData = publication as TravelerPublication & {
-      ratingAverage?: number | null;
-      ratingCount?: number | null;
-    };
-
     const hasRating =
-      typeof ratingData.ratingAverage === "number" &&
-      Number.isFinite(ratingData.ratingAverage);
+      typeof publication.ratingAverage === "number" &&
+      Number.isFinite(publication.ratingAverage) &&
+      (publication.ratingCount ?? 0) > 0;
 
     return (
       <article className="discovery-trip-card">
@@ -1277,12 +1295,21 @@ function TravelerTripCard({
           </p>
 
           {hasRating ? (
-            <p className="discovery-trip-rating">
-              <Star size={18} fill="currentColor" aria-hidden="true" />
-              <strong>{ratingData.ratingAverage!.toFixed(1)}</strong>
-              {typeof ratingData.ratingCount === "number" ? (
-                <span>({ratingData.ratingCount})</span>
-              ) : null}
+            <p
+              className="discovery-trip-rating"
+              aria-label={`${publication.ratingAverage!.toFixed(1)} ${t("de 5 estrellas")}, ${publication.ratingCount} ${publication.ratingCount === 1 ? t("calificación") : t("calificaciones")}`}
+            >
+              <span className="discovery-trip-stars" aria-hidden="true">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <Star
+                    key={star}
+                    size={16}
+                    fill={star <= Math.round(publication.ratingAverage!) ? "currentColor" : "none"}
+                  />
+                ))}
+              </span>
+              <strong aria-hidden="true">{publication.ratingAverage!.toFixed(1)}</strong>
+              <span aria-hidden="true">({publication.ratingCount})</span>
             </p>
           ) : null}
 

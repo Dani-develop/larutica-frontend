@@ -1,7 +1,7 @@
 "use client";
+import { DashboardBreadcrumb } from "@/components/dashboard/DashboardBreadcrumb";
 import { usePreferences } from "@/lib/preferences/Preferences";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { emptyVehicleInput } from "../models/Vehicle";
 import { useVehicles } from "../hooks/useVehicles";
@@ -15,10 +15,7 @@ export function CreateVehiclePage() {
   return (
     <div className="mx-auto max-w-3xl space-y-6">
       <div>
-        <p className="text-sm font-medium text-primary">
-          <Link href="/dashboard/agencies" className="hover:underline">{t("Vehículos ")}</Link>
-          <span className="text-muted-foreground">{t(" / Nuevo")}</span>
-        </p>
+        <DashboardBreadcrumb items={[{ label: "Vehículos", href: "/dashboard/agencies" }, { label: "Nuevo vehículo" }]} />
         <h1 className="mt-1 lr-page-title">{t("Nuevo vehículo ")}</h1>
         <p className="mt-1 text-sm text-muted-foreground">{t("Define tipo, asientos y placa para usarlo en tus rutas. ")}</p>
       </div>

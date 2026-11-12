@@ -11,6 +11,7 @@ import {
   type ReactNode,
 } from "react";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/modules/auth/context/AuthContext";
 import {
   ArrowLeft,
   ArrowRight,
@@ -166,6 +167,22 @@ function agencyToFormData(agency: Agency): AgencyFormData {
   };
 }
 
+function prefillFromAccount(
+  current: AgencyFormData,
+  account: { email: string; phone: string; businessName: string } | null,
+): AgencyFormData {
+  if (!account) return current;
+  const businessName = account.businessName?.trim() ?? "";
+
+  return {
+    ...current,
+    agencyName: current.agencyName || businessName,
+    commercialName: current.commercialName || businessName,
+    email: current.email || account.email?.trim() || "",
+    phone: current.phone || account.phone?.trim() || "",
+  };
+}
+
 const businessTypes: Array<{
   value: BusinessType;
   label: string;
@@ -230,10 +247,22 @@ export default function AgencyForm({
   const { t } = usePreferences();
   const router = useRouter();
   const { createAgency, updateAgency, saving, error } = useAgency();
+  const { user } = useAuth();
 
-  const [form, setForm] = useState<AgencyFormData>(
-    initialAgency ? agencyToFormData(initialAgency) : initialForm,
+  const [form, setForm] = useState<AgencyFormData>(() =>
+    initialAgency
+      ? agencyToFormData(initialAgency)
+      : prefillFromAccount(initialForm, user),
   );
+
+  // Al registrar la agencia ya tenemos nombre, teléfono y correo de la cuenta:
+  // los precargamos (sin pisar lo que la persona ya escribió) para no pedirlos dos veces.
+  const accountPrefilledRef = useRef(Boolean(user));
+  useEffect(() => {
+    if (initialAgency || !user || accountPrefilledRef.current) return;
+    accountPrefilledRef.current = true;
+    setForm((previous) => prefillFromAccount(previous, user));
+  }, [initialAgency, user]);
   const [currentStep, setCurrentStep] = useState<StepId>(1);
   const [stepPhase, setStepPhase] = useState<"idle" | "exit" | "enter">("idle");
   const [stepDirection, setStepDirection] = useState<"forward" | "backward">(

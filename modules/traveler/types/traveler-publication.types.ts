@@ -36,4 +36,12 @@ export type TravelerPublication = {
   providerSlug?: string;
 
   promoted?: boolean;
+
+  /** Promedio de calificaciones de viajeros (1 a 5); null si aún no hay. */
+  ratingAverage?: number | null;
+
+  ratingCount?: number;
+
+  /** Reservas confirmadas o finalizadas; sirve para ordenar por "Más reservados". */
+  bookingCount?: number;
 };

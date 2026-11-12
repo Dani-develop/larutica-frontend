@@ -1,6 +1,6 @@
 "use client";
+import { DashboardBreadcrumb } from "@/components/dashboard/DashboardBreadcrumb";
 
-import Link from "next/link";
 import { useCallback, useState } from "react";
 import { useDashboardRole } from "@/components/dashboard/dashboard-role-context";
 import { DashboardSectionPage } from "@/components/dashboard/DashboardSectionPage";
@@ -43,12 +43,7 @@ function PromotionCheckout({ publicationId }: { publicationId: string }) {
       <PageHeading
         title={t("Pagar promoción")}
         description={t("12 USD por 7 días. La promoción cubre todas las fechas de salida de esta publicación.")}
-        eyebrow={
-          <p className="mb-2 text-sm font-medium text-primary">
-            <Link href="/dashboard/promotions" className="hover:underline">{t("Promociones")}</Link>
-            <span className="text-muted-foreground"> / {publication?.title ?? t("Publicación")}</span>
-          </p>
-        }
+        eyebrow={<DashboardBreadcrumb className="mb-2" items={[{ label: "Promociones", href: "/dashboard/promotions" }, { label: publication?.title ?? "Publicación" }]} />}
       />
       {loading ? <p className="text-sm text-muted-foreground">{t("Cargando publicaciones...")}</p> : null}
       {error ? <p className="text-sm text-destructive" role="alert">{t(error)}</p> : null}
@@ -70,9 +65,6 @@ function PromotionCheckout({ publicationId }: { publicationId: string }) {
           onPaid={() => { setPaid(true); void reload(); }}
         />
       ) : null}
-      <p>
-        <Link href="/dashboard/promotions" className="text-sm font-medium text-primary hover:underline">{t("Volver a promociones")}</Link>
-      </p>
     </div>
   );
 }

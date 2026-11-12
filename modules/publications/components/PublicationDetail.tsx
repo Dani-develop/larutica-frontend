@@ -14,7 +14,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import {
-  ArrowLeft,
   CalendarDays,
   Clock3,
   Languages,
@@ -161,6 +160,7 @@ export function PublicationDetail({
   ) {
     return (
       <div className="mx-auto w-full max-w-5xl">
+        <DashboardBreadcrumb className="mb-3" items={[{ label: "Publicaciones", href: "/dashboard/publications" }, { label: "Detalle" }]} />
         <div className="rounded-2xl border border-red-200 bg-red-50 p-6">
           <h1 className="!m-0 text-red-800 lr-page-title">{t("No se pudo cargar la publicación ")}</h1>
 
@@ -169,13 +169,6 @@ export function PublicationDetail({
               "La publicación no existe."}
           </p>
 
-          <Button
-            variant="outline"
-            asChild
-            className="mt-4"
-          >
-            <Link href="/dashboard/publications">{t("Volver al listado ")}</Link>
-          </Button>
         </div>
       </div>
     );
@@ -198,19 +191,7 @@ export function PublicationDetail({
                 publication.status
               }
             /></div>
-        <div className="mb-5 flex flex-wrap items-center justify-between gap-3"><div className="min-w-0">
-        <Button
-          variant="ghost"
-          size="sm"
-          asChild
-          className="-ml-2 h-8 gap-1.5 px-2 text-xs text-muted-foreground"
-        >
-          <Link href="/dashboard/publications">
-            <ArrowLeft
-              size={15}
-            />{t("Volver a publicaciones ")}</Link>
-        </Button>
-      </div><div className="flex flex-wrap gap-2">
+        <div className="mb-5 flex flex-wrap items-center justify-end gap-3"><div className="flex flex-wrap gap-2">
           <Button
             variant="outline"
             size="sm"

@@ -611,11 +611,32 @@ kbd { padding:.2rem .35rem; border:1px solid var(--input); border-bottom-width:2
   box-shadow: 0 5px 16px rgba(23, 53, 45, 0.08);
   transform: translateY(-1px);
 }
-.landing-sort-placeholder {
-  cursor: default;
+.landing-sort-control {
+  position: relative;
+  gap: 0.35rem;
+  cursor: pointer;
 }
-.landing-sort-placeholder:hover {
-  transform: none;
+.landing-sort-control select {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-weight: 700;
+  padding-right: 1.4rem;
+  cursor: pointer;
+}
+.landing-sort-control select:focus-visible {
+  outline: none;
+}
+.landing-sort-control:has(select:focus-visible) {
+  outline: 2px solid var(--brand-forest);
+  outline-offset: 2px;
+}
+.landing-sort-control > svg {
+  position: absolute;
+  right: 0.9rem;
+  pointer-events: none;
 }
 .landing-filter-count {
   display: inline-grid;
@@ -953,8 +974,8 @@ kbd { padding:.2rem .35rem; border:1px solid var(--input); border-bottom-width:2
     min-width: 0;
     padding-inline: 0.8rem;
   }
-  .landing-sort-placeholder {
-    justify-content: space-between;
+  .landing-sort-control {
+    justify-content: flex-start;
   }
   .landing-publication-row {
     grid-auto-columns: 84%;
@@ -1055,6 +1076,10 @@ kbd { padding:.2rem .35rem; border:1px solid var(--input); border-bottom-width:2
 }
 .landing-publication-row .discovery-trip-rating svg {
   color: #f4bf1b;
+}
+.landing-publication-row .discovery-trip-stars {
+  display: inline-flex;
+  gap: 1px;
 }
 .landing-publication-row .discovery-trip-rating strong {
   font-size: 0.82rem;

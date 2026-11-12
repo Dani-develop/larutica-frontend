@@ -3,18 +3,15 @@
 import { DashboardBreadcrumb } from "@/components/dashboard/DashboardBreadcrumb";
 import { usePreferences } from "@/lib/preferences/Preferences";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import {
-  ArrowLeft,
   CalendarDays,
   ImageIcon,
   Info,
   LockKeyhole,
 } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
 
 import { useDashboardRole } from "@/components/dashboard/dashboard-role-context";
 import { useMemo } from "react";
@@ -120,26 +117,6 @@ export function CreatePublicationPage() {
 
   return (
     <div className="mx-auto w-full max-w-7xl">
-      {/* Volver */}
-      <div className="mb-4">
-        <Button
-          variant="ghost"
-          size="sm"
-          asChild
-          className="-ml-2 h-8 gap-1.5 px-2 text-xs text-muted-foreground"
-        >
-          <Link href="/dashboard/publications">
-            <ArrowLeft
-              size={15}
-            />
-
-            {t(
-              "Volver a publicaciones",
-            )}
-          </Link>
-        </Button>
-      </div>
-
       {/* Encabezado */}
       <div className="mb-5">
         <DashboardBreadcrumb

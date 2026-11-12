@@ -3,6 +3,7 @@ import { apiErrorResponse, ApiError } from '@/lib/api/errors';
 import { proxyRemoteApiRequest } from '@/lib/api/remote-proxy';
 import { catalogPromotionFlag, comparePromotedPublications } from '@/lib/promotions/window';
 import { getSupabaseAdminClient } from '@/lib/supabase/admin-client';
+import { publicationStats, type PublicationStats } from '@/lib/traveler/publication-stats';
 
 // Explicit public projection: never expose provider documents or passenger records.
 export async function GET(request: Request) {
@@ -30,6 +31,11 @@ export async function GET(request: Request) {
     if (detail.error) throw detail.error;
     const departures = rows.flatMap(p => p.publication_departures).filter(d => d.status === 'ACTIVE' && Date.parse(d.start_at) > now);
     const used = await usedDepartureSeats(admin, departures.map(d => d.id));
+    // Las estadísticas son un extra: si fallan, el catálogo sigue funcionando sin ellas.
+    const stats = await publicationStats(admin, rows.map(p => p.id)).catch(cause => {
+      console.error('No se pudieron calcular reservas y calificaciones:', cause);
+      return new Map<string, PublicationStats>();
+    });
     return Response.json({ data: rows.map(p => ({
       id: p.id, title: p.title, description: p.description, destination: p.destination,
       serviceType: p.service_type, price: Number(p.price_per_person), duration: p.duration_minutes,
@@ -39,6 +45,9 @@ export async function GET(request: Request) {
         .map(d => ({ id: d.id, startAt: d.start_at, available: Math.max(0, d.capacity - (used.get(d.id) ?? 0)) }))
         .sort((a,b) => a.startAt.localeCompare(b.startAt)),
       promoted: catalogPromotionFlag(p.promoted_until, now).promoted,
+      ratingAverage: stats.get(p.id)?.ratingAverage ?? null,
+      ratingCount: stats.get(p.id)?.ratingCount ?? 0,
+      bookingCount: stats.get(p.id)?.bookingCount ?? 0,
     })) }, { headers: { 'cache-control': 'no-store' } });
   } catch (error) { return apiErrorResponse(error); }
 }
