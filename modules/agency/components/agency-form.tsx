@@ -797,7 +797,7 @@ function StepOne({
       </div>
 
       <div className="mt-2.5 grid gap-2.5 md:grid-cols-2">
-        <Field label="Nombre de la agencia" required>
+        <Field label={t("Nombre de la agencia")} required>
           <input
             value={form.agencyName}
             onChange={(event) => updateField("agencyName", event.target.value)}
@@ -806,7 +806,7 @@ function StepOne({
           />
         </Field>
 
-        <Field label="Nombre comercial" required>
+        <Field label={t("Nombre comercial")} required>
           <input
             value={form.commercialName}
             onChange={(event) =>
@@ -819,7 +819,7 @@ function StepOne({
       </div>
 
       <div className="mt-2">
-        <FieldLabel label="Tipo de negocio" required />
+        <FieldLabel label={t("Tipo de negocio")} required />
 
         <div className="mt-1.5 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
           {businessTypes.map((type) => {
@@ -878,7 +878,7 @@ function StepOne({
       </div>
 
       <div className="mt-2 grid items-start gap-3 md:grid-cols-[minmax(0,1.8fr)_minmax(220px,0.9fr)]">
-        <Field label="Descripción" required>
+        <Field label={t("Descripción")} required>
           <div className="relative">
             <textarea
               value={form.description}
@@ -895,7 +895,7 @@ function StepOne({
           </div>
         </Field>
 
-        <Field label="Idiomas que atiendes" required>
+        <Field label={t("Idiomas que atiendes")} required>
           <div className="relative">
             <button
               type="button"
@@ -917,7 +917,7 @@ function StepOne({
                 >
                   {selectedLanguageNames.length
                     ? selectedLanguageNames.join(", ")
-                    : "Selecciona idiomas"}
+                    : t("Selecciona idiomas")}
                 </span>
               </span>
 
@@ -987,7 +987,7 @@ function StepTwo({
       />
 
       <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-        <Field label="Correo electrónico" required>
+        <Field label={t("Correo electrónico")} required>
           <input
             type="email"
             value={form.email}
@@ -997,7 +997,7 @@ function StepTwo({
           />
         </Field>
 
-        <Field label="Teléfono" required>
+        <Field label={t("Teléfono")} required>
           <div className="bg-background focus-within:ring-ring flex h-9 overflow-hidden rounded-md border transition focus-within:ring-2">
             <div className="text-muted-foreground flex items-center gap-1.5 border-r px-3 !text-xs !font-medium">{t("CR ")}<span className="!text-xs">▼</span>
             </div>
@@ -1010,7 +1010,7 @@ function StepTwo({
           </div>
         </Field>
 
-        <Field label="Sitio web (opcional)">
+        <Field label={t("Sitio web (opcional)")}>
           <input
             value={form.website}
             onChange={(event) => updateField("website", event.target.value)}
@@ -1023,7 +1023,7 @@ function StepTwo({
       <div className="my-3 border-t" />
 
       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-        <Field label="País" required>
+        <Field label={t("País")} required>
           <select
             value={form.country}
             onChange={(event) => updateField("country", event.target.value)}
@@ -1033,7 +1033,7 @@ function StepTwo({
           </select>
         </Field>
 
-        <Field label="Provincia / Estado" required>
+        <Field label={t("Provincia / Estado")} required>
           <select
             value={form.province}
             onChange={(event) => updateField("province", event.target.value)}
@@ -1048,7 +1048,7 @@ function StepTwo({
           </select>
         </Field>
 
-        <Field label="Ciudad" required>
+        <Field label={t("Ciudad")} required>
           <input
             value={form.city}
             onChange={(event) => updateField("city", event.target.value)}
@@ -1059,7 +1059,7 @@ function StepTwo({
       </div>
 
       <div className="mt-3">
-        <Field label="Dirección exacta" required>
+        <Field label={t("Dirección exacta")} required>
           <input
             value={form.exactAddress}
             onChange={(event) => updateField("exactAddress", event.target.value)}
@@ -1236,7 +1236,7 @@ function StepFour({
             form.coverUrl ? (
               <img
                 src={form.coverUrl}
-                alt="Portada"
+                alt={t("Portada")}
                 className="h-16 w-28 rounded-xl object-cover"
               />
             ) : (
@@ -1334,7 +1334,7 @@ function StepFive({
           {form.coverUrl ? (
             <img
               src={form.coverUrl}
-              alt="Portada de la agencia"
+              alt={t("Portada de la agencia")}
               className="h-full w-full object-cover"
             />
           ) : (
@@ -1381,8 +1381,8 @@ function StepFive({
 
           <div className="mt-3 grid gap-3 md:grid-cols-2">
             <PreviewInfoCard title={t("Contacto")}>
-              <PreviewRow label="Correo" value={form.email || "Sin información"} />
-              <PreviewRow label="Teléfono" value={form.phone || "Sin información"} />
+              <PreviewRow label={t("Correo")} value={form.email || "Sin información"} />
+              <PreviewRow label={t("Teléfono")} value={form.phone || "Sin información"} />
               <PreviewRow
                 label="Sitio web"
                 value={form.website || "No indicado"}
@@ -1390,9 +1390,9 @@ function StepFive({
             </PreviewInfoCard>
 
             <PreviewInfoCard title={t("Ubicación")}>
-              <PreviewRow label="Ubicación" value={previewLocation} />
+              <PreviewRow label={t("Ubicación")} value={previewLocation} />
               <PreviewRow
-                label="Dirección"
+                label={t("Dirección")}
                 value={form.exactAddress || "Sin información"}
               />
             </PreviewInfoCard>
@@ -1779,8 +1779,8 @@ function UploadBox({
         <p className="text-xs font-semibold text-[#2B3A33]">
           {value
             ? kind === "verification"
-              ? "Documento cargado"
-              : "Archivo cargado"
+              ? t("Documento cargado")
+              : t("Archivo cargado")
             : text}
         </p>
 
