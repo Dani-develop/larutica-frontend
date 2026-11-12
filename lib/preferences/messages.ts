@@ -244,5 +244,5 @@ for (const [key, value] of Object.entries({
 Object.assign(english,bookingEnglish);
 Object.assign(english, {
   'Ordenar por': 'Sort by', 'Recomendados': 'Recommended', 'Más reservados': 'Most booked', 'Mejor calificados': 'Top rated',
-  'de 5 estrellas': 'out of 5 stars', 'calificación': 'rating', 'calificaciones': 'ratings',
+  'de 5 estrellas': 'out of 5 stars', 'Mostrando': 'Showing', 'calificación': 'rating', 'calificaciones': 'ratings',
 });

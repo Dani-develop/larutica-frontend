@@ -39,8 +39,11 @@ export function LandingExplore({ searchInput, headingRef, category, onCategoryCh
     results?.focus({ preventScroll: true });
   }
 
+  // Los resultados están más abajo: al elegir una categoría llevamos a la persona hasta ellos
+  // para que vea el cambio y no parezca que el toque no hizo nada.
   function selectCategory(next: Category) {
     onCategoryChange(next);
+    showResults();
   }
 
   function searchDestination(value: string) {
@@ -105,7 +108,7 @@ export function LandingExplore({ searchInput, headingRef, category, onCategoryCh
             { label: "Transporte", image: beach, category: "transport" as Category },
             { label: "Viaja por menos", image: mountains, category: "budget" as Category },
           ].map(item => (
-            <button key={item.label} type="button" className="discovery-image-tile" onClick={() => { selectCategory(item.category); showResults(); }}>
+            <button key={item.label} type="button" className="discovery-image-tile" onClick={() => selectCategory(item.category)}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={item.image} alt="" loading="lazy" decoding="async" />
               <span>{t(item.label)}</span>
@@ -115,7 +118,7 @@ export function LandingExplore({ searchInput, headingRef, category, onCategoryCh
       </section>
 
       <section className="discovery-section discovery-container" aria-labelledby="results">
-        <SectionHeading id="results" focusable title={t("Experiencias para tu próximo viaje")} description={t("Descubre lo que ofrecen los proveedores locales.")} actions={isFiltered ? <Button type="button" variant="link" onClick={() => { setFilters(emptyFilters); setDestination(""); onCategoryChange("all"); formRef.current?.reset(); }}>{t("Limpiar búsqueda")}</Button> : undefined} />
+        <SectionHeading id="results" focusable title={t("Experiencias para tu próximo viaje")} description={category === "all" ? t("Descubre lo que ofrecen los proveedores locales.") : `${t("Mostrando")}: ${t(categories.find(item => item.id === category)?.label ?? "")}`} actions={isFiltered ? <Button type="button" variant="link" onClick={() => { setFilters(emptyFilters); setDestination(""); onCategoryChange("all"); formRef.current?.reset(); }}>{t("Limpiar búsqueda")}</Button> : undefined} />
         <TravelerExplorePage embedded discovery filters={{ ...filters, type: category === "transport" ? "TRANSPORT" : category === "nature" ? "EXCURSION" : "", budget: category === "budget" }} />
       </section>
 
