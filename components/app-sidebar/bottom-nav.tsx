@@ -62,7 +62,7 @@ export function BottomNav({ role }: Props) {
             href={item.href}
             aria-current={active ? "page" : undefined}
             className={cn(
-              "flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 px-1 text-[10px] font-medium transition-colors",
+              "flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 px-1 text-xs font-medium transition-colors",
               active ? "text-primary" : "text-muted-foreground",
             )}
           >
@@ -81,7 +81,7 @@ export function BottomNav({ role }: Props) {
         aria-expanded={openMobile}
         aria-label={t("Más opciones")}
         className={cn(
-          "flex min-h-0 min-w-0 flex-1 flex-col items-center justify-center gap-0.5 rounded-none bg-transparent px-1 py-0 text-[10px] font-medium transition-colors",
+          "flex min-h-0 min-w-0 flex-1 flex-col items-center justify-center gap-0.5 rounded-none bg-transparent px-1 py-0 text-xs font-medium transition-colors",
           openMobile ? "text-primary" : "text-muted-foreground",
         )}
       >

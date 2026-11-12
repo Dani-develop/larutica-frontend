@@ -26,7 +26,7 @@ type UserFormProps = {
 };
 
 const selectClassName =
-  "border-input h-9 w-full rounded-md border bg-transparent px-3 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]";
+  "border-input h-9 w-full rounded-md border bg-transparent px-3 text-base shadow-xs outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]";
 
 export function UserForm({
   initialValue,
@@ -77,7 +77,7 @@ export function UserForm({
             <FieldLabel htmlFor="name" className="!text-sm">{t("Nombre completo ")}</FieldLabel>
             <Input
               id="name"
-              className="!h-9 !text-sm"
+              className="!h-9 !text-base"
               value={value.name}
               onChange={(event) => patch("name", event.target.value)}
               placeholder={t("Nombre y apellidos")}
@@ -95,7 +95,7 @@ export function UserForm({
             ) : (
               <Input
                 id="email"
-                className="!h-9 !text-sm"
+                className="!h-9 !text-base"
                 type="email"
                 value={value.email}
                 onChange={(event) => patch("email", event.target.value)}
@@ -181,7 +181,7 @@ export function UserForm({
               </FieldLabel>
               <Input
                 id="businessName"
-                className="!h-9 !text-sm"
+                className="!h-9 !text-base"
                 value={value.businessName}
                 onChange={(event) => patch("businessName", event.target.value)}
                 placeholder={
@@ -198,7 +198,7 @@ export function UserForm({
               <FieldLabel htmlFor="password" className="!text-sm">{t("Contraseña temporal ")}</FieldLabel>
               <Input
                 id="password"
-                className="!h-9 !text-sm"
+                className="!h-9 !text-base"
                 type="password"
                 value={value.password ?? ""}
                 onChange={(event) => patch("password", event.target.value)}

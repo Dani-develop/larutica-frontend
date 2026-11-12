@@ -109,7 +109,7 @@ export default function EditAgencyPage() {
       <div className="mb-3">
         <h1 className="!m-0 !max-w-none lr-page-title">{t("Editar agencia ")}</h1>
 
-        <p className="mt-1 text-[12px] leading-5 text-[#66706B]">{t("Actualiza la información de tu negocio. ")}</p>
+        <p className="mt-1 text-xs leading-5 text-[#66706B]">{t("Actualiza la información de tu negocio. ")}</p>
       </div>
 
       {agency.status ===
@@ -122,9 +122,9 @@ export default function EditAgencyPage() {
           </span>
 
           <div>
-            <p className="text-[11px] font-semibold text-[#765B17]">{t("Estás modificando una agencia verificada ")}</p>
+            <p className="text-xs font-semibold text-[#765B17]">{t("Estás modificando una agencia verificada ")}</p>
 
-            <p className="mt-0.5 text-[10px] leading-4 text-[#8C7743]">{t("Al guardar cambios, la agencia volverá a estado borrador y tendrás que enviarla nuevamente para revisión. ")}</p>
+            <p className="mt-0.5 text-xs leading-4 text-[#8C7743]">{t("Al guardar cambios, la agencia volverá a estado borrador y tendrás que enviarla nuevamente para revisión. ")}</p>
           </div>
         </div>
       )}
@@ -139,9 +139,9 @@ export default function EditAgencyPage() {
           </span>
 
           <div>
-            <p className="text-[11px] font-semibold text-[#963333]">{t("Tu agencia requiere correcciones ")}</p>
+            <p className="text-xs font-semibold text-[#963333]">{t("Tu agencia requiere correcciones ")}</p>
 
-            <p className="mt-0.5 text-[10px] leading-4 text-[#A75A5A]">{t("Revisa y corrige la información necesaria. Luego podrás reenviarla para una nueva revisión. ")}</p>
+            <p className="mt-0.5 text-xs leading-4 text-[#A75A5A]">{t("Revisa y corrige la información necesaria. Luego podrás reenviarla para una nueva revisión. ")}</p>
           {agency.rejectionReason && (
             <div className="mt-3 text-sm text-destructive">
               <p className="font-semibold">{t("Motivo del rechazo")}</p>
@@ -192,7 +192,7 @@ function BlockedEditState({
           {t(title)}
         </h1>
 
-        <p className="mx-auto mt-2 max-w-[540px] text-[11px] leading-5 text-[#66706B]">
+        <p className="mx-auto mt-2 max-w-[540px] text-xs leading-5 text-[#66706B]">
           {t(description)}
         </p>
       </div>

@@ -195,7 +195,7 @@ function Header({
   return (
     <TableHead
       className={[
-        "text-muted-foreground !py-3 !text-[11px] !font-semibold !tracking-wider uppercase",
+        "text-muted-foreground !py-3 !text-xs !font-semibold !tracking-wider uppercase",
         align ===
         "right"
           ? "w-24 text-left"

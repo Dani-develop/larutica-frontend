@@ -212,7 +212,7 @@ export function UsersList() {
         <div className="relative flex-1">
           <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
           <Input
-            className="!h-9 !text-sm pl-9"
+            className="!h-9 !text-base pl-9"
             onChange={(event) => {
               setQuery(event.target.value);
               setPage(1);
@@ -247,7 +247,7 @@ export function UsersList() {
                     setPage(1);
                   }}
                 >
-                  <SelectTrigger className="w-full !text-sm">
+                  <SelectTrigger className="w-full !text-base">
                     <SelectValue placeholder={t("Todos los roles")} />
                   </SelectTrigger>
                   <SelectContent>
@@ -270,7 +270,7 @@ export function UsersList() {
                     setPage(1);
                   }}
                 >
-                  <SelectTrigger className="w-full !text-sm">
+                  <SelectTrigger className="w-full !text-base">
                     <SelectValue placeholder={t("Todos los estados")} />
                   </SelectTrigger>
                   <SelectContent>
@@ -290,7 +290,7 @@ export function UsersList() {
                     setPage(1);
                   }}
                 >
-                  <SelectTrigger className="w-full !text-sm">
+                  <SelectTrigger className="w-full !text-base">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -309,7 +309,7 @@ export function UsersList() {
                     setPage(1);
                   }}
                 >
-                  <SelectTrigger className="w-full !text-sm">
+                  <SelectTrigger className="w-full !text-base">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -375,11 +375,11 @@ export function UsersList() {
           <Table>
             <TableHeader>
               <TableRow className="bg-muted/30 hover:bg-muted/30">
-                <TableHead className="text-muted-foreground !py-3 !text-[11px] !font-semibold !tracking-wider uppercase">{t("Usuario ")}</TableHead>
-                <TableHead className="text-muted-foreground !py-3 !text-[11px] !font-semibold !tracking-wider uppercase">{t("Email ")}</TableHead>
-                <TableHead className="text-muted-foreground hidden !py-3 !text-[11px] !font-semibold !tracking-wider uppercase md:table-cell">{t("Teléfono ")}</TableHead>
-                <TableHead className="text-muted-foreground !py-3 !text-[11px] !font-semibold !tracking-wider uppercase">{t("Rol ")}</TableHead>
-                <TableHead className="text-muted-foreground hidden !py-3 !text-[11px] !font-semibold !tracking-wider uppercase sm:table-cell">{t("Estado ")}</TableHead>
+                <TableHead className="text-muted-foreground !py-3 !text-xs !font-semibold !tracking-wider uppercase">{t("Usuario ")}</TableHead>
+                <TableHead className="text-muted-foreground !py-3 !text-xs !font-semibold !tracking-wider uppercase">{t("Email ")}</TableHead>
+                <TableHead className="text-muted-foreground hidden !py-3 !text-xs !font-semibold !tracking-wider uppercase md:table-cell">{t("Teléfono ")}</TableHead>
+                <TableHead className="text-muted-foreground !py-3 !text-xs !font-semibold !tracking-wider uppercase">{t("Rol ")}</TableHead>
+                <TableHead className="text-muted-foreground hidden !py-3 !text-xs !font-semibold !tracking-wider uppercase sm:table-cell">{t("Estado ")}</TableHead>
                 <TableHead className="w-12" />
               </TableRow>
             </TableHeader>

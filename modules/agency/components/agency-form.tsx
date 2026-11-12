@@ -731,7 +731,7 @@ function TopStepper({
               >
                 <span
                   className={[
-                    "flex size-6 items-center justify-center rounded-full border !text-[10px] !font-semibold",
+                    "flex size-6 items-center justify-center rounded-full border !text-xs !font-semibold",
                     "transition-all duration-200 ease-out",
                     active
                       ? "border-primary bg-primary text-primary-foreground shadow-[0_4px_12px_rgba(7,94,54,0.16)]"
@@ -745,7 +745,7 @@ function TopStepper({
 
                 <span
                   className={[
-                    "mt-1.5 hidden max-w-[125px] !text-[10.5px] !font-medium leading-4 sm:block",
+                    "mt-1.5 hidden max-w-[125px] !text-xs !font-medium leading-4 sm:block",
                     "transition-colors duration-200",
                     active ? "text-primary" : "text-muted-foreground",
                   ].join(" ")}
@@ -792,8 +792,8 @@ function StepOne({
   return (
     <div>
       <div>
-        <h2 className="!m-0 !text-[15px] !font-semibold !leading-5 !tracking-[-0.01em]">{t("Datos generales ")}</h2>
-        <p className="text-muted-foreground !m-0 mt-0.5 !text-[10.5px] !leading-4">{t("Información básica sobre tu agencia. ")}</p>
+        <h2 className="!m-0 !text-base !font-semibold !leading-5 !tracking-[-0.01em]">{t("Datos generales ")}</h2>
+        <p className="text-muted-foreground !m-0 mt-0.5 !text-xs !leading-4">{t("Información básica sobre tu agencia. ")}</p>
       </div>
 
       <div className="mt-2.5 grid gap-2.5 md:grid-cols-2">
@@ -851,11 +851,11 @@ function StepOne({
                 </span>
 
                 <span className="min-w-0 pt-px">
-                  <span className="block truncate !text-[10.5px] !font-medium leading-[13px]">
+                  <span className="block truncate !text-xs !font-medium leading-[13px]">
                     {t(type.label)}
                   </span>
 
-                  <span className="text-muted-foreground mt-0.5 block !text-[9px] leading-[11px]">
+                  <span className="text-muted-foreground mt-0.5 block !text-xs leading-[11px]">
                     {t(type.description)}
                   </span>
                 </span>
@@ -889,7 +889,7 @@ function StepOne({
               className={`${textareaClass} min-h-[58px] pb-5`}
               placeholder={t("Describe brevemente tu agencia, sus servicios y lo que la hace especial.")}
             />
-            <span className="text-muted-foreground absolute bottom-1.5 right-3 !text-[9px]">
+            <span className="text-muted-foreground absolute bottom-1.5 right-3 !text-xs">
               {form.description.length} / 600
             </span>
           </div>
@@ -923,7 +923,7 @@ function StepOne({
 
               <span
                 className={[
-                  "text-muted-foreground !text-[9px] transition-transform duration-200",
+                  "text-muted-foreground !text-xs transition-transform duration-200",
                   languagesOpen ? "rotate-180" : "",
                 ].join(" ")}
                 aria-hidden="true"
@@ -942,7 +942,7 @@ function StepOne({
                       key={language.id}
                       type="button"
                       onClick={() => toggleLanguage(language.id)}
-                      className="hover:bg-muted/60 flex w-full items-center gap-2.5 rounded-[4px] px-2.5 py-2 text-left !text-[11px] transition-colors"
+                      className="hover:bg-muted/60 flex w-full items-center gap-2.5 rounded-[4px] px-2.5 py-2 text-left !text-xs transition-colors"
                     >
                       <span
                         className={[
@@ -999,7 +999,7 @@ function StepTwo({
 
         <Field label="Teléfono" required>
           <div className="bg-background focus-within:ring-ring flex h-9 overflow-hidden rounded-md border transition focus-within:ring-2">
-            <div className="text-muted-foreground flex items-center gap-1.5 border-r px-3 !text-xs !font-medium">{t("CR ")}<span className="!text-[9px]">▼</span>
+            <div className="text-muted-foreground flex items-center gap-1.5 border-r px-3 !text-xs !font-medium">{t("CR ")}<span className="!text-xs">▼</span>
             </div>
             <input
               value={form.phone}
@@ -1160,10 +1160,10 @@ function StepThree({
                 </span>
               </div>
 
-              <p className="mt-2 text-[11px] font-semibold text-[#20332B]">
+              <p className="mt-2 text-xs font-semibold text-[#20332B]">
                 {name}
               </p>
-              <p className="mt-0.5 text-[8px] leading-3.5 text-[#7C8781]">{t("Mostrar tu agencia dentro de experiencias relacionadas con ")}{name.toLowerCase()}.
+              <p className="mt-0.5 text-xs leading-3.5 text-[#7C8781]">{t("Mostrar tu agencia dentro de experiencias relacionadas con ")}{name.toLowerCase()}.
               </p>
             </button>
           );
@@ -1284,7 +1284,7 @@ function StepFour({
             className="mt-0.5 size-4 accent-[#075E36]"
           />
 
-          <span className="text-[10px] leading-5 text-[#48564F]">{t("Confirmo que la información proporcionada es correcta y acepto los")}{t(" ")}
+          <span className="text-xs leading-5 text-[#48564F]">{t("Confirmo que la información proporcionada es correcta y acepto los")}{t(" ")}
             <button
               type="button"
               className="font-semibold text-[#075E36] underline underline-offset-2"
@@ -1297,8 +1297,8 @@ function StepFour({
       <div className="mt-3 flex items-start gap-2.5 rounded-md border border-[#D4E7DA] bg-[#F3FAF5] px-3.5 py-3">
         <ShieldCheck size={17} className="mt-0.5 shrink-0 text-[#075E36]" />
         <div>
-          <p className="text-[10px] font-semibold text-[#24533F]">{t("Verificación segura ")}</p>
-          <p className="mt-0.5 text-[9px] leading-4 text-[#6E7C75]">{t("El documento de verificación se utiliza únicamente durante el proceso de revisión administrativa. ")}</p>
+          <p className="text-xs font-semibold text-[#24533F]">{t("Verificación segura ")}</p>
+          <p className="mt-0.5 text-xs leading-4 text-[#6E7C75]">{t("El documento de verificación se utiliza únicamente durante el proceso de revisión administrativa. ")}</p>
         </div>
       </div>
     </div>
@@ -1367,12 +1367,12 @@ function StepFive({
                 <BadgeCheck size={17} className="text-[#075E36]" />
               </div>
 
-              <p className="mt-1 text-[10px] text-[#66706B]">
+              <p className="mt-1 text-xs text-[#66706B]">
                 {selectedBusinessType} · {previewLocation}
               </p>
 
               {form.description && (
-                <p className="mt-3 max-w-[720px] text-[10px] leading-5 text-[#5F6C66]">
+                <p className="mt-3 max-w-[720px] text-xs leading-5 text-[#5F6C66]">
                   {form.description}
                 </p>
               )}
@@ -1402,7 +1402,7 @@ function StepFive({
                 {selectedCategoryNames.map((category) => (
                   <span
                     key={category}
-                    className="rounded-full border border-[#CFE3D6] bg-[#EFF8F3] px-3 py-1.5 text-[9px] font-medium text-[#075E36]"
+                    className="rounded-full border border-[#CFE3D6] bg-[#EFF8F3] px-3 py-1.5 text-xs font-medium text-[#075E36]"
                   >
                     {category}
                   </span>
@@ -1415,7 +1415,7 @@ function StepFive({
                 {selectedLanguageNames.map((language) => (
                   <span
                     key={language}
-                    className="rounded-full border border-[#DEE5E1] bg-white px-3 py-1.5 text-[9px] font-medium text-[#52615B]"
+                    className="rounded-full border border-[#DEE5E1] bg-white px-3 py-1.5 text-xs font-medium text-[#52615B]"
                   >
                     {language}
                   </span>
@@ -1429,8 +1429,8 @@ function StepFive({
       <div className="mt-3 flex items-start gap-2.5 rounded-md border border-[#D4E7DA] bg-[#F3FAF5] px-3.5 py-3">
         <ShieldCheck size={18} className="mt-0.5 shrink-0 text-[#075E36]" />
         <div>
-          <p className="text-[10px] font-semibold text-[#24533F]">{t("Lista para revisión ")}</p>
-          <p className="mt-1 text-[9px] leading-4 text-[#6E7C75]">{t("Al enviar la agencia, administración revisará la información y los documentos. Durante ese proceso el perfil quedará en estado de revisión. ")}</p>
+          <p className="text-xs font-semibold text-[#24533F]">{t("Lista para revisión ")}</p>
+          <p className="mt-1 text-xs leading-4 text-[#6E7C75]">{t("Al enviar la agencia, administración revisará la información y los documentos. Durante ese proceso el perfil quedará en estado de revisión. ")}</p>
         </div>
       </div>
     </div>
@@ -1547,7 +1547,7 @@ function StepHeader({
         <h2 className="!m-0 !text-sm !font-semibold !leading-5 !tracking-normal">
           {t(title)}
         </h2>
-        <p className="text-muted-foreground !m-0 mt-0.5 !text-[11px] !leading-4">
+        <p className="text-muted-foreground !m-0 mt-0.5 !text-xs !leading-4">
           {t(description)}
         </p>
       </div>
@@ -1581,7 +1581,7 @@ function FieldLabel({
 }) {
   const { t } = usePreferences();
   return (
-    <span className="block !text-[12px] !font-medium leading-4">
+    <span className="block !text-xs !font-medium leading-4">
       {t(label)}
       {required && <Required />}
     </span>
@@ -1705,7 +1705,7 @@ function UploadBox({
 
   return (
     <div>
-      <p className="flex items-center gap-1 text-[11px] font-semibold text-[#26352E]">
+      <p className="flex items-center gap-1 text-xs font-semibold text-[#26352E]">
         {t(title)}
         <Required />
         {info && <Info size={11} className="text-[#66706B]" />}
@@ -1769,14 +1769,14 @@ function UploadBox({
           {uploading ? (
             <div className="flex flex-col items-center gap-2 text-[#075E36]">
               <Loader2 size={28} className="animate-spin" />
-              <span className="text-[9px] font-medium">{t("Subiendo...")}</span>
+              <span className="text-xs font-medium">{t("Subiendo...")}</span>
             </div>
           ) : (
             preview
           )}
         </div>
 
-        <p className="text-[10px] font-semibold text-[#2B3A33]">
+        <p className="text-xs font-semibold text-[#2B3A33]">
           {value
             ? kind === "verification"
               ? "Documento cargado"
@@ -1784,22 +1784,22 @@ function UploadBox({
             : text}
         </p>
 
-        <p className="mt-1 text-[9px] font-semibold text-[#075E36]">
+        <p className="mt-1 text-xs font-semibold text-[#075E36]">
           {t(value
             ? "Selecciona otro archivo para reemplazarlo"
             : "o selecciona un archivo")}
         </p>
 
-        <p className="mt-1.5 text-[8px] leading-4 text-[#87908C]">{t(subtitle)}</p>
+        <p className="mt-1.5 text-xs leading-4 text-[#87908C]">{t(subtitle)}</p>
 
         {value && kind === "verification" && (
-          <div className="mt-3 flex items-center gap-1.5 rounded-full bg-[#EAF5ED] px-2.5 py-1 text-[8px] font-medium text-[#075E36]">
+          <div className="mt-3 flex items-center gap-1.5 rounded-full bg-[#EAF5ED] px-2.5 py-1 text-xs font-medium text-[#075E36]">
             <ShieldCheck size={10} />{t("Documento almacenado de forma privada ")}</div>
         )}
       </div>
 
       {uploadError && (
-        <p className="mt-1.5 text-[9px] leading-4 text-red-600">
+        <p className="mt-1.5 text-xs leading-4 text-red-600">
           {uploadError && t(uploadError)}
         </p>
       )}
@@ -1817,7 +1817,7 @@ function PreviewInfoCard({
   const { t } = usePreferences();
   return (
     <div className="rounded-md border border-[#E3E9E6] bg-[#FBFDFC] p-4">
-      <p className="text-[10px] font-semibold text-[#263A31]">{t(title)}</p>
+      <p className="text-xs font-semibold text-[#263A31]">{t(title)}</p>
       <div className="mt-3 space-y-2">{children}</div>
     </div>
   );
@@ -1827,8 +1827,8 @@ function PreviewRow({ label, value }: { label: string; value: string }) {
   const { t } = usePreferences();
   return (
     <div className="flex items-start justify-between gap-4 rounded-lg bg-white px-3 py-2.5">
-      <span className="text-[9px] text-[#7C8781]">{t(label)}</span>
-      <span className="max-w-[65%] text-right text-[9px] font-medium text-[#38463F]">
+      <span className="text-xs text-[#7C8781]">{t(label)}</span>
+      <span className="max-w-[65%] text-right text-xs font-medium text-[#38463F]">
         {value}
       </span>
     </div>
@@ -1850,7 +1850,7 @@ function StatusMessage({
 
   return (
     <div
-      className={`flex items-center gap-2 rounded-md border px-3.5 py-2.5 text-[10px] ${styles}`}
+      className={`flex items-center gap-2 rounded-md border px-3.5 py-2.5 text-xs ${styles}`}
     >
       {children}
     </div>
@@ -1858,7 +1858,7 @@ function StatusMessage({
 }
 
 const inputClass =
-  "bg-background ring-offset-background placeholder:text-muted-foreground/60 focus-visible:border-primary/70 focus-visible:ring-primary/10 h-9 w-full rounded-[5px] border px-3 !text-[13px] outline-none transition-all duration-200 focus-visible:ring-2";
+  "bg-background ring-offset-background placeholder:text-muted-foreground/60 focus-visible:border-primary/70 focus-visible:ring-primary/10 h-9 w-full rounded-[5px] border px-3 !text-base outline-none transition-all duration-200 focus-visible:ring-2";
 
 const textareaClass =
-  "bg-background ring-offset-background placeholder:text-muted-foreground/60 focus-visible:border-primary/70 focus-visible:ring-primary/10 w-full resize-none rounded-[5px] border px-3 py-2 !text-[12.5px] leading-[18px] outline-none transition-all duration-200 focus-visible:ring-2";
+  "bg-background ring-offset-background placeholder:text-muted-foreground/60 focus-visible:border-primary/70 focus-visible:ring-primary/10 w-full resize-none rounded-[5px] border px-3 py-2 !text-base leading-[18px] outline-none transition-all duration-200 focus-visible:ring-2";

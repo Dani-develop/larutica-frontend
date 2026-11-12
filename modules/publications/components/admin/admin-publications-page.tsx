@@ -124,7 +124,7 @@ export default function AdminPublicationsPage() {
             onChange={(event) => setSearch(event.target.value)}
             placeholder={t("Buscar por título o destino...")}
             aria-label={t("Buscar por título o destino...")}
-            className="!h-9 !text-sm pl-9"
+            className="!h-9 !text-base pl-9"
           />
         </div>
         <Sheet>
@@ -143,7 +143,7 @@ export default function AdminPublicationsPage() {
               <div className="flex flex-col gap-2">
                 <Label htmlFor="publication-status-filter" className="!text-sm !font-medium">{t("Estado")}</Label>
                 <Select value={status || "all"} onValueChange={(value) => setStatus(value === "all" ? "" : value as AdminPublicationStatus)}>
-                  <SelectTrigger id="publication-status-filter" className="w-full !text-sm">
+                  <SelectTrigger id="publication-status-filter" className="w-full !text-base">
                     <SelectValue placeholder={t("Todos los estados")} />
                   </SelectTrigger>
                   <SelectContent>

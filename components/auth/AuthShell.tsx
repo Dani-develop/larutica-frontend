@@ -27,7 +27,7 @@ export function AuthShell({ eyebrow, title, children }: AuthShellProps) {
           }}
         />
         <div className="absolute inset-x-0 bottom-0 p-12 pb-14 text-white">
-          <p className="mb-3 text-[10px] font-bold tracking-[0.35em] uppercase opacity-80">
+          <p className="mb-3 text-xs font-bold tracking-[0.35em] uppercase opacity-80">
             {t(eyebrow)}
           </p>
           <div className="flex items-center gap-3">

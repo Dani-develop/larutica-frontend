@@ -415,7 +415,7 @@ export function PublicationForm({
                   >
                     <span
                       className={[
-                        "z-10 flex size-7 items-center justify-center rounded-full border text-[10px] font-semibold transition",
+                        "z-10 flex size-7 items-center justify-center rounded-full border text-xs font-semibold transition",
                         current
                           ? "border-[var(--primary)] bg-[var(--primary)] text-white shadow-sm"
                           : completed
@@ -438,7 +438,7 @@ export function PublicationForm({
 
                     <span
                       className={[
-                        "max-w-full truncate text-[10px] font-medium",
+                        "max-w-full truncate text-xs font-medium",
                         current ||
                         completed
                           ? "text-[var(--ink)]"
@@ -609,7 +609,7 @@ export function PublicationForm({
                   className="min-h-20 resize-y"
                 />
 
-                <p className="mt-1 text-right text-[11px] text-muted-foreground">
+                <p className="mt-1 text-right text-xs text-muted-foreground">
                   {
                     (
                       value.description ??
@@ -712,7 +712,7 @@ export function PublicationForm({
                   />
                 </div>
 
-                <p className="mt-1 text-[11px] text-muted-foreground">
+                <p className="mt-1 text-xs text-muted-foreground">
                   {t(
                     "USD",
                   )}
@@ -808,7 +808,7 @@ export function PublicationForm({
                   />
                 </div>
 
-                <p className="mt-1 text-[11px] leading-5 text-muted-foreground">
+                <p className="mt-1 text-xs leading-5 text-muted-foreground">
                   {t(
                     "Se utilizará como capacidad inicial al crear nuevas salidas. Podrás modificarla para cada fecha.",
                   )}
@@ -833,7 +833,7 @@ export function PublicationForm({
                     )}
                   </p>
 
-                  <p className="mt-0.5 text-[11px] leading-4 text-muted-foreground">
+                  <p className="mt-0.5 text-xs leading-4 text-muted-foreground">
                     {t(
                       "Este valor es solamente el predeterminado. En Salidas y cupos podrás asignar una capacidad distinta a cada fecha y horario.",
                     )}
@@ -924,7 +924,7 @@ export function PublicationForm({
                           language.name
                         }
 
-                        <span className="text-[10px] uppercase opacity-60">
+                        <span className="text-xs uppercase opacity-60">
                           {
                             language.code
                           }
@@ -1134,7 +1134,7 @@ export function PublicationForm({
                   )}
                 </h3>
 
-                <p className="mt-0.5 text-[11px] leading-4 text-muted-foreground">
+                <p className="mt-0.5 text-xs leading-4 text-muted-foreground">
                   {t(
                     "Puedes volver a cualquier paso anterior si necesitas realizar cambios.",
                   )}
@@ -1533,7 +1533,7 @@ function ReviewItem({
     <div className="rounded-xl border border-black/10 bg-muted/20 p-3">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
             {t(
               label,
             )}
@@ -1551,7 +1551,7 @@ function ReviewItem({
           onClick={
             onEdit
           }
-          className="shrink-0 text-[11px] font-semibold text-[var(--primary)] transition hover:underline"
+          className="shrink-0 text-xs font-semibold text-[var(--primary)] transition hover:underline"
         >
           {t(
             "Editar",
@@ -1581,7 +1581,7 @@ function SectionHeader({
       </h2>
 
       {description ? (
-        <p className="mt-0.5 text-[11px] leading-4 text-muted-foreground">
+        <p className="mt-0.5 text-xs leading-4 text-muted-foreground">
           {t(
             description,
           )}
@@ -1606,7 +1606,7 @@ function FormField({
 
   return (
     <div>
-      <label className="mb-1 block text-[11px] font-medium text-foreground">
+      <label className="mb-1 block text-xs font-medium text-foreground">
         {t(
           label,
         )}
@@ -1683,7 +1683,7 @@ function ServiceTypeButton({
           )}
         </p>
 
-        <p className="mt-0.5 text-[11px] leading-4 text-muted-foreground">
+        <p className="mt-0.5 text-xs leading-4 text-muted-foreground">
           {t(
             description,
           )}

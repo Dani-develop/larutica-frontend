@@ -33,9 +33,9 @@ export default function AdminAgenciesTable({
           <Building2 size={20} />
         </div>
 
-        <p className="mt-3 text-[12px] font-semibold text-[#252B28]">{t("No hay agencias para mostrar ")}</p>
+        <p className="mt-3 text-xs font-semibold text-[#252B28]">{t("No hay agencias para mostrar ")}</p>
 
-        <p className="mt-1 text-[10px] text-[#66706B]">{t("Intenta cambiar los filtros de búsqueda. ")}</p>
+        <p className="mt-1 text-xs text-[#66706B]">{t("Intenta cambiar los filtros de búsqueda. ")}</p>
       </div>
     );
   }
@@ -81,16 +81,16 @@ export default function AdminAgenciesTable({
                     </div>
 
                     <div className="min-w-0">
-                      <p className="truncate text-[11px] font-semibold text-[#252B28]">
+                      <p className="truncate text-xs font-semibold text-[#252B28]">
                         {agency.commercialName}
                       </p>
 
-                      <p className="mt-0.5 truncate text-[9px] text-[#7A837F]">
+                      <p className="mt-0.5 truncate text-xs text-[#7A837F]">
                         {agency.agencyName}
                       </p>
 
                       {agency.email && (
-                        <p className="mt-0.5 truncate text-[9px] text-[#87908C]">
+                        <p className="mt-0.5 truncate text-xs text-[#87908C]">
                           {agency.email}
                         </p>
                       )}
@@ -99,7 +99,7 @@ export default function AdminAgenciesTable({
                 </td>
 
                 <td className="px-4 py-3">
-                  <div className="flex items-center gap-1.5 text-[10px] text-[#59615D]">
+                  <div className="flex items-center gap-1.5 text-xs text-[#59615D]">
                     <MapPin
                       size={12}
                       className="shrink-0 text-[#075E36]"
@@ -116,7 +116,7 @@ export default function AdminAgenciesTable({
                   </div>
                 </td>
 
-                <td className="px-4 py-3 text-[10px] text-[#59615D]">
+                <td className="px-4 py-3 text-xs text-[#59615D]">
                   {businessTypeLabel(
                     agency.businessType,
                   )}
@@ -128,7 +128,7 @@ export default function AdminAgenciesTable({
                   />
                 </td>
 
-                <td className="px-4 py-3 text-[10px] text-[#66706B]">
+                <td className="px-4 py-3 text-xs text-[#66706B]">
                   {formatDate(
                     agency.createdAt, language,
                   )}
@@ -142,7 +142,7 @@ export default function AdminAgenciesTable({
                         `/dashboard/agencies/${agency.id}`,
                       )
                     }
-                    className="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border border-[#D7E1DC] bg-white px-3 text-[10px] font-semibold text-[#075E36] transition hover:border-[#0A6A42] hover:bg-[#EFF8F3]"
+                    className="inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border border-[#D7E1DC] bg-white px-3 text-xs font-semibold text-[#075E36] transition hover:border-[#0A6A42] hover:bg-[#EFF8F3]"
                   >{t("Ver detalle ")}<ChevronRight size={12} />
                   </button>
                 </td>
@@ -165,7 +165,7 @@ function TableHeader({
   return (
     <th
       className={[
-        "px-4 py-3 text-[10px] font-semibold uppercase tracking-[0.04em] text-[#69726D]",
+        "px-4 py-3 text-xs font-semibold uppercase tracking-[0.04em] text-[#69726D]",
         align === "right"
           ? "text-right"
           : "text-left",
@@ -224,7 +224,7 @@ function StatusBadge({
 
   return (
     <span
-      className={`inline-flex rounded-full border px-2 py-1 text-[9px] font-semibold ${current.className}`}
+      className={`inline-flex rounded-full border px-2 py-1 text-xs font-semibold ${current.className}`}
     >
       {t(current.label)}
     </span>

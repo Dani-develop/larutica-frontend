@@ -61,9 +61,9 @@ export default function MyAgencyPage() {
                 />
               </div>
 
-              <h2 className="!m-0 !mt-5 !text-[24px] !font-bold !leading-8 !tracking-[-0.02em] text-[#123A30]">{t("Registra tu agencia en LaRutica ")}</h2>
+              <h2 className="!m-0 !mt-5 !text-2xl !font-bold !leading-8 !tracking-[-0.02em] text-[#123A30]">{t("Registra tu agencia en LaRutica ")}</h2>
 
-              <p className="mx-auto mt-2 max-w-[560px] text-[12px] leading-5 text-[#66706B]">{t("Crea el perfil de tu negocio para comenzar el proceso de revisión y preparar tu cuenta para publicar experiencias, gestionar promociones y recibir reservas. ")}</p>
+              <p className="mx-auto mt-2 max-w-[560px] text-xs leading-5 text-[#66706B]">{t("Crea el perfil de tu negocio para comenzar el proceso de revisión y preparar tu cuenta para publicar experiencias, gestionar promociones y recibir reservas. ")}</p>
 
               <div className="mt-6">
                 <button
@@ -73,14 +73,14 @@ export default function MyAgencyPage() {
                       "/dashboard/my-agency/new",
                     )
                   }
-                  className="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-[#075E36] px-5 text-[12px] font-semibold text-white transition hover:bg-[#064D2D]"
+                  className="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-[#075E36] px-5 text-xs font-semibold text-white transition hover:bg-[#064D2D]"
                 >
                   <Plus
                     size={15}
                   />{t("Registrar mi agencia ")}</button>
               </div>
 
-              <div className="mt-4 flex items-center justify-center gap-1.5 text-[10px] leading-4 text-[#7A837F]">
+              <div className="mt-4 flex items-center justify-center gap-1.5 text-xs leading-4 text-[#7A837F]">
                 <ShieldCheck
                   size={12}
                   className="shrink-0 text-[#6B8176]"
@@ -130,9 +130,9 @@ export default function MyAgencyPage() {
         {error && (
           <div className="mt-3 flex flex-col gap-2 rounded-xl border border-[#F1E5C9] bg-[#FFFCF5] px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="text-[11px] font-semibold text-[#765B17]">{t("El servicio de agencias no está disponible temporalmente ")}</p>
+              <p className="text-xs font-semibold text-[#765B17]">{t("El servicio de agencias no está disponible temporalmente ")}</p>
 
-              <p className="mt-0.5 text-[10px] leading-4 text-[#8C7743]">{t("Intenta nuevamente dentro de unos momentos. ")}</p>
+              <p className="mt-0.5 text-xs leading-4 text-[#8C7743]">{t("Intenta nuevamente dentro de unos momentos. ")}</p>
             </div>
 
             <button
@@ -140,7 +140,7 @@ export default function MyAgencyPage() {
               onClick={() =>
                 window.location.reload()
               }
-              className="inline-flex h-8 shrink-0 items-center justify-center gap-1.5 rounded-lg border border-[#D9C993] bg-white px-3 text-[10px] font-semibold text-[#765B17]"
+              className="inline-flex h-8 shrink-0 items-center justify-center gap-1.5 rounded-lg border border-[#D9C993] bg-white px-3 text-xs font-semibold text-[#765B17]"
             >
               <RefreshCw
                 size={12}
@@ -182,7 +182,7 @@ export default function MyAgencyPage() {
                   "/dashboard/my-agency/edit",
                 )
               }
-              className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[#0A6A42] bg-white px-4 text-[11px] font-semibold text-[#075E36] transition hover:bg-[#EFF8F3]"
+              className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[#0A6A42] bg-white px-4 text-xs font-semibold text-[#075E36] transition hover:bg-[#EFF8F3]"
             >
               <Pencil
                 size={14}
@@ -203,18 +203,18 @@ export default function MyAgencyPage() {
           </div>
 
           <div>
-            <p className="text-[11px] font-semibold text-[#765B17]">{t("Tu agencia está en revisión ")}</p>
+            <p className="text-xs font-semibold text-[#765B17]">{t("Tu agencia está en revisión ")}</p>
 
-            <p className="mt-0.5 text-[10px] leading-4 text-[#8C7743]">{t("Administración está revisando la información y los documentos enviados. Mientras el proceso esté activo no podrás modificar el perfil. ")}</p>
+            <p className="mt-0.5 text-xs leading-4 text-[#8C7743]">{t("Administración está revisando la información y los documentos enviados. Mientras el proceso esté activo no podrás modificar el perfil. ")}</p>
           </div>
         </div>
       )}
       {agency.status ===
         "REJECTED" && (
         <div className="mb-4 rounded-xl border border-[#F2CACA] bg-[#FFF4F4] px-4 py-3">
-          <p className="text-[11px] font-semibold text-[#963333]">{t("La agencia requiere correcciones ")}</p>
+          <p className="text-xs font-semibold text-[#963333]">{t("La agencia requiere correcciones ")}</p>
 
-          <p className="mt-0.5 text-[10px] leading-4 text-[#A75A5A]">{t("Edita la información necesaria y vuelve a enviarla para revisión. ")}</p>
+          <p className="mt-0.5 text-xs leading-4 text-[#A75A5A]">{t("Edita la información necesaria y vuelve a enviarla para revisión. ")}</p>
           {agency.rejectionReason && (
             <div className="mt-3 text-sm text-destructive">
               <p className="font-semibold">{t("Motivo del rechazo")}</p>
@@ -571,17 +571,17 @@ function ProcessStep({
         </span>
 
         <div className="flex items-center gap-1.5">
-          <span className="text-[9px] font-semibold text-[#8A938E]">
+          <span className="text-xs font-semibold text-[#8A938E]">
             {number}.
           </span>
 
-          <p className="text-[11px] font-semibold text-[#252B28]">
+          <p className="text-xs font-semibold text-[#252B28]">
             {t(title)}
           </p>
         </div>
       </div>
 
-      <p className="mt-2 text-[9px] leading-4 text-[#7A837F]">
+      <p className="mt-2 text-xs leading-4 text-[#7A837F]">
         {text}
       </p>
     </div>

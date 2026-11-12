@@ -4,7 +4,7 @@
 .onvo-pay-loading{display:flex;align-items:center;justify-content:center;gap:12px;padding:48px 0;color:var(--ink-muted)}
 .onvo-pay-spinner{width:20px;height:20px;border-radius:50%;border:2px solid var(--border);border-top-color:var(--primary);animation:onvo-pay-spin 1s linear infinite}
 .onvo-pay-button-spinner{width:16px;height:16px;border-color:currentColor;border-right-color:transparent;flex-shrink:0}
-.onvo-pay-progress{margin:0!important;color:var(--ink-muted);font-size:.875rem}
-.onvo-pay-secure{display:flex;align-items:center;gap:6px;font-size:.875rem;color:var(--ink-muted);margin:0!important}
+.onvo-pay-progress{margin:0!important;color:var(--ink-muted);font-size:var(--type-small)}
+.onvo-pay-secure{display:flex;align-items:center;gap:6px;font-size:var(--type-small);color:var(--ink-muted);margin:0!important}
 @keyframes onvo-pay-spin{to{transform:rotate(360deg)}}
 @media (prefers-reduced-motion:reduce){.onvo-pay-spinner{animation:none}}

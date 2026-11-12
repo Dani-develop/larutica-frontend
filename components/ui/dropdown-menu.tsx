@@ -103,7 +103,7 @@ function DropdownMenuContent({
       >
         {showHeader && (
           <>
-            <DropdownMenuPrimitive.Label className="px-2.5 pb-1.5 pt-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+            <DropdownMenuPrimitive.Label className="px-2.5 pb-1.5 pt-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
               {header}
             </DropdownMenuPrimitive.Label>
             <DropdownMenuPrimitive.Separator className="-mx-1.5 mb-1 h-px bg-border/80" />

@@ -110,7 +110,7 @@ export function NavUser({ user }: NavUserProps) {
                     </span>
                   )}
                   {user?.role && (
-                    <span className="text-muted-foreground truncate text-[11px] uppercase tracking-wide">
+                    <span className="text-muted-foreground truncate text-xs uppercase tracking-wide">
                       {t(user.role)}
                     </span>
                   )}

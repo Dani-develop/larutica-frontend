@@ -77,7 +77,7 @@ function AgencyPromotionList() {
               <div className="flex flex-1 flex-col gap-2 p-3 xl:p-4">
                 <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-x-2 gap-y-1">
                   <div className="contents">
-                    <p className="text-[11px] font-medium uppercase tracking-wide text-[var(--primary)]">
+                    <p className="text-xs font-medium uppercase tracking-wide text-[var(--primary)]">
                       {t(publication.serviceType === "TRANSPORT" ? "Transporte" : "Excursión")}
                     </p>
                     <h2 className="order-3 col-span-2 min-w-0 !m-0 line-clamp-2 !text-base !font-semibold !leading-6 !tracking-normal text-[var(--ink)]">

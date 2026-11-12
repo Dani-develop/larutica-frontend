@@ -196,7 +196,7 @@ function PublicationsListContent({ canCreate = true, notice, agencyView = false 
                 <div className={agencyView ? "flex flex-1 flex-col gap-2 p-3 xl:p-4" : "p-5"}>
                   <div className={agencyView ? "grid grid-cols-[minmax(0,1fr)_auto] items-start gap-x-2 gap-y-1" : "flex items-start justify-between gap-4"}>
                     <div className={agencyView ? "contents" : "min-w-0"}>
-                      <p className="text-[11px] font-medium uppercase tracking-wide text-[var(--primary)]">
+                      <p className="text-xs font-medium uppercase tracking-wide text-[var(--primary)]">
                         {t(publication.serviceType ===
                         "TRANSPORT"
                           ? "Transporte"

@@ -11,6 +11,22 @@ for(const file of ['app','components','modules'].flatMap(walk).filter(file=>file
   }
   if(!file.endsWith('design-tokens.css') && /#(?:003b22|00df5b|0d684e)\b/i.test(css))errors.push(`${file}: usar tokens para la paleta de marca`);
 }
+// Tamaño mínimo de texto: 12 px (type-caption). Usar text-xs o los tokens type-*.
+for(const file of ['app','components','modules'].flatMap(walk)){
+  if(file.endsWith('.tsx')){
+    const source=fs.readFileSync(file,'utf8');
+    for(const match of source.matchAll(/text-\[(\d+(?:\.\d+)?)px\]/g)){
+      if(Number(match[1])<12)errors.push(`${file}: texto de ${match[1]} px; el mínimo es 12 px (text-xs)`);
+    }
+  }
+  if(file.endsWith('.css')){
+    const sheet=fs.readFileSync(file,'utf8');
+    for(const match of sheet.matchAll(/font-size\s*:\s*(\d*\.?\d+)(px|rem)/g)){
+      const px=match[2]==='rem'?Number(match[1])*16:Number(match[1]);
+      if(px<12)errors.push(`${file}: font-size ${match[1]}${match[2]} menor a 12 px`);
+    }
+  }
+}
 const css=fs.readFileSync('app/globals.css','utf8');
 if(/(?:^|[}])\s*nav\s*\{/m.test(css))errors.push('globals.css: navegación global sin scope');
 if(/(?:^|[}])\s*h[12]\s*\{/m.test(css))errors.push('globals.css: títulos de página sin scope');

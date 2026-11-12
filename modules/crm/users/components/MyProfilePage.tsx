@@ -213,7 +213,7 @@ function ChangePasswordForm({
           <FieldLabel htmlFor="current-password" className="!text-sm">{t("Contraseña actual ")}</FieldLabel>
           <Input
             id="current-password"
-            className="!h-9 !text-sm"
+            className="!h-9 !text-base"
             type="password"
             value={currentPassword}
             onChange={(event) => setCurrentPassword(event.target.value)}
@@ -226,7 +226,7 @@ function ChangePasswordForm({
           <FieldLabel htmlFor="new-password" className="!text-sm">{t("Nueva contraseña ")}</FieldLabel>
           <Input
             id="new-password"
-            className="!h-9 !text-sm"
+            className="!h-9 !text-base"
             type="password"
             value={password}
             onChange={(event) => setPassword(event.target.value)}
@@ -240,7 +240,7 @@ function ChangePasswordForm({
           <FieldLabel htmlFor="confirm-password" className="!text-sm">{t("Confirmar contraseña ")}</FieldLabel>
           <Input
             id="confirm-password"
-            className="!h-9 !text-sm"
+            className="!h-9 !text-base"
             type="password"
             value={confirmation}
             onChange={(event) => setConfirmation(event.target.value)}

@@ -627,7 +627,7 @@ export function PublicationDepartures({
              */
             <div className="max-h-[390px] overflow-y-auto overflow-x-hidden">
               {/* Encabezado */}
-              <div className="sticky top-0 z-10 grid grid-cols-[minmax(0,1.8fr)_minmax(90px,0.85fr)_minmax(78px,0.7fr)_58px] items-center gap-2 border-b border-black/10 bg-[#f8faf9] px-4 py-3 text-[11px] font-medium uppercase tracking-[0.03em] text-muted-foreground">
+              <div className="sticky top-0 z-10 grid grid-cols-[minmax(0,1.8fr)_minmax(90px,0.85fr)_minmax(78px,0.7fr)_58px] items-center gap-2 border-b border-black/10 bg-[#f8faf9] px-4 py-3 text-xs font-medium uppercase tracking-[0.03em] text-muted-foreground">
                 <span>
                   {t(
                     "Fecha y hora",
@@ -686,7 +686,7 @@ export function PublicationDepartures({
                             )}
                           </p>
 
-                          <div className="mt-1 flex min-w-0 items-center gap-1.5 text-[11px] text-muted-foreground">
+                          <div className="mt-1 flex min-w-0 items-center gap-1.5 text-xs text-muted-foreground">
                             <Clock3
                               size={
                                 12
@@ -731,7 +731,7 @@ export function PublicationDepartures({
                         <div>
                           <span
                             className={[
-                              "inline-flex max-w-full items-center rounded-md px-2 py-1 text-[11px] font-semibold",
+                              "inline-flex max-w-full items-center rounded-md px-2 py-1 text-xs font-semibold",
                               getStatusClass(
                                 departure.status,
                               ),
@@ -1018,7 +1018,7 @@ export function PublicationDepartures({
                 />
               </div>
 
-              <p className="mt-1 text-[11px] leading-5 text-muted-foreground">
+              <p className="mt-1 text-xs leading-5 text-muted-foreground">
                 {t(
                   "Número máximo de personas para esta salida.",
                 )}
@@ -1040,7 +1040,7 @@ export function PublicationDepartures({
                     )}
                   </p>
 
-                  <p className="mt-1 text-[11px] leading-5 text-muted-foreground">
+                  <p className="mt-1 text-xs leading-5 text-muted-foreground">
                     {t(
                       "Las horas se guardan usando la zona horaria de Costa Rica.",
                     )}
