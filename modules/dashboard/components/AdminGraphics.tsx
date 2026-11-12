@@ -14,7 +14,8 @@ import {
 import { usePreferences } from "@/lib/preferences/Preferences";
 import { money } from "@/modules/booking/types";
 import { useAdminGraphics } from "../hooks/useAdminGraphics";
-import { ReservationsBarChart } from "./ReservationsBarChart";
+import { DailyScatterChart } from "./DailyScatterChart";
+
 
 const RESERVATION_STATUS: Record<string, string> = {
   PENDING: "Pendiente", CONFIRMED: "Confirmada", PAST: "Finalizada", CANCELLED: "Cancelada",
@@ -129,7 +130,7 @@ export function AdminGraphics() {
       </TabsList>
 
       <TabsContent value="reservations">
-        <ReservationsBarChart bars={metrics.reservationBars} />
+        <DailyScatterChart points={metrics.reservationBars} title="Reservas por fecha de creación" emptyMessage="No hay reservas registradas en este período." valueLabel="Reservas" integer />
         <div className="grid gap-8 pt-2 md:grid-cols-2">
           <Breakdown title="Por estado" items={metrics.byStatus} />
           <Breakdown title="Experiencias más reservadas" items={metrics.topPublications} />
@@ -137,7 +138,7 @@ export function AdminGraphics() {
       </TabsContent>
 
       <TabsContent value="revenue">
-        <ReservationsBarChart bars={metrics.revenueBars} title="Ingresos cobrados por día" emptyMessage="No hay ingresos cobrados en este período." format={money} />
+        <DailyScatterChart points={metrics.revenueBars} title="Ingresos cobrados por día" emptyMessage="No hay ingresos cobrados en este período." format={money} />
         <div className="pt-2"><Breakdown title="Ingresos por agencia" items={metrics.topAgencies} format={money} /></div>
       </TabsContent>
 
