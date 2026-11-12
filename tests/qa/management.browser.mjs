@@ -25,8 +25,8 @@ for(const width of [1440,390]) {
     await page.getByRole('button',{name:'Ver detalle',exact:true}).first().click();await page.getByRole('dialog').waitFor();assert.ok(await page.getByRole('dialog').evaluate(el=>el.getBoundingClientRect().right<=innerWidth+1),'dialog overflow');
     await page.getByRole('button',{name:'Cancelar reserva',exact:true}).click();await page.getByRole('button',{name:'Sí, cancelar reserva',exact:true}).click();await page.getByText('Reserva cancelada. Puedes consultar el estado de la devolución en su detalle.',{exact:true}).waitFor();
     await page.getByLabel('Vista',{exact:true}).selectOption('history');await page.getByRole('status').getByText('1 reserva encontrada',{exact:true}).waitFor();assert.equal(await page.locator('.manage-table tbody tr').count(),1);
-    await page.getByRole('link',{name:'Volver a publicaciones',exact:true}).click();await page.getByRole('link',{name:/Volcán Arenal/}).waitFor();assert.match(page.url(),/paginaPublicaciones=2/);
-    assert.deepEqual(errors,[]);console.log('PASS',width,'publication and reservation pagination, search, details, cancellation, back navigation and mobile text');
+    await page.getByRole('navigation',{name:'Ruta de navegación'}).getByRole('link',{name:'Reservas',exact:true}).click();await page.getByRole('link',{name:/Volcán Arenal/}).waitFor();assert.match(page.url(),/paginaPublicaciones=2/);
+    assert.deepEqual(errors,[]);console.log('PASS',width,'publication and reservation pagination, search, details, cancellation, breadcrumb navigation and mobile text');
   } catch(error){await page.screenshot({path:`test-results/management/failure-${width}.png`,fullPage:true});throw error;}finally{await context.close();}
 }
 await browser.close();

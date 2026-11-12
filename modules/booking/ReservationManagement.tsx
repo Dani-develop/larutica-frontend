@@ -3,10 +3,11 @@
 import Link from 'next/link';
 import {useEffect,useState} from 'react';
 import {usePathname,useRouter,useSearchParams} from 'next/navigation';
-import {ArrowLeft,ArrowRight,CalendarDays,RefreshCw,Search} from 'lucide-react';
+import {ArrowRight,CalendarDays,RefreshCw,Search} from 'lucide-react';
 import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
 import {PageHeading} from '@/components/ui/page-heading';
+import {DashboardBreadcrumb} from '@/components/dashboard/DashboardBreadcrumb';
 import {Dialog,DialogContent,DialogTitle,DialogDescription} from '@/components/ui/dialog';
 import {apiFetch} from '@/lib/api/browser-fetch';
 import {usePreferences} from '@/lib/preferences/Preferences';
@@ -40,7 +41,7 @@ export function ReservationManagement() {
   const key=query.toString();
   const [result,setResult]=useState<{key:string;value:Result}|null>(null),[loading,setLoading]=useState(true),[error,setError]=useState(''),[revision,setRevision]=useState(0);
   const [selected,setSelected]=useState<Reservation|null>(null),[confirmCancel,setConfirmCancel]=useState(false),[busy,setBusy]=useState(false),[notice,setNotice]=useState('');
-  function href(changes:Record<string,string|null>){const next=new URLSearchParams(params.toString());Object.entries(changes).forEach(([key,value])=>{if(value===null||value==='')next.delete(key);else next.set(key,value);});return `${pathname}?${next}`;}
+  function href(changes:Record<string,string|null>){const next=new URLSearchParams(params.toString());Object.entries(changes).forEach(([key,value])=>{if(value===null||value==='')next.delete(key);else next.set(key,value);});const search=next.toString();return search?`${pathname}?${search}`:pathname;}
   function navigate(changes:Record<string,string|null>){router.push(href(changes),{scroll:false});setNotice('');}
   const indexHref=href({publicacion:null,pagina:null,buscar:null,periodo:null,estado:null});
   useEffect(()=>{
@@ -61,7 +62,7 @@ export function ReservationManagement() {
   if(authLoading)return <p role="status">{t('Validando tu sesión…')}</p>;
   if(!user||!['Admin','Agencia','Transporte'].includes(user.role))return <p role="alert">{t('No tienes acceso a la administración de reservas.')}</p>;
   return <section className="reservation-management" aria-busy={loading}>
-    {publicationId&&<Button asChild variant="outline" className="manage-back"><Link href={indexHref}><ArrowLeft size={18}/>{t('Volver a publicaciones')}</Link></Button>}
+    <DashboardBreadcrumb className="mb-2" items={publicationId?[{label:'Reservas',href:indexHref},{label:detail?.publication.title??'Reservas de la publicación'}]:[{label:'Reservas'}]}/>
     <PageHeading id="management-title" focusable title={publicationId?(detail?.publication.title??t('Reservas de la publicación')):t('Reservas')}
       description={publicationId?(detail?`${detail.publication.agencyName??''}${detail.publication.destination?' · '+detail.publication.destination:''}`:undefined):t('Elige una publicación para consultar sus viajeros y gestionar sus reservas.')}
       actions={<Button variant="outline" disabled={loading} onClick={()=>setRevision(n=>n+1)}><RefreshCw size={16} className={loading?'manage-spinning':''}/>{t('Actualizar')}</Button>}/>

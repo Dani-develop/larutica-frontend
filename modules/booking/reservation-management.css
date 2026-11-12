@@ -1,5 +1,4 @@
 .reservation-management{width:100%;max-width:var(--container-dashboard,1280px);margin:0 auto;color:var(--ink);padding:8px;min-width:0}
-.reservation-management .manage-back{margin-bottom:24px;max-width:100%;white-space:normal;height:auto;min-height:44px}
 .manage-tabs{display:flex;flex-wrap:wrap;gap:12px;margin:24px 0}
 .manage-filters{display:flex;align-items:end;flex-wrap:wrap;gap:16px;margin:24px 0}
 .manage-filters label{display:grid;gap:8px;font-size:.875rem;font-weight:600;min-width:160px;flex:1}
