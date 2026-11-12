@@ -8,6 +8,7 @@ import { type ReactNode, useEffect, useRef, useState } from 'react';
 import { Building2, Clock, MapPin } from 'lucide-react';
 import { useNow } from './useNow';
 import { Button } from '@/components/ui/button';
+import { SiteBreadcrumb } from '@/components/ui/site-breadcrumb';
 import { useAuth } from '@/modules/auth/context/AuthContext';
 import { listReservations, type Reservation } from '@/modules/transport/reservations/services/reservation.service';
 import { PublicShell } from './PublicShell';
@@ -135,11 +136,7 @@ export function ExperienceDetail({ id, embedded = false }: { id: string; embedde
     {created ? <CheckoutScreen key={created.id} checkout={created} onBack={()=>{setCreated(null);setPersonalCheck({key:'',reservation:null,checkout:null,error:''});setStep('choose');setReload(n=>n+1);}}/>
     : loading && !item ? <ExperienceDetailSkeleton /> : !item ? <div className="booking-empty" role="alert"><h1>{t("No pudimos abrir esta experiencia")}</h1><p>{t(error)}</p><Button onClick={() => setReload(n => n+1)}>{t("Volver a intentar")}</Button></div> : <>
     <div className="booking-detail-heading">
-      <nav className="booking-detail-breadcrumb" aria-label={t("Ruta de navegación")}>
-        <Link href="/#experiencias">{t("Explorar")}</Link>
-        <span aria-hidden="true">/</span>
-        <span aria-current="page">{item.title}</span>
-      </nav>
+      <SiteBreadcrumb className="booking-detail-breadcrumb" items={[{ label: "Explorar", href: "/#experiencias" }, { label: item.title, translate: false }]} />
       <h1>{item.title}</h1>
       <ul className="booking-detail-meta">
         <li><MapPin size={16} aria-hidden="true" />{item.destination}</li>

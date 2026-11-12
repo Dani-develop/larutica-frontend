@@ -1,7 +1,6 @@
 "use client";
 import { usePreferences } from "@/lib/preferences/Preferences";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { AuthShell } from "@/components/auth/AuthShell";
@@ -18,7 +17,7 @@ export default function ForgotPasswordForm() {
   const [submitting, setSubmitting] = useState(false);
 
   return (
-    <AuthShell eyebrow={t("Ayuda para entrar")} title={t("Recuperar contraseña")}>
+    <AuthShell eyebrow={t("Ayuda para entrar")} title={t("Recuperar contraseña")} trail={[{ label: "Iniciar sesión", href: "/login" }]}>
       <p className="mb-6 -mt-6 text-sm text-muted-foreground">{t("Escribe el correo de tu cuenta y te ayudaremos a recuperar el acceso.")}</p>
       <form className="flex flex-col gap-5" noValidate onSubmit={async (event) => {
         event.preventDefault();
@@ -58,9 +57,6 @@ export default function ForgotPasswordForm() {
         {error ? <p className="text-sm text-destructive" role="alert">{t(error)}</p> : null}
         <Button type="submit" className="mt-1 w-full" disabled={submitting}>{submitting ? t("Enviando código…") : t("Continuar")}</Button>
       </form>
-      <p className="mt-6 text-center text-sm text-muted-foreground">
-        <Link href="/login" className="font-medium text-primary underline-offset-4 hover:underline">{t("Volver a iniciar sesión")}</Link>
-      </p>
     </AuthShell>
   );
 }

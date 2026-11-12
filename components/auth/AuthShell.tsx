@@ -2,18 +2,20 @@
 import { usePreferences } from "@/lib/preferences/Preferences";
 import { PreferenceControls } from "@/components/preferences/PreferenceControls";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
 import { BrandMark } from "@/components/brand/BrandMark";
 import { SITE } from "@/modules/landing/constants/site";
 import { PageHeading } from "@/components/ui/page-heading";
+import { SiteBreadcrumb, type BreadcrumbEntry } from "@/components/ui/site-breadcrumb";
 
 type AuthShellProps = {
   eyebrow: string;
   title: string;
+  /** Migas intermedias. La página actual (title) se añade al final. */
+  trail?: BreadcrumbEntry[];
   children: React.ReactNode;
 };
 
-export function AuthShell({ eyebrow, title, children }: AuthShellProps) {
+export function AuthShell({ eyebrow, title, trail = [], children }: AuthShellProps) {
   const { t } = usePreferences();
   return (
     <div className="larutica-auth flex h-svh overflow-hidden bg-background">
@@ -44,11 +46,10 @@ export function AuthShell({ eyebrow, title, children }: AuthShellProps) {
       <div className="hidden w-px shrink-0 bg-linear-to-b from-transparent via-border to-transparent lg:block" />
 
       <div className="flex flex-1 flex-col overflow-y-auto">
-        <nav aria-label={t("Volver al sitio")} className="auth-return flex items-center justify-between gap-3 px-6 pt-6 sm:px-8">
-          <Link href="/" className="inline-flex min-h-11 items-center gap-2 rounded-md px-2 text-sm font-medium text-primary underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-4">
-            <ArrowLeft size={18} aria-hidden="true" />{t(" Volver al inicio ")}</Link>
+        <div className="auth-return flex items-center justify-between gap-3 px-6 pt-6 sm:px-8">
+          <SiteBreadcrumb items={[...trail, { label: title, translate: false }]} />
           <PreferenceControls />
-        </nav>
+        </div>
         <div className="mb-2 px-8 pt-10 lg:hidden">
           <Link href="/" className="flex items-center gap-2">
             <BrandMark className="size-9" />

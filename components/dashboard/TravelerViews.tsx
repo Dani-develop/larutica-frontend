@@ -5,6 +5,7 @@ import { usePreferences } from "@/lib/preferences/Preferences";
 import Link from "next/link";
 import { Check, ChevronDown, ChevronLeft, ChevronRight, Heart, MapPin, SlidersHorizontal, Star, X } from "lucide-react";
 import { PageHeading } from "@/components/ui/page-heading";
+import { SiteBreadcrumb, type BreadcrumbEntry } from "@/components/ui/site-breadcrumb";
 import { CurrencyNotice } from "@/components/preferences/PreferenceControls";
 import Swal from "sweetalert2";
 import "sweetalert2/dist/sweetalert2.min.css";
@@ -48,10 +49,10 @@ const cancelReservationAlertClasses = {
   confirmButton: "larutica-swal-confirm larutica-swal-danger",
 };
 
-function TripHeading({ eyebrow, title, lead }: { eyebrow: string; title: string; lead: string }) {
+function TripHeading({ trail, title, lead }: { trail: BreadcrumbEntry[]; title: string; lead: string }) {
   const { t } = usePreferences();
   return (
-    <PageHeading className="trip-page-heading" eyebrow={<p className="eyebrow">{t(eyebrow)}</p>} title={t(title)} description={t(lead)} />
+    <PageHeading className="trip-page-heading" eyebrow={<SiteBreadcrumb className="mb-2" items={trail} />} title={t(title)} description={t(lead)} />
   );
 }
 
@@ -499,7 +500,7 @@ export function TravelerExplorePage({ embedded = false, discovery = false, filte
   return (
     <section id={embedded ? "experiencias" : undefined} className={embedded ? "catalog-embedded" : "page-shell"}>
       {!embedded && <TripHeading
-        eyebrow={t("Mi viaje")}
+        trail={[{ label: providerName ? `${t("Viajes de")} ${providerName}` : "Explorar", translate: !providerName }]}
         title={providerName ? `${t("Viajes de")} ${providerName}` : t("Explorar")}
         lead={t("Encuentra experiencias y servicios para armar tu próxima ruta.")}
       />}
@@ -965,7 +966,7 @@ export function TravelerSavedPage() {
   return (
     <section className="page-shell trip-page-shell">
       <TripHeading
-        eyebrow={t("Mi viaje")}
+        trail={[{ label: "Guardados" }]}
         title={t("Guardados")}
         lead={t("Ideas de viaje que quieres revisar antes de reservar.")}
       />
@@ -1132,7 +1133,7 @@ export function TravelerReservationsPage() {
   if (selectedReservation && !loading && !selected) {
     return (
       <section className="page-shell trip-page-shell">
-        <Link className="back-link" href="/?viaje=reservas">{t("Volver a reservas por venir")}</Link>
+        <SiteBreadcrumb className="mb-6" items={[{ label: "Mis reservas", href: "/?viaje=reservas" }, { label: "Reserva" }]} />
         {error ? <p className="notice" role="alert">{t(error)}</p> : <p className="empty-state" role="status">{t("No encontramos esta reserva.")}</p>}
       </section>
     );
@@ -1155,7 +1156,7 @@ export function TravelerReservationsPage() {
     <section className="page-shell trip-page-shell trip-reservations-page">
       <div className="trip-reservations-content">
       <TripHeading
-        eyebrow={t("Mi viaje")}
+        trail={[{ label: "Mis reservas" }]}
         title={t("Mis reservas")}
         lead={t("Consulta tus próximos viajes y tu historial de reservas.")}
       />
@@ -1566,7 +1567,7 @@ export function TravelerProfileForm({
   return (
     <section className="page-shell">
       <TripHeading
-        eyebrow={t("Mi viaje")}
+        trail={[{ label: "Mi usuario" }]}
         title={t("Mi usuario")}
         lead={t("Aquí puedes revisar y actualizar tus datos personales.")}
       />

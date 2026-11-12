@@ -249,3 +249,19 @@ Object.assign(english, {
 });
 
 for (const [key, value] of Object.entries(interfaceEnglish)) english[key] ??= value;
+
+// Landing: categorías, mensajes para lector de pantalla y metadatos de la pestaña.
+Object.assign(english, {
+  'Naturaleza': 'Nature', 'Aventura': 'Adventure',
+  'Explora opciones seleccionadas para ti.': 'Explore options selected for you.',
+  'Rutas de transporte publicadas.': 'Published transport routes.',
+  'Explora los destinos disponibles.': 'Explore the available destinations.',
+  'Búsqueda completada: 24 experiencias cerca de La Fortuna.': 'Search complete: 24 experiences near La Fortuna.',
+  'Búsqueda de transporte: 1 ruta publicada.': 'Transport search: 1 published route.',
+  'Búsqueda de transporte: {n} rutas publicadas.': 'Transport search: {n} published routes.',
+  'Pantalla {name} abierta.': '{name} screen opened.',
+  'Detalle de ruta': 'Route details', 'Reserva de transporte': 'Transport booking',
+  'LaRutica | Explora Costa Rica': 'LaRutica | Explore Costa Rica',
+  'Tours, transporte y experiencias locales en Costa Rica.': 'Tours, transport and local experiences in Costa Rica.',
+  'Tours, transporte y experiencias locales en Costa Rica': 'Tours, transport and local experiences in Costa Rica',
+});

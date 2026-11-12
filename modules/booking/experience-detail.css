@@ -66,14 +66,7 @@
 
 /* Refinamiento visual exclusivo de la información de la experiencia.
    No se alteran reglas de .booking-panel ni su contenido. */
-.booking-site.booking-detail-page .booking-detail-breadcrumb {
-  display:flex; align-items:center; flex-wrap:wrap; gap:9px;
-  margin-bottom:14px; color:var(--detail-muted); font-size:var(--type-caption); font-weight:500;
-}
-.booking-site.booking-detail-page .booking-detail-breadcrumb a {
-  color:var(--detail-ink); text-decoration:none;
-}
-.booking-site.booking-detail-page .booking-detail-breadcrumb a:hover { text-decoration:underline; text-underline-offset:3px; }
+.booking-site.booking-detail-page .booking-detail-breadcrumb { margin-bottom:14px; }
 .booking-site.booking-detail-page .booking-detail-heading h1 { margin-bottom:12px; letter-spacing:-.035em; }
 .booking-site.booking-detail-page .booking-detail-meta { gap:10px 18px; font-size:var(--type-small); line-height:1.45; }
 .booking-site.booking-detail-page .booking-detail-meta li { gap:7px; min-width:0; }

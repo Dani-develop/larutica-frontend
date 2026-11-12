@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { SiteBreadcrumb } from "@/components/ui/site-breadcrumb";
 import { PrivacyPolicyContent } from "@/components/legal/PrivacyPolicyContent";
 import { PRIVACY_POLICY_UPDATED_AT, PRIVACY_POLICY_VERSION } from "@/lib/privacyPolicy";
 
@@ -12,7 +12,7 @@ export default function PrivacyPage() {
   return (
     <main className="legal-page" lang="es">
       <div className="legal-content">
-        <Link className="back-link" href="/">← Volver a LaRutica</Link>
+        <SiteBreadcrumb className="mb-8" items={[{ label: "Política de privacidad" }]} />
         <p className="eyebrow">LaRutica · Costa Rica</p>
         <h1 className="detail-title lr-page-title">Política de privacidad</h1>
         <p className="detail-intro">Última actualización: {PRIVACY_POLICY_UPDATED_AT}. Versión: {PRIVACY_POLICY_VERSION}.</p>

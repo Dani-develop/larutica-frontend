@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { SiteBreadcrumb } from "@/components/ui/site-breadcrumb";
 
 export const metadata: Metadata = {
   title: "Términos y condiciones | LaRutica",
@@ -10,7 +11,7 @@ export default function TermsPage() {
   return (
     <main className="legal-page" lang="es">
       <div className="legal-content">
-        <Link className="back-link" href="/">← Volver a LaRutica</Link>
+        <SiteBreadcrumb className="mb-8" items={[{ label: "Términos y condiciones" }]} />
         <p className="eyebrow">LaRutica · Costa Rica</p>
         <h1 className="detail-title lr-page-title">Términos y condiciones</h1>
         <p className="detail-intro">

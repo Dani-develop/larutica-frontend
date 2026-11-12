@@ -1,6 +1,7 @@
 "use client";
 import { CurrencyNotice } from "@/components/preferences/PreferenceControls";
 import { usePreferences } from "@/lib/preferences/Preferences";
+import { SiteBreadcrumb } from "@/components/ui/site-breadcrumb";
 
 import { useState } from "react";
 import type { TransportRoute } from "@/modules/transport/routes/models/Route";
@@ -12,6 +13,7 @@ type TransportDetailViewProps = {
   defaultPeople: string;
   headingRef: React.RefObject<HTMLHeadingElement | null>;
   onBack: () => void;
+  onHome: () => void;
   onConfirm: (input: { date: string; people: number; totalUsd: number }) => void;
 };
 
@@ -21,6 +23,7 @@ export function TransportDetailView({
   defaultPeople,
   headingRef,
   onBack,
+  onHome,
   onConfirm,
 }: TransportDetailViewProps) {
   const { t, money } = usePreferences();
@@ -32,7 +35,11 @@ export function TransportDetailView({
 
   return (
     <div className="detail-page page-shell">
-      <button className="back-link" onClick={onBack} type="button">{t("← Volver a resultados ")}</button>
+      <SiteBreadcrumb
+        className="mb-4"
+        onHome={onHome}
+        items={[{ label: "Transporte", onClick: onBack }, { label: routeTitle(route), translate: false }]}
+      />
       <div className="detail-grid">
         <div>
           <div className="detail-image">

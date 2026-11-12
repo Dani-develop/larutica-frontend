@@ -1,10 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { useState } from 'react';
 import { PageHeading } from '@/components/ui/page-heading';
+import { SiteBreadcrumb } from '@/components/ui/site-breadcrumb';
 import { CurrencyNotice } from '@/components/preferences/PreferenceControls';
 import { usePreferences } from '@/lib/preferences/Preferences';
 import { JourneyView } from '@/modules/journeys/JourneyView';
@@ -31,7 +30,7 @@ export function UpcomingReservationDetail({ reservation: r, image, onCancel, bus
 
   return <section className="page-shell trip-page-shell">
     <div className="reservation-detail-content">
-    <div className="reservation-detail-back"><Button asChild variant="outline"><Link href={tripPath('reservas')}><ArrowLeft size={18} aria-hidden="true" />{t('Volver a mis reservas')}</Link></Button></div>
+    <SiteBreadcrumb className="mb-6" items={[{ label: 'Mis reservas', href: tripPath('reservas') }, { label: r.publicationTitle, translate: false }]} />
     {existing ? <p className="notice" role="status">{t('Ya tienes una reserva para esta salida. No creamos una segunda reserva.')}</p> : null}
     <PageHeading
       className="trip-page-heading"

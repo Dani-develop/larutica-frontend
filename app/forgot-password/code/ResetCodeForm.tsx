@@ -1,7 +1,6 @@
 "use client";
 import { usePreferences } from "@/lib/preferences/Preferences";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { AuthShell } from "@/components/auth/AuthShell";
@@ -57,7 +56,7 @@ export default function ResetCodeForm() {
   }
 
   return (
-    <AuthShell eyebrow={t("Ayuda para entrar")} title={t("Código de recuperación")}>
+    <AuthShell eyebrow={t("Ayuda para entrar")} title={t("Código de recuperación")} trail={[{ label: "Iniciar sesión", href: "/login" }, { label: "Recuperar contraseña", href: "/forgot-password" }]}>
       <p className="mb-6 -mt-6 text-sm text-muted-foreground">{email ? <>{t("Escribe el código de 5 dígitos que enviamos a")} <span className="font-medium">{email}</span>{t(". Caduca a los 15 minutos.")}</> : t("Escribe el código de 5 dígitos. Caduca a los 15 minutos.")}</p>
       <form className="flex flex-col gap-5" onSubmit={async (event) => {
         event.preventDefault();
@@ -112,9 +111,6 @@ export default function ResetCodeForm() {
           {resending ? t("Enviando código…") : t("Pedir otro código")}
         </Button>
       </form>
-      <p className="mt-6 text-center text-sm text-muted-foreground">
-        <Link href="/forgot-password" className="font-medium text-primary underline-offset-4 hover:underline">{t("Volver")}</Link>
-      </p>
     </AuthShell>
   );
 }

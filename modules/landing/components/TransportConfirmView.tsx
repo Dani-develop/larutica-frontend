@@ -1,5 +1,6 @@
 "use client";
 import { usePreferences } from "@/lib/preferences/Preferences";
+import { SiteBreadcrumb } from "@/components/ui/site-breadcrumb";
 
 import type { TransportReservation } from "@/modules/transport/reservations/models/Reservation";
 import { routeTitle } from "@/modules/transport/routes/models/Route";
@@ -8,6 +9,7 @@ type TransportConfirmViewProps = {
   reservation: TransportReservation;
   headingRef: React.RefObject<HTMLHeadingElement | null>;
   onBack: () => void;
+  onHome: () => void;
 };
 
 function formatDate(isoDate: string, language: string) {
@@ -22,13 +24,18 @@ export function TransportConfirmView({
   reservation,
   headingRef,
   onBack,
+  onHome,
 }: TransportConfirmViewProps) {
   const { t, money, language } = usePreferences();
   const title = routeTitle(reservation);
 
   return (
     <div className="page-shell">
-      <button className="back-link" type="button" onClick={onBack}>{t("← Volver a explorar ")}</button>
+      <SiteBreadcrumb
+        className="mb-4"
+        onHome={onHome}
+        items={[{ label: "Transporte", onClick: onBack }, { label: "Reserva registrada" }]}
+      />
       <div className="form-header">
         <p className="eyebrow">{t("Reserva registrada")}</p>
         <h1 className="form-title lr-page-title" ref={headingRef} tabIndex={-1}>

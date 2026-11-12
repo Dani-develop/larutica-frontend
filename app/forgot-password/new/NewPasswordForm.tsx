@@ -30,7 +30,7 @@ export default function NewPasswordForm() {
   }, [router]);
 
   return (
-    <AuthShell eyebrow={t("Ayuda para entrar")} title={t("Nueva contraseña")}>
+    <AuthShell eyebrow={t("Ayuda para entrar")} title={t("Nueva contraseña")} trail={[{ label: "Iniciar sesión", href: "/login" }, { label: "Recuperar contraseña", href: "/forgot-password" }]}>
       {phase === "ready" && resetGrant ? (
         <>
           <p className="mb-6 -mt-6 text-sm text-muted-foreground">{t("Elige una contraseña de 8 a 128 caracteres y confírmala.")}</p>

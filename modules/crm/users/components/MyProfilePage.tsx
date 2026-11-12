@@ -7,6 +7,7 @@ import { parsePhoneNumber } from "react-phone-number-input";
 import { getInitials } from "@/components/app-sidebar/user-avatar-utils";
 import type { DashboardRole } from "@/components/dashboard/dashboard-role-context";
 import { DashboardBreadcrumb } from "@/components/dashboard/DashboardBreadcrumb";
+import { SiteBreadcrumb } from "@/components/ui/site-breadcrumb";
 import { Button } from "@/components/ui/button";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
@@ -306,12 +307,11 @@ export function MyProfilePage({ appearance = "dashboard" }: { appearance?: "dash
 
   return (
     <div className={landing ? "page-shell trip-profile" : "mx-auto flex w-full max-w-3xl flex-col gap-6"}>
-      {landing ? null : (
-        <DashboardBreadcrumb items={[{ label: "Mi perfil" }]} />
-      )}
+      {landing
+        ? <SiteBreadcrumb items={[{ label: "Mi perfil" }]} />
+        : <DashboardBreadcrumb items={[{ label: "Mi perfil" }]} />}
 
       <div className={landing ? "trip-profile-heading" : undefined}>
-        {landing ? <p className="eyebrow">{t("Mi viaje")}</p> : null}
         <h1 className={landing ? "detail-title" : "!m-0 !max-w-none !text-2xl !leading-8 !font-semibold !tracking-tight"}>{t("Mi perfil ")}</h1>
         <p className={landing ? "detail-intro" : "text-muted-foreground mt-0.5 !text-sm !leading-5"}>{t("Consulta tu cuenta, edita tus datos, cambia tu contraseña o administra tus passkeys. ")}</p>
       </div>

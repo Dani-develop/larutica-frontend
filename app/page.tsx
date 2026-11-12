@@ -86,6 +86,14 @@ export default function Home() {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [view]);
 
+  // Los metadatos de app/layout.tsx son estáticos (español): los alineamos con el idioma elegido.
+  useEffect(() => {
+    document.title = t("LaRutica | Explora Costa Rica");
+    document
+      .querySelector('meta[name="description"]')
+      ?.setAttribute("content", t("Tours, transporte y experiencias locales en Costa Rica."));
+  }, [t]);
+
   useEffect(() => {
     document.documentElement.classList.toggle("large-text", largeText);
     document.documentElement.classList.toggle("high-contrast", highContrast);
@@ -111,7 +119,7 @@ export default function Home() {
       router.replace("/");
     }
     setView(next);
-    setStatus(nextStatus ?? `Pantalla ${screenName(next)} abierta.`);
+    setStatus(nextStatus ?? t("Pantalla {name} abierta.").replace("{name}", t(screenName(next))));
     window.scrollTo({ top: 0, behavior: "smooth" });
     window.setTimeout(() => mainHeading.current?.focus(), 80);
   }
@@ -148,7 +156,7 @@ export default function Home() {
       setStatus(
         matches.length === 1
           ? "Búsqueda de transporte: 1 ruta publicada."
-          : `Búsqueda de transporte: ${matches.length} rutas publicadas.`,
+          : t("Búsqueda de transporte: {n} rutas publicadas.").replace("{n}", String(matches.length)),
       );
     } else {
       setStatus("Búsqueda completada: 24 experiencias cerca de La Fortuna.");
@@ -193,7 +201,7 @@ export default function Home() {
         onHelp={() => setHelpOpen(true)}
         onAccess={() => setAccessOpen(true)}
       />
-      <p className="global-status sr-only" role="status" aria-live="polite">{status}</p>
+      <p className="global-status sr-only" role="status" aria-live="polite">{t(status)}</p>
 
       <main id="main">
         {trip && authLoading ? <p className="trip-status">{t("Validando sesión...")}</p> : null}
@@ -213,6 +221,7 @@ export default function Home() {
             defaultPeople={bookingPeople}
             headingRef={mainHeading}
             onBack={() => { setCategory("transport"); navigate("explore"); }}
+            onHome={openExplore}
             onConfirm={({ date, people, totalUsd }) => {
               const reservation = createReservation({
                 routeId: selectedRoute.id,
@@ -226,7 +235,7 @@ export default function Home() {
               setLastReservation(reservation);
               navigate(
                 "route-confirm",
-                `Reserva registrada: ${routeTitle(selectedRoute)} · ${people} ${people === 1 ? "persona" : "personas"} · USD ${totalUsd}`,
+                `${t("Reserva registrada")}: ${routeTitle(selectedRoute)} · ${people} ${people === 1 ? t("persona") : t("personas")} · USD ${totalUsd}`,
               );
             }}
           />
@@ -236,6 +245,7 @@ export default function Home() {
             reservation={lastReservation}
             headingRef={mainHeading}
             onBack={() => { setCategory("transport"); navigate("explore"); }}
+            onHome={openExplore}
           />
         )}
         {!trip && view === "agency" && <AgencyView onPublish={() => navigate("publish")} onPromote={() => navigate("promotion")} setStatus={setStatus} headingRef={mainHeading} />}

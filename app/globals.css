@@ -123,8 +123,6 @@ a[data-slot="button"][data-variant="default"] {
 .trip-page-shell .reservation-card .trip-actions { width:auto; justify-content:flex-end; }
 .trip-reservations-content { width:100%; min-width:0; }
 .reservation-detail-content { width:100%; min-width:0; }
-.reservation-detail-back { margin-bottom:1.5rem; }
-.reservation-detail-back [data-slot="button"] { max-width:100%; white-space:normal; height:auto; min-height:44px; text-align:left; }
 .trip-reservations-page .reservation-history > .empty-state { margin:0; padding:1.5rem; text-align:left; border:1px solid var(--line); border-radius:var(--radius-card); background:var(--surface-muted); }
 .trip-reservations-page .reservation-rating { min-width:0; }
 .trip-reservations-page .rating-stars { flex-wrap:wrap; }
@@ -266,7 +264,6 @@ footer p { color:#c8d8d2; }
 .footer-link { border:0; background:transparent; color:#fff; text-decoration:underline; text-underline-offset:4px; cursor:pointer; }
 .legal-page { min-height:calc(100vh - 76px); padding:clamp(2rem,5vw,4rem) clamp(1rem,5vw,5rem); background:#fff; }
 .legal-content { width:min(100%,900px); margin:0 auto; }
-.legal-content>.back-link { display:inline-flex; align-items:center; margin-bottom:2rem; text-decoration:none; }
 .legal-content>.eyebrow { margin-bottom:.65rem; }
 .legal-content>.detail-title { font-size:var(--type-page); line-height:1.08; letter-spacing:-.045em; }
 .legal-content>.detail-intro { margin:.9rem 0 1.5rem; line-height:1.65; }
