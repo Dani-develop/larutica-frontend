@@ -6,6 +6,11 @@ on:
   push:
     branches: [main, development, seg/3.2-analisis-seguridad-ci]
   workflow_dispatch:
+  # 7.6: reescaneo semanal (lunes 12:00 UTC = 06:00 en Costa Rica). Los avisos
+  # nuevos de OSV aparecen sin que cambie el código; el resultado actualiza un
+  # Issue de hallazgos (job reescaneo-hallazgo).
+  schedule:
+    - cron: "0 12 * * 1"
 
 permissions:
   contents: read
@@ -67,3 +72,33 @@ jobs:
           path: outputs/security/ci/*.json
           if-no-files-found: error
           retention-days: 14
+
+  # 7.6: si el reescaneo programado o manual falla, se abre o actualiza un solo
+  # Issue con la etiqueta `security`. Es un hallazgo candidato: una persona lo
+  # clasifica con la plantilla de 7.5 (H-NN) antes de darlo por confirmado.
+  # Solo este job recibe `issues: write`; el análisis conserva contents: read.
+  reescaneo-hallazgo:
+    name: Registrar hallazgo del reescaneo
+    needs: security
+    if: ${{ always() && needs.security.result == 'failure' && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - name: Abrir o actualizar el Issue del reescaneo
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          COMMIT: ${{ github.sha }}
+        run: |
+          title="Reescaneo programado: hallazgo candidato (7.6)"
+          body="El reescaneo (Semgrep, Gitleaks, OSV) falló sobre ${COMMIT}. Corrida: ${RUN_URL}. Descargar el artefacto seguridad-${COMMIT}-N, clasificar cada aviso con la plantilla de 7.5 (H-NN) y enlazarlo aquí. No es un hallazgo confirmado hasta que una persona lo clasifique."
+          number=$(gh issue list --state open --label security --search "\"$title\" in:title" --json number --jq '.[0].number // empty')
+          if [ -n "$number" ]; then
+            gh issue comment "$number" --body "$body"
+          else
+            gh issue create --title "$title" --label security --body "$body"
+          fi
