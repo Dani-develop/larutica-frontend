@@ -30,6 +30,12 @@ versionados sin commit. No acepta reportes antiguos como sustituto de ejecutar.
 Los runners borran únicamente su reporte/recibo anterior antes de empezar.
 Las pruebas de esta política están en `tests/security/gate.test.mjs`.
 
+Una repetición local detectó timeouts en `worker-env.d.ts` (tipos del runtime
+generados por Wrangler, como indica su encabezado). El gate los clasificó
+correctamente como **incompleto**, pese a tener cero hallazgos. Se excluye
+únicamente ese archivo generado mediante `.semgrepignore`, no código de negocio;
+no se relaja `--strict` ni se ignoran los errores del analizador.
+
 ## Artefactos y privacidad
 
 El gate crea `outputs/security/ci/{semgrep,gitleaks,osv}.json` con estado,
