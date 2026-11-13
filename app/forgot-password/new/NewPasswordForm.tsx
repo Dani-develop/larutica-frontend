@@ -18,6 +18,10 @@ export default function NewPasswordForm() {
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
+  // sessionStorage solo existe tras hidratar; el estado inicial debe seguir
+  // siendo "pending" para no romper la hidratación. Esta sincronización única
+  // con el almacenamiento del navegador es intencional.
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     const draft = readPasswordResetDraft();
     if (!draft?.resetGrant) {
@@ -28,6 +32,7 @@ export default function NewPasswordForm() {
     setResetGrant(draft.resetGrant);
     setPhase("ready");
   }, [router]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   return (
     <AuthShell eyebrow={t("Ayuda para entrar")} title={t("Nueva contraseña")} trail={[{ label: "Iniciar sesión", href: "/login" }, { label: "Recuperar contraseña", href: "/forgot-password" }]}>

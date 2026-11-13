@@ -23,6 +23,15 @@ casos de Gitleaks ni demuestra cobertura de todos los defectos posibles.
 | `supabase/functions/mail-relay/relay-config.mjs`, línea 1 | generic-api-key / 1 | El valor es un verificador SHA-256, no el token en claro. Una prueba del handler real en memoria confirma que usar ese hash como Bearer devuelve 401 sin abrir SMTP. | No se demuestra filtración del token; falta confirmación del propietario sobre generación segura y exposición previa. Sin conexión al relay real, sin rotación automática y sin exclusión. |
 | `tests/mail/fixtures/localhost-key.pem`, línea 1 | private-key / 1 | La clave coincide criptográficamente con el certificado `CN=localhost`, SAN `DNS:localhost, IP Address:127.0.0.1`. Los tests de transporte la usan en TLS/STARTTLS local con certificado verificado. | Material público de pruebas en el repositorio; pendiente de confirmación humana de que no se reutilizó en despliegues. Sin allowlist. |
 
+## Remediación H-04 (clave localhost)
+
+La coincidencia `tests/mail/fixtures/localhost-key.pem` ya no existe en el
+árbol de trabajo: los dos PEM se retiraron del repositorio y las pruebas generan
+una identidad TLS efímera en tiempo de ejecución con
+`tests/mail/fixtures/localhost-tls.mjs`. El material ya no se versiona, por lo
+que Gitleaks deja de reportarlo en escaneos nuevos. El historial anterior
+permanece y cualquier decisión sobre él sigue siendo humana (ver #29).
+
 ## Comprobaciones adicionales reproducibles
 
 ```bash
@@ -37,7 +46,8 @@ El segundo ejecutó **24/24 pruebas correctas** usando servicios locales de prue
 Con Node 22.14 es necesario `--experimental-strip-types`: el intento inicial sin
 ese flag no pudo cargar los imports `.ts` y no cuenta como una ejecución aprobada.
 
-Certificado de la fixture, huella pública SHA-256:
+Certificado de la fixture original, huella pública SHA-256 (histórica; la
+identidad actual se genera por ejecución y su huella cambia):
 `88:81:96:1E:71:21:F0:31:50:93:43:7F:8F:59:28:E5:63:05:A9:61:E0:11:27:B4:DB:C9:37:A2:3B:5D:76:34`.
 Las referencias encontradas a estos archivos de fixture están en
 `tests/mail/transport.test.mjs` y `tests/mail/relay.test.mjs`; esto no prueba

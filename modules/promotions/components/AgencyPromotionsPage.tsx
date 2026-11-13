@@ -1,5 +1,6 @@
 "use client";
 import { DashboardBreadcrumb } from "@/components/dashboard/DashboardBreadcrumb";
+import { useState } from "react";
 
 import Link from "next/link";
 import { Megaphone } from "lucide-react";
@@ -34,7 +35,7 @@ function AgencyPromotionList() {
   const { publications, loading, error } = usePublications();
   const paged = usePagedRows(publications);
   const formatDate = dateFormatter(language);
-  const now = Date.now();
+  const [now] = useState(() => Date.now());
 
   return (
     <div className="mx-auto min-w-0 w-full max-w-7xl space-y-4">

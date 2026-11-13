@@ -18,10 +18,13 @@ export function JourneyEditor({value,onChange,meetingPoint,onMeetingPointChange,
   meetingPoint:string;onMeetingPointChange:(text:string)=>void;allowLegacy?:boolean;isExcursion?:boolean;
 }) {
   const { t, language } = usePreferences();
-  const initialEmpty=useRef(emptyJourney());
-  const journey=value ?? initialEmpty.current;
-  const current=useRef(journey); current.current=journey;
-  const change=useRef(onChange);change.current=onChange;
+  const [initialEmpty] = useState(emptyJourney);
+  const journey=value ?? initialEmpty;
+  const current=useRef(journey);
+  const change=useRef(onChange);
+  // Espejos para callbacks asíncronos: se sincronizan tras el render, nunca durante.
+  useEffect(()=>{current.current=journey;},[journey]);
+  useEffect(()=>{change.current=onChange;},[onChange]);
   const reverseRequests=useRef(new Map<string,{controller:AbortController;lat:number;lon:number}>());
   const [editing,setEditing]=useState(false),[mapAction,setMapAction]=useState<"stop"|"origin"|"destination">("stop");
   const [mapNotice,setMapNotice]=useState("");

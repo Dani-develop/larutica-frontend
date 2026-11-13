@@ -4,7 +4,6 @@ import { localeFor, type Language } from "@/lib/preferences/format";
 import { usePreferences } from "@/lib/preferences/Preferences";
 
 import {
-  useCallback,
   useEffect,
   useMemo,
   useState,
@@ -219,41 +218,40 @@ export function PublicationDepartures({
       null,
     );
 
-  const loadDepartures =
-    useCallback(
-      async () => {
-        setLoading(true);
-        setError(null);
+  useEffect(() => {
+    let active = true;
 
-        try {
-          const result =
-            await getPublicationDepartures(
-              publication.id,
-            );
-
+    getPublicationDepartures(
+      publication.id,
+    )
+      .then((result) => {
+        if (active) {
           setDepartures(
             result,
           );
-        } catch (loadError) {
+        }
+      })
+      .catch((loadError) => {
+        if (active) {
           setError(
             loadError instanceof
               Error
               ? loadError.message
               : "No se pudieron cargar las salidas.",
           );
-        } finally {
+        }
+      })
+      .finally(() => {
+        if (active) {
           setLoading(false);
         }
-      },
-      [
-        publication.id,
-      ],
-    );
+      });
 
-  useEffect(() => {
-    void loadDepartures();
+    return () => {
+      active = false;
+    };
   }, [
-    loadDepartures,
+    publication.id,
   ]);
 
   /*

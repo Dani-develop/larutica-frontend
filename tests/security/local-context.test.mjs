@@ -1,17 +1,18 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
 import { createPrivateKey, createPublicKey, X509Certificate } from 'node:crypto';
 import { createMailRelay } from '../../supabase/functions/mail-relay/handler.mjs';
 import { tokenHash } from '../../supabase/functions/mail-relay/relay-config.mjs';
+import { localhostTlsFixture } from '../mail/fixtures/localhost-tls.mjs';
 
-test('la clave fixture corresponde al certificado de localhost', () => {
-  const cert = new X509Certificate(readFileSync(new URL('../mail/fixtures/localhost-cert.pem', import.meta.url)));
-  const key = createPrivateKey(readFileSync(new URL('../mail/fixtures/localhost-key.pem', import.meta.url)));
+test('la identidad TLS generada corresponde al certificado de localhost', async () => {
+  const { key, cert: certPem } = await localhostTlsFixture();
+  const cert = new X509Certificate(certPem);
+  const keyObject = createPrivateKey(key);
   assert.equal(cert.subject, 'CN=localhost');
   assert.equal(cert.subjectAltName, 'DNS:localhost, IP Address:127.0.0.1');
   assert.ok(cert.publicKey.export({ type: 'spki', format: 'der' }).equals(
-    createPublicKey(key).export({ type: 'spki', format: 'der' }),
+    createPublicKey(keyObject).export({ type: 'spki', format: 'der' }),
   ));
 });
 

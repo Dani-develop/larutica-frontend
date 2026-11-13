@@ -95,7 +95,18 @@ export function EditPublicationPage({
     setActiveTab,
   ] =
     useState<PublicationTab>(
-      "general",
+      () => {
+        const requestedTab =
+          searchParams.get(
+            "tab",
+          );
+
+        return isPublicationTab(
+          requestedTab,
+        )
+          ? requestedTab
+          : "general";
+      },
     );
 
   /*
@@ -106,26 +117,10 @@ export function EditPublicationPage({
    *
    * Esto hace que "Guardar y continuar"
    * desde Nueva publicación se sienta
-   * como un único flujo.
+   * como un único flujo. Se resuelve al
+   * inicializar el estado, sin un efecto
+   * que provoque un render adicional.
    */
-  useEffect(() => {
-    const requestedTab =
-      searchParams.get(
-        "tab",
-      );
-
-    if (
-      isPublicationTab(
-        requestedTab,
-      )
-    ) {
-      setActiveTab(
-        requestedTab,
-      );
-    }
-  }, [
-    searchParams,
-  ]);
 
   useEffect(() => {
     let active =

@@ -19,11 +19,15 @@ export default function ResetCodeForm() {
   const [resending, setResending] = useState(false);
   const [email, setEmail] = useState<string | null>(null);
 
+  // sessionStorage solo existe tras hidratar; esta lectura única en el efecto
+  // es intencional y no puede resolverse durante el primer render.
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     const draft = readPasswordResetDraft();
     if (!draft) router.replace("/forgot-password");
     else setEmail(draft.displayEmail ?? draft.email);
   }, [router]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   async function resend() {
     const draft = readPasswordResetDraft();

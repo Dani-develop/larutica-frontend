@@ -17,13 +17,12 @@ export function JourneyMap({ points, geometry, meetingLocation, onMove, onPick }
   const mapRef = useRef<LibreMap|null>(null);
   const markers = useRef<Marker[]>([]);
   const latest = useRef({points,geometry,meetingLocation,onMove,onPick});
-  latest.current = {points,geometry,meetingLocation,onMove,onPick};
+  useEffect(()=>{latest.current = {points,geometry,meetingLocation,onMove,onPick};},[points,geometry,meetingLocation,onMove,onPick]);
   const [ready,setReady] = useState(false);
   const [error,setError] = useState("");
   const [attempt,setAttempt] = useState(0);
   useEffect(()=>{
     let cancelled = false;
-    setReady(false); setError("");
     import("maplibre-gl").then(lib=>{
       if (cancelled || !container.current) return;
       lib.setWorkerUrl("/maplibre/maplibre-gl-worker.mjs?v=6.15.0");
@@ -88,6 +87,6 @@ export function JourneyMap({ points, geometry, meetingLocation, onMove, onPick }
   return <div className="lr-map-frame">
     <div ref={container} className="lr-journey-map" role="region" aria-label={t("Mapa del trayecto")}/>
     {!ready && !error && <p className="lr-map-loading" role="status">{t("Cargando mapa…")}</p>}
-    {error && <div className="lr-map-error" role="status"><p>{error}</p><Button type="button" variant="outline" size="sm" onClick={()=>setAttempt(n=>n+1)}>{t("Reintentar mapa")}</Button></div>}
+    {error && <div className="lr-map-error" role="status"><p>{error}</p><Button type="button" variant="outline" size="sm" onClick={()=>{setReady(false);setError("");setAttempt(n=>n+1);}}>{t("Reintentar mapa")}</Button></div>}
   </div>;
 }
