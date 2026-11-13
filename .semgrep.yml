@@ -1,0 +1,38 @@
+rules:
+  - id: larutica.no-eval
+    languages: [javascript, typescript]
+    severity: ERROR
+    message: No ejecutar texto como código; reemplazar eval por un parser o una lista de operaciones permitidas.
+    pattern: eval(...)
+  - id: larutica.no-function-constructor
+    languages: [javascript, typescript]
+    severity: ERROR
+    message: No construir funciones desde texto. Evitar ejecución de código inyectado.
+    pattern: new Function(...)
+  - id: larutica.no-shell-exec
+    languages: [javascript, typescript]
+    severity: ERROR
+    message: Evitar shell; usar execFile/spawn con shell false y argumentos validados.
+    pattern-either:
+      - patterns:
+          - pattern-inside: |
+              import { exec } from 'node:child_process';
+              ...
+          - pattern: exec(...)
+      - patterns:
+          - pattern-inside: |
+              import * as $CP from 'node:child_process';
+              ...
+          - pattern: $CP.exec(...)
+      - patterns:
+          - pattern-inside: |
+              import { exec } from 'child_process';
+              ...
+          - pattern: exec(...)
+    paths:
+      include: [app/**, lib/**, worker/**]
+  - id: larutica.no-disabled-tls-validation
+    languages: [javascript, typescript]
+    severity: ERROR
+    message: No desactivar la validación de certificados TLS en el código de aplicación.
+    pattern: process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"
