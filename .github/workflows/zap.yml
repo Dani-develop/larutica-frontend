@@ -14,6 +14,8 @@ on:
   pull_request:
     branches: [main]
     types: [opened, synchronize, reopened]
+  push:
+    branches: [seg/4.7-dast-zap]
 
 permissions:
   contents: read
@@ -21,12 +23,12 @@ permissions:
 jobs:
   zap:
     name: ZAP Automation Framework
-    if: ${{ github.event_name == 'workflow_dispatch' || (github.event.pull_request.head.ref == 'seg/4.7-dast-zap' && github.event.pull_request.head.repo.full_name == github.repository) }}
+    if: ${{ github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/seg/4.7-dast-zap' || (github.event.pull_request.head.ref == 'seg/4.7-dast-zap' && github.event.pull_request.head.repo.full_name == github.repository) }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
-      ZAP_TARGET_URL: ${{ github.event_name == 'pull_request' && 'https://larutica-frontend-pruebas4-7.onrender.com/' || inputs.target_url }}
-      ZAP_ALLOWED_HOSTS: ${{ github.event_name == 'pull_request' && 'larutica-frontend-pruebas4-7.onrender.com' || inputs.allowed_hosts }}
+      ZAP_TARGET_URL: ${{ (github.event_name == 'pull_request' || github.event_name == 'push') && 'https://larutica-frontend-pruebas4-7.onrender.com/' || inputs.target_url }}
+      ZAP_ALLOWED_HOSTS: ${{ (github.event_name == 'pull_request' || github.event_name == 'push') && 'larutica-frontend-pruebas4-7.onrender.com' || inputs.allowed_hosts }}
       ZAP_USER: ${{ secrets.ZAP_USER }}
       ZAP_PASSWORD: ${{ secrets.ZAP_PASSWORD }}
     steps:
