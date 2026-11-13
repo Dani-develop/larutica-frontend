@@ -31,6 +31,7 @@
     "security:secrets": "node scripts/security/run.mjs gitleaks",
     "security:local": "npm run security:code && npm run security:secrets",
     "security:demo": "node scripts/security/run.mjs demo",
+    "security:context": "node --test tests/security/local-context.test.mjs",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next",
     "db:generate": "drizzle-kit generate",
     "build:vercel": "node scripts/build-vercel.mjs",

@@ -13,5 +13,7 @@ playwright-report/
 test-results/
 public/maplibre/
 *.min.js
+# Tipos de runtime de Cloudflare generados por Wrangler, no lógica de aplicación.
+/worker-env.d.ts
 .env.local
 .dev.vars
