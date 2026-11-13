@@ -15,7 +15,7 @@ test('client links, dynamic detail, login, back and reload work in the compiled 
   await page.getByRole('link', { name: 'Términos y condiciones', exact: true }).click();
   await expect(page).toHaveURL(/\/terminos$/);
   await expect(page.getByRole('heading', { level: 1 })).toContainText('Términos');
-  await page.getByRole('link', { name: '← Volver a LaRutica' }).click();
+  await page.getByRole('navigation', { name: 'Ruta de navegación' }).getByRole('link', { name: 'Inicio' }).click();
   await expect(page.getByRole('heading', { name: '¿A dónde vamos?', exact: true })).toBeVisible();
 
   const service = page.locator('article h3 a[href^="/experiencias/"]').first();

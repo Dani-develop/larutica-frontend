@@ -2,7 +2,7 @@ env:
   parameters:
     failOnError: true
     failOnWarning: false
-    continueOnFailure: true
+    progressToStdout: true
   contexts:
     - name: "LaRutica isolated test"
       urls:
@@ -39,7 +39,6 @@ jobs:
 
   - type: "requestor"
     parameters:
-      context: "LaRutica isolated test"
       user: "zap-test-user"
     requests:
       - name: "authenticated session verification"
