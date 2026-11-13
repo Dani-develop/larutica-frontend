@@ -4,25 +4,52 @@
 
 Fecha de preparación: **2026-11-13**. Revisor del ítem: **Pablo**.
 El registro único lo gestiona Axel en el [ítem 7.5](../../docs-proyecto-seguridad/fase-7-operacion-mejora/7.5-registro-unico-hallazgos.md),
-que figura **Pendiente en la copia local**. No se inspeccionaron ni crearon
-Issues remotos como parte de este trabajo.
+que figura **Pendiente en la copia local y en `origin/development` consultado**.
+Se inspeccionaron Issues públicos en modo de solo lectura; no se crearon Issues
+ni se realizaron aprobaciones.
 
 | Pregunta | Respuesta verificable |
 |---|---|
 | ¿Este trabajo aprobó excepciones? | **No: cero aprobaciones y cero excepciones vigentes otorgadas por el agente.** |
 | ¿El equipo tiene cero excepciones abiertas? | **No verificable todavía**: falta consultar/confirmar el registro único con Axel. No confundir con la fila anterior. |
 | ¿Se silenciaron controles para aprobar? | No: no se añadieron allowlists, overrides SCA ni bypass al gate. |
-| ¿Se publicaron solicitudes? | No. Solo se preparó la plantilla local `.github/ISSUE_TEMPLATE/excepcion-seguridad.yml`. |
+| ¿Se publicaron solicitudes? | No se crearon Issues. Se preparó la plantilla `.github/ISSUE_TEMPLATE/excepcion-seguridad.yml` para integrar mediante PR. |
 | ¿Puede cerrarse 5.6 ahora? | No: falta el registro único, confirmar sus excepciones abiertas y la revisión de Pablo. |
 
 Este documento **no es otro registro de excepciones**: explica el procedimiento.
 La información de cada E-NN vive una sola vez como Issue del registro único;
 desde 5.6 se enlaza ese Issue, sin duplicar su ficha ni asignar IDs inventados.
+La plantilla aparecerá en el selector de Issues de GitHub una vez integrada en
+la rama predeterminada; subirla en una rama de PR no la habilita allí todavía.
 
 ## Evidencia que debe recibir el registro único
 
 - Coincidencias del análisis de secretos: [clasificación inicial 2.3](triage-local-2.3.md).
-- Resultados SCA y estado del gate: [evidencia local 3.2](evidencia-local-3.2.md).
+- Resultados SCA y estado del gate: [evidencia real de Actions 3.2](evidencia-actions-3.2.md).
+
+## Consulta verificable del repositorio
+
+El **2026-11-13 a las 16:16 UTC**, la consulta completa de Issues públicos,
+abiertos y cerrados, de `Dani-develop/larutica-frontend` devolvió **0 Issues y
+0 candidatos a excepción** (los Pull Requests se excluyen). Eso no confirma que
+ese repositorio sea el registro único acordado ni descarta otro registro del
+equipo. **Axel debe confirmar su ubicación y las excepciones de la versión.**
+
+```bash
+npm run security:exceptions
+npm run test:exceptions
+```
+
+`scripts/security/check-exceptions.mjs` pagina la API pública de GitHub en modo
+de solo lectura. Guarda evidencia temporal en
+`outputs/security/excepciones-inventario.json`, ignorada por Git; no crea un
+registro paralelo ni copia cuerpos/comentarios. Detecta candidatos por ID E-NN,
+solicitud pendiente o etiqueta; **no prueba la ausencia de excepciones sin esas
+convenciones ni verifica aprobaciones humanas**. Un fallo de red/API/esquema
+produce estado `incompleto` y código 2, nunca un inventario vacío aprobado.
+El código 0 solo significa consulta técnica completa, no aprobación del 5.6.
+Cinco pruebas cubren paginación, exclusión de PR, detección de solicitudes,
+ausencia de aprobaciones automáticas y errores operativos.
 
 Son entradas pendientes de clasificación/tratamiento con Axel, **no excepciones
 aprobadas**. Un falso positivo demostrado se documenta como tal en el hallazgo,
@@ -33,8 +60,8 @@ puede declararse falso positivo por conveniencia.
 
 1. **Registrar/investigar H-NN con Axel.** Debe existir evidencia sanitizada,
    versión/commit y alcance, severidad justificada y responsable. Hasta entonces,
-   los controles siguen bloqueando. No abrir Issues ni publicar evidencia sin
-   autorización de Daniel durante esta etapa de trabajo exclusivamente local.
+    los controles siguen bloqueando. Abrir Issues solo después de coordinar
+    el registro con Axel y la autorización de Daniel; este trabajo no los crea.
 2. **Preferir corrección.** Evaluar actualizar, eliminar o reemplazar el componente;
    comprobar compatibilidad y volver a ejecutar controles. No ejecutar arreglos
    masivos ni aceptar riesgo automáticamente.
@@ -92,3 +119,12 @@ del relay con su propietario antes de resolver la clasificación.
 Si el registro confirma que no hay excepciones abiertas, registrar esa
 confirmación con enlace/fecha y commit candidato; no crear excepciones ficticias
 solo para llenar la tabla. Esa confirmación aún está pendiente.
+
+## Solicitud concreta de coordinación
+
+Daniel debe pedir a **Axel** el enlace del registro único y confirmar si hay
+excepciones abiertas aplicables al commit candidato. Si hay alguna, enlazar su
+ficha real aquí y en 5.6 después de comprobar sus campos y vigencia; no copiarla.
+Si no hay, conservar la confirmación humana con fecha, alcance y enlace.
+Después **Pablo** revisa la trazabilidad y registra su aprobación del ítem.
+Los bloqueos del 3.2 siguen activos mientras tanto; no son excepciones implícitas.
