@@ -36,7 +36,7 @@ comandos PowerShell interpolados. Los reportes quedan en `outputs/security/`
 
 | Analizador | Alcance | Qué exige corrección |
 |---|---|---|
-| Semgrep CE | JS/TS/JSX/TSX, reglas locales de `.semgrep.yml`: eval, constructor Function, ciertos imports de exec de child_process en aplicación y desactivación explícita de validación TLS | Todos los resultados de estas reglas bloquean (ERROR); investigar y corregir o tramitar una excepción humana concreta. |
+| Semgrep CE | JS/TS/JSX/TSX versionados, reglas locales de `.semgrep.yml`: eval, constructor Function, ciertos imports de exec de child_process en aplicación y desactivación explícita de validación TLS | Todos los resultados de estas reglas bloquean (ERROR); investigar y corregir o tramitar una excepción humana concreta. |
 | Gitleaks | Reglas oficiales por defecto; instantánea de TODOS los archivos versionados, incluyendo cambios locales en ellos | Cualquier coincidencia requiere investigación. Si es real: revocar/rotar primero; no basta borrar. Un falso positivo necesita evidencia y revisión antes de permitirlo. |
 
 Semgrep CE no es auditoría completa: análisis local de patrones, no flujo
@@ -46,6 +46,11 @@ se excluyen globalmente de SAST. Gitleaks no analiza archivos no versionados
 ni el historial Git en este comando; un secreto borrado en commits anteriores
 puede seguir expuesto. Un análisis de historial separado es necesario antes
 de afirmar ausencia histórica de secretos. No se configura una allowlist global.
+
+Ambos analizadores usan una instantánea temporal de `git ls-files`, con el
+contenido actual de los archivos. Antes de analizar archivos nuevos, añadirlos
+con `git add <ruta>`. No recorren `node_modules` en el montaje Windows/WSL;
+la instantánea también evita que los secretos locales entren accidentalmente.
 
 `.env.local` y `.dev.vars` están ignorados; el runner de Gitleaks no los copia.
 Si alguien los fuerza con `git add -f`, pasan a estar en alcance: no se deben

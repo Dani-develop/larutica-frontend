@@ -30,7 +30,7 @@ rules:
               ...
           - pattern: exec(...)
     paths:
-      include: [app/**, lib/**, worker/**]
+      include: ['**/app/**', '**/lib/**', '**/worker/**']
   - id: larutica.no-disabled-tls-validation
     languages: [javascript, typescript]
     severity: ERROR
