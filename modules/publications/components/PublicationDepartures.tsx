@@ -4,7 +4,6 @@ import { localeFor, type Language } from "@/lib/preferences/format";
 import { usePreferences } from "@/lib/preferences/Preferences";
 
 import {
-  useCallback,
   useEffect,
   useMemo,
   useState,
@@ -219,41 +218,65 @@ export function PublicationDepartures({
       null,
     );
 
-  const loadDepartures =
-    useCallback(
-      async () => {
-        setLoading(true);
-        setError(null);
+  const [
+    loadedFor,
+    setLoadedFor,
+  ] = useState(
+    publication.id,
+  );
 
-        try {
-          const result =
-            await getPublicationDepartures(
-              publication.id,
-            );
+  if (
+    loadedFor !==
+    publication.id
+  ) {
+    setLoadedFor(
+      publication.id,
+    );
+    setLoading(true);
+    setError(null);
+  }
 
+  useEffect(() => {
+    let active =
+      true;
+
+    getPublicationDepartures(
+      publication.id,
+    )
+      .then((result) => {
+        if (active) {
+          setError(null);
           setDepartures(
             result,
           );
-        } catch (loadError) {
-          setError(
-            loadError instanceof
-              Error
-              ? loadError.message
-              : "No se pudieron cargar las salidas.",
-          );
-        } finally {
-          setLoading(false);
         }
-      },
-      [
-        publication.id,
-      ],
-    );
+      })
+      .catch(
+        (loadError) => {
+          if (active) {
+            setError(
+              loadError instanceof
+                Error
+                ? loadError.message
+                : "No se pudieron cargar las salidas.",
+            );
+          }
+        },
+      )
+      .finally(() => {
+        if (active) {
+          setLoading(
+            false,
+          );
+        }
+      });
 
-  useEffect(() => {
-    void loadDepartures();
+    return () => {
+      active =
+        false;
+    };
   }, [
-    loadDepartures,
+    publication.id,
   ]);
 
   /*

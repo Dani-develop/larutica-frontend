@@ -30,7 +30,7 @@ revisión del reporte.
 | Campo | Valor |
 |---|---|
 | Origen | 2.3 / Gitleaks |
-| Estado | Falso positivo |
+| Estado | Falso positivo / cerrado |
 | Severidad | Informativa |
 | Responsable | Axel |
 | Tratamiento | Descartar con justificación |
@@ -38,6 +38,9 @@ revisión del reporte.
 | Issue oficial | [H-02](https://github.com/Dani-develop/larutica-frontend/issues/31) |
 
 No se reproducen valores sensibles en el registro. Falta la decisión humana que confirme la justificación del falso positivo.
+
+Decisión humana: las 3 coincidencias son AAGUID de passkeys; identifican autenticadores y no son
+credenciales ni secretos utilizables. El Issue fue cerrado como falso positivo informativo.
 
 ## H-03 — Coincidencia Gitleaks del token del relay
 
@@ -70,25 +73,25 @@ Debe confirmarse que la clave/certificado solo sirve para fixtures localhost y n
 | Campo | Valor |
 |---|---|
 | Origen | 3.1 / ESLint CI |
-| Estado | Pendiente de investigación |
+| Estado | Corregido en la rama `seg/entrega-unificada`; el cierre del Issue lo decide Axel al integrar |
 | Severidad | Baja |
 | Responsable | Axel |
-| Tratamiento | Corregir / aceptar temporalmente |
-| Evidencia | 72 avisos `react-hooks/*`, 62 en `JourneyEditor.tsx` |
+| Tratamiento | Corregir |
+| Evidencia | Antes: 72 avisos `react-hooks/*`. Ahora: 0; `react-hooks/refs`, `set-state-in-effect` y `purity` vuelven a *error* en `eslint.config.mjs` y `npm run lint` termina con 0 errores |
 | Issue oficial | [H-05](https://github.com/Dani-develop/larutica-frontend/issues/34) |
 
-Los avisos son deuda visible y no se presentan como corregidos.
+Se corrigieron los avisos restantes (formularios de recuperación de contraseña, `PlaceSearch`, `EditPublicationPage` y `PublicationDepartures`) sin excepción: ya no hay nada que aceptar con fecha.
 
 ## H-06 — SCA sin artefacto CI asociado
 
 | Campo | Valor |
 |---|---|
 | Origen | 3.2 / OSV-Scanner o SCA |
-| Estado | Pendiente de investigación |
+| Estado | Avisos corregidos en la rama `seg/entrega-unificada`; falta el artefacto OSV de CI sobre el SHA final |
 | Severidad | Informativa |
 | Responsable | Axel |
-| Tratamiento | Investigar / ejecutar |
-| Evidencia | `npm audit --omit=dev --audit-level=high`: 0 vulnerabilidades |
+| Tratamiento | Corregir / ejecutar |
+| Evidencia | Local con osv-scanner sobre `package-lock.json`: 78 avisos antes, 0 después (`No issues found`). `npm audit`: 0 (completo, no solo producción). Cambios: `npm audit fix` sin `--force`; vite 8.3.8, wrangler 4.162.0 y @cloudflare/vite-plugin 1.69.1; `overrides` de image-size, esbuild de `@esbuild-kit/core-utils`, minimatch de typescript-estree, `@vercel/og` y fflate. No se añadió ninguna allowlist ni bypass al gate. |
 | Issue oficial | [H-06](https://github.com/Dani-develop/larutica-frontend/issues/33) |
 
 El resultado local no sustituye el artefacto del análisis SCA en CI.
@@ -98,14 +101,15 @@ El resultado local no sustituye el artefacto del análisis SCA en CI.
 | Campo | Valor |
 |---|---|
 | Origen | 2.6 / revisión asistida por IA |
-| Estado | Pendiente de investigación |
+| Estado | Cerrado con limitación aceptada |
 | Severidad | Informativa |
 | Responsable | Axel |
 | Tratamiento | Investigar / validar |
 | Evidencia | AI-01, AI-02 y AI-03 en la evidencia de 2.6 |
 | Issue oficial | [H-07](https://github.com/Dani-develop/larutica-frontend/issues/32) |
 
-Pablo debe decidir cada observación en el PR #19. La salida de IA no sustituye la decisión humana.
+Pablo decidió AI-01 y AI-03 como cerrados y aceptó AI-02 como limitación pendiente. La salida de IA
+no sustituyó la decisión humana; el Issue fue cerrado con esa decisión registrada.
 
 ## Regla de numeración
 

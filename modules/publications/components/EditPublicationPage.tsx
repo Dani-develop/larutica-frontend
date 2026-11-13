@@ -108,11 +108,26 @@ export function EditPublicationPage({
    * desde Nueva publicación se sienta
    * como un único flujo.
    */
-  useEffect(() => {
-    const requestedTab =
-      searchParams.get(
-        "tab",
-      );
+  const requestedTab =
+    searchParams.get(
+      "tab",
+    );
+
+  const [
+    previousRequestedTab,
+    setPreviousRequestedTab,
+  ] =
+    useState<string | null>(
+      null,
+    );
+
+  if (
+    requestedTab !==
+    previousRequestedTab
+  ) {
+    setPreviousRequestedTab(
+      requestedTab,
+    );
 
     if (
       isPublicationTab(
@@ -123,9 +138,7 @@ export function EditPublicationPage({
         requestedTab,
       );
     }
-  }, [
-    searchParams,
-  ]);
+  }
 
   useEffect(() => {
     let active =

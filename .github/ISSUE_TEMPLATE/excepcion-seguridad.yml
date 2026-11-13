@@ -1,0 +1,106 @@
+name: Excepcion de seguridad (5.6)
+description: Solicitud humana y temporal; no aprueba ni silencia controles por sí sola.
+title: "[E-pendiente] Solicitud de excepcion de seguridad"
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Este Issue pertenece al registro único del proyecto (7.5), no a un registro paralelo.
+        Coordinar el ID E-NN con Axel y enlazar el hallazgo H-NN en ambas direcciones.
+        Crear esta solicitud NO constituye aprobación. No publicar secretos o datos reales.
+        No se pueden exceptuar controles sin ejecutar ni sustituir la rotación de una credencial expuesta.
+  - type: input
+    id: hallazgo
+    attributes:
+      label: Hallazgo del registro único
+      description: URL del Issue H-NN y su identificador; no copiar el hallazgo completo.
+      placeholder: "H-NN — https://github.com/organizacion/repositorio/issues/numero"
+    validations:
+      required: true
+  - type: textarea
+    id: alcance
+    attributes:
+      label: Version y alcance afectados
+      description: Commit completo, versión candidata, paquetes/versiones, regla/advisory y componentes concretos.
+    validations:
+      required: true
+  - type: textarea
+    id: evidencia
+    attributes:
+      label: Evidencia verificable
+      description: Enlaces a commit, ejecución y artefacto sanitizado. Indicar expresamente si es solo evidencia local.
+    validations:
+      required: true
+  - type: textarea
+    id: justificacion
+    attributes:
+      label: Justificacion y riesgo residual
+      description: Impacto, exposición, por qué no se corrige ahora, alternativas y razones para no aceptarlas. No usar razones genéricas.
+    validations:
+      required: true
+  - type: textarea
+    id: mitigacion
+    attributes:
+      label: Controles compensatorios y plan de correccion
+      description: Controles comprobables, tareas, responsable y criterio de cierre; no silenciar el analizador completo.
+    validations:
+      required: true
+  - type: input
+    id: responsable
+    attributes:
+      label: Responsable designado del riesgo y la correccion
+      description: Persona humana y usuario de GitHub, no el agente.
+    validations:
+      required: true
+  - type: input
+    id: revisor
+    attributes:
+      label: Revisor humano independiente
+      description: Otro integrante, distinto del responsable. Para el ítem 5.6 coordinar con Pablo.
+    validations:
+      required: true
+  - type: textarea
+    id: aprobaciones
+    attributes:
+      label: Aprobaciones humanas con evidencia
+      description: Comentarios/enlaces y fechas del responsable y de otro integrante revisor. Si aún no existen, indicar PENDIENTES; la solicitud sigue sin aprobar.
+      value: "PENDIENTES. No vigente hasta tener ambas aprobaciones verificables."
+    validations:
+      required: true
+  - type: textarea
+    id: docente
+    attributes:
+      label: Impacto en exigencias academicas
+      description: Si cambia una exigencia obligatoria, requiere aprobación del docente con enlace y fecha. Si no aplica, justificarlo; no asumir aprobación.
+    validations:
+      required: true
+  - type: input
+    id: vencimiento
+    attributes:
+      label: Fecha limite de vencimiento o revision
+      description: AAAA-MM-DD y zona horaria; debe ser futura al aprobar y no autorrenovable.
+      placeholder: "AAAA-MM-DD — America/Costa_Rica"
+    validations:
+      required: true
+  - type: dropdown
+    id: estado
+    attributes:
+      label: Estado de la solicitud
+      options:
+        - Solicitada - pendiente de revision y aprobaciones
+        - En revision - todavia no vigente
+    validations:
+      required: true
+  - type: checkboxes
+    id: restricciones
+    attributes:
+      label: Restricciones obligatorias
+      options:
+        - label: No incluyo secretos, tokens ni datos personales en evidencia o comentarios.
+          required: true
+        - label: Entiendo que una credencial real expuesta debe revocarse o rotarse; esta solicitud no reemplaza esa acción.
+          required: true
+        - label: Entiendo que un análisis omitido, fallido operativamente o sin resultados sigue incompleto y no puede darse por aprobado.
+          required: true
+        - label: La solicitud no modifica por sí sola el gate, los controles ni la protección de ramas.
+          required: true

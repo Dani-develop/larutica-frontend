@@ -5,6 +5,8 @@ Lineamientos oficiales: [`documento-proyecto.docx`](documento-proyecto.docx).
 
 Alcance elegido: **15 ítems** (3 por integrante, mínimo para un equipo de 5), con al menos uno por fase.
 
+Lista de lo que falta para cerrar la entrega: [pendientes](pendientes.md).
+
 ## Cómo usar esta carpeta
 
 - Cada fase tiene su carpeta con un `README.md` y **un archivo por ítem** (`N.M-nombre.md`).

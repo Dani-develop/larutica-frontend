@@ -51,12 +51,6 @@ const eslintConfig = defineConfig([
         "error",
         { argsIgnorePattern: "^_", caughtErrorsIgnorePattern: "^_" },
       ],
-      // Deuda técnica conocida (reglas nuevas del compilador de React) en
-      // modules/journeys y otros 8 archivos: 72 avisos. Se mantienen visibles
-      // como advertencia hasta corregirlos; ver docs-proyecto-seguridad (ítem 3.1).
-      "react-hooks/refs": "warn",
-      "react-hooks/set-state-in-effect": "warn",
-      "react-hooks/purity": "warn",
     },
   },
   {

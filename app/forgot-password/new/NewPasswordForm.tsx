@@ -7,27 +7,22 @@ import { AuthShell } from "@/components/auth/AuthShell";
 import { Button } from "@/components/ui/button";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { clearPasswordResetDraft, readPasswordResetDraft } from "@/lib/auth/password-reset-client";
+import { clearPasswordResetDraft } from "@/lib/auth/password-reset-client";
+import { usePasswordResetDraft } from "@/lib/auth/use-password-reset-draft";
 import { RESET_PASSWORD_LENGTH, RESET_PASSWORD_MISMATCH } from "@/lib/auth/password-reset";
 
 export default function NewPasswordForm() {
   const { t } = usePreferences();
   const router = useRouter();
-  const [resetGrant, setResetGrant] = useState<string | null>(null);
-  const [phase, setPhase] = useState<"pending" | "ready" | "missing">("pending");
+  const draft = usePasswordResetDraft();
+  const resetGrant = draft?.resetGrant ?? null;
+  const phase: "pending" | "ready" | "missing" = draft === undefined ? "pending" : resetGrant ? "ready" : "missing";
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    const draft = readPasswordResetDraft();
-    if (!draft?.resetGrant) {
-      setPhase("missing");
-      router.replace("/forgot-password");
-      return;
-    }
-    setResetGrant(draft.resetGrant);
-    setPhase("ready");
-  }, [router]);
+    if (phase === "missing") router.replace("/forgot-password");
+  }, [phase, router]);
 
   return (
     <AuthShell eyebrow={t("Ayuda para entrar")} title={t("Nueva contraseña")} trail={[{ label: "Iniciar sesión", href: "/login" }, { label: "Recuperar contraseña", href: "/forgot-password" }]}>
