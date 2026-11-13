@@ -26,6 +26,7 @@ npm run security:code
 npm run security:secrets
 npm run security:local
 npm run security:demo
+npm run security:context
 ```
 
 El runner de Windows utiliza Ubuntu en WSL; no busca Docker ni ejecuta
@@ -46,6 +47,10 @@ se excluyen globalmente de SAST. Gitleaks no analiza archivos no versionados
 ni el historial Git en este comando; un secreto borrado en commits anteriores
 puede seguir expuesto. Un análisis de historial separado es necesario antes
 de afirmar ausencia histórica de secretos. No se configura una allowlist global.
+
+`worker-env.d.ts` se excluye por ser tipos de runtime generados por Wrangler,
+como indica su encabezado. En repeticiones produjo timeouts; la exclusión es
+puntual y no elimina el análisis de código de negocio ni el modo estricto.
 
 Ambos analizadores usan una instantánea temporal de `git ls-files`, con el
 contenido actual de los archivos. Antes de analizar archivos nuevos, añadirlos
@@ -78,3 +83,9 @@ Gitleaks se producen con `--redact=100`. No compartir valores originales.
 Frander debe reproducir instalación, análisis y demo. No marcar el ítem Listo
 solo porque existe configuración o porque se ejecutó la demo: el análisis real,
 los hallazgos y la revisión se documentan por separado.
+
+Para revisar las coincidencias reales, ejecutar también `security:context` y
+consultar [la evidencia de clasificación](triage-local-2.3.md). Encontrar una
+coincidencia no invalida la demostración de funcionamiento de 2.3; tampoco permite
+declarar el repositorio aprobado. No hace falta un resultado verde artificial.
+La ejecución de GitHub Actions pertenece al 3.2, no a este requisito local.
