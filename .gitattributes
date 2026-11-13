@@ -1,0 +1,2 @@
+# Los runners de seguridad se ejecutan en Linux/WSL también desde Windows.
+scripts/security/*.sh text eol=lf
