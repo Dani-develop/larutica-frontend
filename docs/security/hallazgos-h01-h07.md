@@ -16,7 +16,7 @@ dependen de otra persona o de otra ejecución quedan abiertos y se indica qué f
 | H-03 | #29 | Excepción Gitleaks acotada (regla + archivo + línea exacta); historial completo revisado | Falso positivo, verificado; rotación a criterio del propietario |
 | H-04 | #30 | **Corregido**: clave privada eliminada del repositorio; TLS de pruebas efímero | Corregido |
 | H-05 | #34 | **Corregido** 66 de 72 avisos; 6 aceptados temporalmente con justificación | Corregido parcialmente / aceptado |
-| H-06 | #33 | SCA ejecutado localmente con `npm audit`; parches de React y zod | Pendiente del artefacto CI (PR #20) |
+| H-06 | #33 | SCA local con `npm audit`; parche del RCE crítico de React (19.2.9) y de zod | Pendiente del artefacto CI (PR #20) |
 | H-07 | #32 | Investigación técnica de AI-02 aportada; AI-01 y AI-03 requieren a Pablo | Pendiente de decisión humana |
 
 ## Gitleaks (H-02, H-03, H-04)
@@ -116,8 +116,9 @@ No se añadió ningún `eslint-disable`. Los 17 avisos `@next/next/no-img-elemen
 - El crítico es `react-server-dom-webpack 19.2.6` (GHSA-xqc2-xf4c-x3h3, RCE no autenticado
   en React Server Components). Aunque está declarado como dependencia de desarrollo, el
   runtime RSC se empaqueta en el servidor desplegado, por lo que **sí afecta producción**.
-  Este cambio actualiza `react`, `react-dom` y `react-server-dom-webpack` a la versión de
-  parche corregida de la misma línea 19.2 y `zod` a `^4.6.6`.
+  Este cambio actualiza `react`, `react-dom` y `react-server-dom-webpack` a `19.2.9` (parche
+  corregido de la misma línea 19.2) y `zod` a `4.6.7`.
+- Después: `npm audit --omit=dev` = 0; total 32 (0 críticos, 14 altos, 17 moderados, 1 bajo).
 - Los avisos restantes requieren saltos mayores (`vinext` beta → 1.4, `@cloudflare/vite-plugin`,
   `wrangler`, `vite`) y se dejan para Renovate/PRs dedicados.
 
