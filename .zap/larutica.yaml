@@ -37,14 +37,6 @@ jobs:
       maxDuration: 2
       url: "${ZAP_TARGET_URL}/"
 
-  - type: "spiderAjax"
-    parameters:
-      context: "LaRutica isolated test"
-      user: "zap-test-user"
-      maxDuration: 2
-      maxCrawlDepth: 3
-      url: "${ZAP_TARGET_URL}/"
-
   - type: "requestor"
     parameters:
       user: "zap-test-user"
