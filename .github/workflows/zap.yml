@@ -44,6 +44,10 @@ jobs:
       - name: Validar objetivo aislado
         run: node scripts/validate-zap-target.mjs "$ZAP_TARGET_URL"
 
+      - name: Normalizar origen del objetivo
+        shell: bash
+        run: echo "ZAP_TARGET_URL=${ZAP_TARGET_URL%/}" >> "$GITHUB_ENV"
+
       - name: Comprobar credenciales de prueba
         shell: bash
         run: |
