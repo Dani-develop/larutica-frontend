@@ -1,0 +1,14 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "timezone": "America/Costa_Rica",
+  "schedule": ["before 6am on Monday"],
+  "prConcurrentLimit": 1,
+  "labels": ["dependencies", "security"],
+  "packageRules": [
+    {
+      "matchUpdateTypes": ["major"],
+      "labels": ["dependencies", "security", "major-update"]
+    }
+  ]
+}
