@@ -35,6 +35,11 @@ jobs:
       - name: Probar politica de bloqueo
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run test:security
+      # `security:context` importa el fixture TLS y el handler del relay, que
+      # dependen de paquetes del lockfile. Se instalan sin ejecutar scripts.
+      - name: Instalar dependencias para la verificacion de contexto
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: npm ci --ignore-scripts --no-audit --no-fund
       - name: Verificar contexto de coincidencias del 2.3
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run security:context
