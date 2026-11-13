@@ -16,6 +16,8 @@ import { createDatabase, ids } from '../mail/database.mjs';
 
 const webhookKey = 'local-only-webhook-fixture';
 const tokens = new Map();
+const transportId = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
+const otherTransportId = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
 const authUpdates = [];
 const noExternalFetch = globalThis.fetch;
 let db;
@@ -41,12 +43,21 @@ before(async () => {
     '202610060001_traveler_saved_ratings.sql',
   ]) await db.exec(await readFile(new URL('../../supabase/migrations/' + file, import.meta.url), 'utf8'));
 
-  for (const [actor, role] of Object.entries({ traveler: 'Viajero', second: 'Viajero', owner: 'Agencia', outsider: 'Agencia', admin: 'Admin' })) {
-    await db.query('update profiles set role=$1 where id=$2', [role, ids[actor]]);
+  for (const userId of [transportId, otherTransportId]) {
+    await db.query("insert into profiles(id, full_name) values($1,'Transporte de prueba')", [userId]);
+    await db.query('insert into auth.users(id) values($1)', [userId]);
+  }
+  for (const [actor, userId, role] of [
+    ['traveler', ids.traveler, 'Viajero'], ['second', ids.second, 'Viajero'],
+    ['owner', ids.owner, 'Agencia'], ['outsider', ids.outsider, 'Agencia'],
+    ['admin', ids.admin, 'Admin'], ['transport', transportId, 'Transporte'],
+    ['otherTransport', otherTransportId, 'Transporte'],
+  ]) {
+    await db.query('update profiles set role=$1 where id=$2', [role, userId]);
     const token = createOpaqueToken();
     tokens.set(actor, token);
     await db.query("insert into app_sessions(session_hash,user_id,expires_at,idle_expires_at) values($1,$2,now()+interval '8 hours',now()+interval '30 minutes')",
-      [await hashOpaqueToken(token), ids[actor]]);
+      [await hashOpaqueToken(token), userId]);
   }
   const expired = createOpaqueToken();
   tokens.set('expired', expired);
@@ -193,4 +204,51 @@ test('F01: el perfil se escribe por sesión; enviar otro id o rol no modifica es
   assert.equal(updated.name, 'Nombre propio');
   assert.deepEqual(authUpdates.map(update => update.id), [ids.traveler]);
   assert.deepEqual((await db.query('select * from profiles where id=$1', [ids.second])).rows[0], before);
+});
+
+test('Q-02: pasajero, proveedor organizador y Admin pueden cancelar y solicitar el reembolso', async (t) => {
+  const refunds = [];
+  const blockedFetch = globalThis.fetch;
+  t.after(() => { globalThis.fetch = blockedFetch; });
+  globalThis.fetch = async (url, init) => {
+    if (url !== 'https://api.onvopay.com/v1/refunds' || init.method !== 'POST') {
+      return blockedFetch(url, init);
+    }
+    refunds.push(JSON.parse(init.body));
+    return Response.json({ id: 're_local_' + refunds.length, status: 'pending' });
+  };
+  for (const actor of ['traveler', 'owner', 'admin']) {
+    const { rows: [departure] } = await db.query(
+      "insert into publication_departures(id,publication_id,start_at,capacity,status) values(gen_random_uuid(),$1,'2099-07-01T15:00:00Z',10,'ACTIVE') returning id",
+      [ids.publication],
+    );
+    const { rows: [{ id }] } = await db.query(
+      "insert into reservations(passenger_id,departure_id,number_of_people,unit_price,status) values($1,$2,1,40,'CONFIRMED') returning id",
+      [ids.traveler, departure.id],
+    );
+    const intent = 'pi_cancel_' + actor;
+    await db.query("insert into reservation_payments(reservation_id,provider_payment_id,amount,status) values($1,$2,40,'paid')", [id, intent]);
+    const updated = await allowed(await call(reservation.PATCH, 'PATCH', '/api/reservations/' + id, {
+      actor, id, body: { status: 'CANCELLED' },
+    }));
+    assert.equal(updated.status, 'CANCELLED', actor);
+    assert.equal((await db.query('select status from reservations where id=$1', [id])).rows[0].status, 'CANCELLED');
+    assert.equal((await db.query('select refund_status from reservation_payments where reservation_id=$1', [id])).rows[0].refund_status, 'pending');
+  }
+  assert.deepEqual(refunds, ['traveler', 'owner', 'admin'].map(actor => ({ paymentIntentId: 'pi_cancel_' + actor, amount: 4000 })));
+});
+
+test('Q-03: Transporte solo accede a su propia ficha de agencia', async () => {
+  const { rows: [{ id }] } = await db.query(
+    "insert into agencies(id,owner_user_id,commercial_name,status) values(gen_random_uuid(),$1,'Transporte propio','APPROVED') returning id",
+    [transportId],
+  );
+  const path = '/api/agencies/me';
+  const owned = await allowed(await call(agencies.GET, 'GET', path + '?agencyId=' + ids.agency, { actor: 'transport' }));
+  assert.equal(owned.agency.id, id);
+  assert.equal(await allowed(await call(agencies.GET, 'GET', path + '?agencyId=' + id, { actor: 'otherTransport' })), null);
+  await denied(await call(agencies.PATCH, 'PATCH', path, {
+    actor: 'otherTransport', body: { id, agencyName: 'Cambio ajeno', commercialName: 'Cambio ajeno', businessType: 'TRANSPORT' },
+  }), 404);
+  assert.equal((await db.query('select commercial_name from agencies where id=$1', [id])).rows[0].commercial_name, 'Transporte propio');
 });
