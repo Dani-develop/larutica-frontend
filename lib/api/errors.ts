@@ -22,6 +22,16 @@ export function apiErrorResponse(error: unknown): Response {
 
 function requestOrigin(request: Request): string {
   const fallback = new URL(request.url).origin;
+  const configuredOrigin = process.env.LARUTICA_PUBLIC_ORIGIN ?? process.env.RENDER_EXTERNAL_URL;
+
+  if (configuredOrigin) {
+    try {
+      return new URL(configuredOrigin).origin;
+    } catch {
+      // Continúa con los headers del proxy si la configuración es inválida.
+    }
+  }
+
   const forwardedHost = request.headers.get("x-forwarded-host")?.split(",", 1)[0]?.trim();
   const forwardedProto = request.headers.get("x-forwarded-proto")?.split(",", 1)[0]?.trim();
 
