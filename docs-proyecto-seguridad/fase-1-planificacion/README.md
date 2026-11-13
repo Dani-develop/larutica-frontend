@@ -10,7 +10,7 @@
 
 | Ítem | Descripción | Responsable | Revisor | Depende de | Estado |
 |---|---|---|---|---|---|
-| [1.1](1.1-flujos-criticos.md) | Tres flujos críticos y criterios de aceptación | Frander | Daniel Núñez | — | Pendiente |
+| [1.1](1.1-flujos-criticos.md) | Tres flujos críticos y criterios de aceptación | Frander | Daniel Núñez | — | En curso |
 | [1.3](1.3-modelo-amenazas-stride.md) | Modelo de amenazas con STRIDE y OWASP Threat Dragon | Daniel Núñez | Axel | 1.1 | Pendiente |
 
 Los demás ítems de esta fase son catálogo de referencia y no se evalúan (ver `../documento-proyecto.docx`).
