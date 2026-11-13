@@ -96,5 +96,16 @@
     "vite": "8.3.8",
     "wrangler": "4.162.0"
   },
-  "type": "module"
+  "type": "module",
+  "overrides": {
+    "image-size": "2.0.3",
+    "@esbuild-kit/core-utils": {
+      "esbuild": "0.25.12"
+    },
+    "@typescript-eslint/typescript-estree": {
+      "minimatch": "11.0.1"
+    },
+    "@vercel/og": "1.0.3",
+    "fflate": "0.7.5"
+  }
 }
