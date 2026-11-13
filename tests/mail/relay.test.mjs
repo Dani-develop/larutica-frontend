@@ -6,7 +6,7 @@ import { callMailRelay, deliverMail, readMailConfig } from '../../lib/mail/send.
 import { notifyReservationCreated, notifyDepartureCancellations, notifyPublicationDecision } from '../../lib/mail/notify.ts';
 import { createMailRelay } from '../../supabase/functions/mail-relay/handler.mjs';
 import { createSmtp } from './smtp.mjs';
-import { localhostTlsFixture } from './fixtures/localhost-tls.mjs';
+import { localhostTls } from './fixtures/localhost-tls.mjs';
 const token='relay-test-token-exclusive-to-local-tests';
 const tokenHash=createHash('sha256').update(token).digest('hex');
 const env={SMTP_HOST:'smtp.gmail.com',SMTP_PORT:'587',SMTP_SECURE:'false',SMTP_USER:'aguero2609@gmail.com',SMTP_PASS:'test-password',MAIL_FROM:'LaRutica <aguero2609@gmail.com>',
@@ -44,7 +44,7 @@ test('relay conserva fallos SMTP sin exponer claves y no reintenta un envío amb
   assert.doesNotMatch(JSON.stringify(result),/secret-password|test-password/);
 });
 test('cinco notificadores cruzan el relay HTTPS y llegan a SMTP TLS real; verify no envía',async()=>{
-  const { key, cert } = await localhostTlsFixture();
+  const { key, cert } = await localhostTls();
   const smtp=await createSmtp({secure:true,key,cert});
   const handler=createMailRelay({tokenHash,createTransport:options=>{
     assert.equal(options.host,'smtp.gmail.com');assert.equal(options.port,465);assert.equal(options.secure,true);

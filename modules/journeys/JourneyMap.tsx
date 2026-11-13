@@ -1,6 +1,6 @@
 "use client";
 import { usePreferences } from "@/lib/preferences/Preferences";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { Map as LibreMap, Marker } from "maplibre-gl";
 import { Button } from "@/components/ui/button";
 import type { JourneyGeometry, JourneyPlace } from "./types";
@@ -17,7 +17,8 @@ export function JourneyMap({ points, geometry, meetingLocation, onMove, onPick }
   const mapRef = useRef<LibreMap|null>(null);
   const markers = useRef<Marker[]>([]);
   const latest = useRef({points,geometry,meetingLocation,onMove,onPick});
-  useEffect(()=>{latest.current = {points,geometry,meetingLocation,onMove,onPick};},[points,geometry,meetingLocation,onMove,onPick]);
+  // Los manejadores del mapa leen los props más recientes; se actualizan tras el commit, no en el render.
+  useLayoutEffect(()=>{latest.current = {points,geometry,meetingLocation,onMove,onPick};});
   const [ready,setReady] = useState(false);
   const [error,setError] = useState("");
   const [attempt,setAttempt] = useState(0);

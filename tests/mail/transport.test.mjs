@@ -5,7 +5,7 @@ import { createTransport } from 'nodemailer';
 import { deliverMail, readMailConfig } from '../../lib/mail/send.ts';
 import { notifyPublicationDecision } from '../../lib/mail/notify.ts';
 import { createSmtp } from './smtp.mjs';
-import { localhostTlsFixture } from './fixtures/localhost-tls.mjs';
+import { localhostTls } from './fixtures/localhost-tls.mjs';
 
 const env = { SMTP_HOST: 'smtp.example.com', SMTP_USER: 'sender@example.com', SMTP_PASS: 'password', MAIL_FROM: 'LaRutica <sender@example.com>' };
 const message = { to: 'recipient@example.invalid', subject: 'Prueba LaRutica', text: 'Mensaje de prueba: español y ₡.' };
@@ -62,7 +62,7 @@ test('publicación: un sender que rechaza no convierte una decisión guardada en
 });
 for (const mode of ['STARTTLS', 'TLS']) {
   test(`Nodemailer real autentica y envía usando ${mode} y un certificado verificado`, async () => {
-    const { key, cert } = await localhostTlsFixture();
+    const { key, cert } = await localhostTls();
     const smtp = await createSmtp({ secure: mode === 'TLS', key, cert, disabledCommands: [], allowInsecureAuth: false });
     try {
       const result = await deliverMail(message, {
@@ -75,7 +75,7 @@ for (const mode of ['STARTTLS', 'TLS']) {
   });
 }
 test('certificado no confiable produce un fallo, sin desactivar validación TLS', async () => {
-  const { key, cert } = await localhostTlsFixture();
+  const { key, cert } = await localhostTls();
   const smtp = await createSmtp({ secure: true, key, cert });
   try {
     const result = await deliverMail(message, { env: { ...smtp.env, SMTP_SECURE: 'true' } });

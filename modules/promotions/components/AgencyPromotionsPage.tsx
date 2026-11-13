@@ -1,8 +1,8 @@
 "use client";
 import { DashboardBreadcrumb } from "@/components/dashboard/DashboardBreadcrumb";
-import { useState } from "react";
 
 import Link from "next/link";
+import { useState } from "react";
 import { Megaphone } from "lucide-react";
 import { useDashboardRole } from "@/components/dashboard/dashboard-role-context";
 import { DashboardSectionPage } from "@/components/dashboard/DashboardSectionPage";
@@ -35,6 +35,7 @@ function AgencyPromotionList() {
   const { publications, loading, error } = usePublications();
   const paged = usePagedRows(publications);
   const formatDate = dateFormatter(language);
+  // Instante de referencia fijado al montar: el render debe ser puro.
   const [now] = useState(() => Date.now());
 
   return (

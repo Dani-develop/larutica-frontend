@@ -25,5 +25,8 @@ case "$tool" in
     cd "$snapshot"
     gitleaks dir . --config "$root/.gitleaks.toml" --redact=100 --exit-code=1 --report-format=json --report-path="$root/outputs/security/gitleaks.json" --no-banner
     ;;
-  *) echo 'Uso: node scripts/security/run.mjs semgrep|gitleaks|demo' >&2; exit 2 ;;
+  osv)
+    osv-scanner scan source --lockfile=package-lock.json --all-packages --format=json --output-file=outputs/security/osv.json
+    ;;
+  *) echo 'Uso: node scripts/security/run.mjs semgrep|gitleaks|osv|demo' >&2; exit 2 ;;
 esac
