@@ -25,19 +25,31 @@ const productionHosts = new Set([
   'larutica.vercel.app',
 ]);
 
-if (productionHosts.has(host) || host.endsWith('.supabase.co') || host.includes('onvo')) {
-  console.error(`Objetivo rechazado por no estar aislado: ${host}`);
+const repositoryAllowedHosts = new Set([
+  'larutica-frontend-pruebas4-7.onrender.com',
+]);
+
+const normalizeHost = value => value.toLowerCase().replace(/\.+$/, '');
+const normalizedHost = normalizeHost(host);
+
+if (productionHosts.has(normalizedHost) || normalizedHost.endsWith('.supabase.co') || normalizedHost.includes('onvo')) {
+  console.error(`Objetivo rechazado por no estar aislado: ${normalizedHost}`);
+  process.exit(3);
+}
+
+if (!repositoryAllowedHosts.has(normalizedHost)) {
+  console.error(`El host ${normalizedHost} no está en la lista de candidatos aislados del repositorio.`);
   process.exit(3);
 }
 
 const allowedHosts = (process.env.ZAP_ALLOWED_HOSTS ?? '')
   .split(',')
-  .map(value => value.trim().toLowerCase())
+  .map(value => normalizeHost(value.trim()))
   .filter(Boolean);
 
-if (allowedHosts.length > 0 && !allowedHosts.includes(host)) {
-  console.error(`El host ${host} no está en ZAP_ALLOWED_HOSTS.`);
+if (allowedHosts.length > 0 && !allowedHosts.includes(normalizedHost)) {
+  console.error(`El host ${normalizedHost} no está en ZAP_ALLOWED_HOSTS.`);
   process.exit(3);
 }
 
-console.log(`Objetivo ZAP aceptado: ${target.origin}`);
+console.log(`Objetivo ZAP aceptado: ${target.origin} (${normalizedHost})`);

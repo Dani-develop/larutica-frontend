@@ -32,15 +32,7 @@ function requestOrigin(request: Request): string {
     }
   }
 
-  const forwardedHost = request.headers.get("x-forwarded-host")?.split(",", 1)[0]?.trim();
-  const forwardedProto = request.headers.get("x-forwarded-proto")?.split(",", 1)[0]?.trim();
-
-  // Render terminates TLS at its proxy, so the runtime URL can be internal
-  // while the browser Origin contains the public HTTPS origin.
-  if (forwardedHost && (forwardedProto === "http" || forwardedProto === "https")) {
-    return `${forwardedProto}://${forwardedHost}`;
-  }
-
+  // No se confía en X-Forwarded-* porque pueden ser enviados por el cliente.
   return fallback;
 }
 

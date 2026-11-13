@@ -41,6 +41,21 @@ jobs:
       maxCrawlDepth: 3
       url: "${ZAP_TARGET_URL}/"
 
+  - type: "requestor"
+    parameters:
+      user: "zap-test-user"
+      requests:
+        - name: "authenticated session verification"
+          url: "${ZAP_TARGET_URL}/api/auth/session"
+          method: "GET"
+          responseCode: 200
+    tests:
+      - name: "authenticated session is present"
+        type: "url"
+        url: "${ZAP_TARGET_URL}/api/auth/session"
+        responseBodyRegex: '"session"\\s*:'
+        onFail: "error"
+
   - type: "passiveScan-wait"
     parameters:
       maxDuration: 2
