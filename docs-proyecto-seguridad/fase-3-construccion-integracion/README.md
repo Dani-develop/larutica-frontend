@@ -10,7 +10,7 @@
 
 | Ítem | Descripción | Responsable | Revisor | Depende de | Estado |
 |---|---|---|---|---|---|
-| [3.1](3.1-ci-por-pr.md) | GitHub Actions por PR: lockfile, lint, build y pruebas | Frander | Pablo | — | Pendiente |
+| [3.1](3.1-ci-por-pr.md) | GitHub Actions por PR: lockfile, lint, build y pruebas | Frander | Pablo | — | En curso |
 | [3.2](3.2-analisis-ci-semgrep-gitleaks-osv.md) | Análisis de código, secretos y dependencias en CI | Daniel | Axel | 2.3 | En revisión (CI ejecutado; bloqueos y revisión pendientes) |
 | [3.5](3.5-proteccion-ramas-pipeline.md) | Protección de ramas y permisos del pipeline | Pablo | Axel | 3.1 | Pendiente |
 

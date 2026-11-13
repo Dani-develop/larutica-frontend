@@ -6,7 +6,7 @@ const target=new URL('public/maplibre/maplibre-gl-worker.mjs',root);
 // this standalone worker through Vinext/Vite injects window-based HMR helpers
 // into its dynamic imports, which cannot run in a Web Worker.
 const contents=await readFile(source);
-let previous;try{previous=await readFile(target);}catch{}
+let previous;try{previous=await readFile(target);}catch{/* sin copia previa: se genera abajo */}
 if(!previous?.equals(contents)){
   await mkdir(new URL('public/maplibre/',root),{recursive:true});
   await writeFile(target,contents);
