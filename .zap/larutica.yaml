@@ -1,4 +1,8 @@
 env:
+  parameters:
+    failOnError: true
+    failOnWarning: false
+    continueOnFailure: true
   contexts:
     - name: "LaRutica isolated test"
       urls:
@@ -75,3 +79,9 @@ jobs:
       reportFile: "larutica-zap-report.html"
       reportTitle: "LaRutica isolated DAST"
       reportDescription: "ZAP Automation Framework against an isolated test candidate."
+
+  - type: "exitStatus"
+    parameters:
+      okExitValue: 0
+      warnExitValue: 0
+      errorExitValue: 1
