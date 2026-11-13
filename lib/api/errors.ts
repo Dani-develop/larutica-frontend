@@ -20,9 +20,23 @@ export function apiErrorResponse(error: unknown): Response {
   );
 }
 
+function requestOrigin(request: Request): string {
+  const fallback = new URL(request.url).origin;
+  const forwardedHost = request.headers.get("x-forwarded-host")?.split(",", 1)[0]?.trim();
+  const forwardedProto = request.headers.get("x-forwarded-proto")?.split(",", 1)[0]?.trim();
+
+  // Render terminates TLS at its proxy, so the runtime URL can be internal
+  // while the browser Origin contains the public HTTPS origin.
+  if (forwardedHost && (forwardedProto === "http" || forwardedProto === "https")) {
+    return `${forwardedProto}://${forwardedHost}`;
+  }
+
+  return fallback;
+}
+
 export function assertSameOrigin(request: Request): void {
   const origin = request.headers.get("origin");
-  if (origin && origin !== new URL(request.url).origin) {
+  if (origin && origin !== requestOrigin(request)) {
     throw new ApiError("Origen de la solicitud no permitido.", 403);
   }
 
