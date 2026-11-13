@@ -30,7 +30,8 @@
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next",
     "db:generate": "drizzle-kit generate",
     "build:vercel": "node scripts/build-vercel.mjs",
-    "test:vercel": "playwright test --config playwright.vercel.config.ts"
+    "test:vercel": "playwright test --config playwright.vercel.config.ts",
+    "test:e2e": "playwright test --config playwright.e2e.config.ts"
   },
   "dependencies": {
     "@radix-ui/react-dropdown-menu": "^2.1.24",
