@@ -41,7 +41,8 @@ jobs:
     tests:
       - name: "authenticated session is present"
         type: "url"
-        url: "${ZAP_TARGET_URL}/api/auth/session"
+        # ZAP no sustituye variables de entorno en el bloque tests; URL fija del candidato aislado.
+        url: "https://larutica-frontend-entrega.onrender.com/api/auth/session"
         operator: "or"
         responseBodyRegex: '"session"\s*:'
         onFail: "error"
