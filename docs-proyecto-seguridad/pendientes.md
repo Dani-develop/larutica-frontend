@@ -17,6 +17,8 @@ Los ítems restantes los completó Frander en la ventana final; las revisiones y
 - Decisiones humanas de Frander (2026-11-13): H-02 falso positivo cerrado; AI-01 resuelta; AI-02 limitación aceptada.
 - Fichas actualizadas: 1.1, 1.3, 2.3, 2.6, 3.1, 3.5, 4.4, 4.5, 5.6, 6.5, 7.5, 7.6 y `entrega-profelink.md`.
 
+- Despliegue gratuito de `main` en Render (Free, 2026-11-13, commit `1eb770c`): https://larutica-frontend-entrega.onrender.com (`/` y `/login` responden 200). Corre en modo proxy: `LARUTICA_REMOTE_API_ORIGIN` apunta al backend compartido `larutica-cr.vercel.app`, sin claves de Supabase. **No es un ambiente aislado**, así que no sirve como objetivo de ZAP (el validador tampoco lo admite) ni reemplaza el despliegue que valida 6.5.
+
 ## Por ítem (lo que falta)
 
 - **1.1** — Daniel Núñez revisa y firma. Q-01 sigue abierta. Verificar los tres ajustes pedidos en la primera revisión del PR #10.
