@@ -1,0 +1,73 @@
+name: DAST ZAP aislado
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_url:
+        description: "URL del candidato aislado, nunca producción"
+        required: true
+        type: string
+      allowed_hosts:
+        description: "Hosts permitidos separados por coma; opcional para limitar el objetivo"
+        required: false
+        type: string
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened]
+  push:
+    branches: [seg/4.7-dast-zap]
+
+permissions:
+  contents: read
+
+jobs:
+  zap:
+    name: ZAP Automation Framework
+    if: ${{ github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/seg/4.7-dast-zap' || (github.event.pull_request.head.ref == 'seg/4.7-dast-zap' && github.event.pull_request.head.repo.full_name == github.repository) }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      ZAP_TARGET_URL: ${{ (github.event_name == 'pull_request' || github.event_name == 'push') && 'https://larutica-frontend-pruebas4-7.onrender.com/' || inputs.target_url }}
+      ZAP_ALLOWED_HOSTS: ${{ (github.event_name == 'pull_request' || github.event_name == 'push') && 'larutica-frontend-pruebas4-7.onrender.com' || inputs.allowed_hosts }}
+      ZAP_USER: ${{ secrets.ZAP_USER }}
+      ZAP_PASSWORD: ${{ secrets.ZAP_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Validar objetivo aislado
+        run: node scripts/validate-zap-target.mjs "$ZAP_TARGET_URL"
+
+      - name: Normalizar origen del objetivo
+        shell: bash
+        run: echo "ZAP_TARGET_URL=${ZAP_TARGET_URL%/}" >> "$GITHUB_ENV"
+
+      - name: Comprobar credenciales de prueba
+        shell: bash
+        run: |
+          test -n "$ZAP_USER"
+          test -n "$ZAP_PASSWORD"
+
+      - name: Ejecutar plan ZAP
+        uses: zaproxy/action-af@v0.3.0
+        with:
+          plan: .zap/larutica.yaml
+          docker_env_vars: |
+            ZAP_TARGET_URL
+            ZAP_USER
+            ZAP_PASSWORD
+
+      - name: Publicar reporte ZAP
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: larutica-zap-${{ github.sha }}
+          path: zap-reports/
+          if-no-files-found: error
+          retention-days: 14
