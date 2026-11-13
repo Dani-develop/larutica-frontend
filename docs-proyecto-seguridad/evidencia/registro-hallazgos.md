@@ -30,7 +30,7 @@ revisión del reporte.
 | Campo | Valor |
 |---|---|
 | Origen | 2.3 / Gitleaks |
-| Estado | Falso positivo |
+| Estado | Falso positivo / cerrado |
 | Severidad | Informativa |
 | Responsable | Axel |
 | Tratamiento | Descartar con justificación |
@@ -38,6 +38,9 @@ revisión del reporte.
 | Issue oficial | [H-02](https://github.com/Dani-develop/larutica-frontend/issues/31) |
 
 No se reproducen valores sensibles en el registro. Falta la decisión humana que confirme la justificación del falso positivo.
+
+Decisión humana: las 3 coincidencias son AAGUID de passkeys; identifican autenticadores y no son
+credenciales ni secretos utilizables. El Issue fue cerrado como falso positivo informativo.
 
 ## H-03 — Coincidencia Gitleaks del token del relay
 
@@ -98,14 +101,15 @@ El resultado local no sustituye el artefacto del análisis SCA en CI.
 | Campo | Valor |
 |---|---|
 | Origen | 2.6 / revisión asistida por IA |
-| Estado | Pendiente de investigación |
+| Estado | Cerrado con limitación aceptada |
 | Severidad | Informativa |
 | Responsable | Axel |
 | Tratamiento | Investigar / validar |
 | Evidencia | AI-01, AI-02 y AI-03 en la evidencia de 2.6 |
 | Issue oficial | [H-07](https://github.com/Dani-develop/larutica-frontend/issues/32) |
 
-Pablo debe decidir cada observación en el PR #19. La salida de IA no sustituye la decisión humana.
+Pablo decidió AI-01 y AI-03 como cerrados y aceptó AI-02 como limitación pendiente. La salida de IA
+no sustituyó la decisión humana; el Issue fue cerrado con esa decisión registrada.
 
 ## Regla de numeración
 
