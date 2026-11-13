@@ -68,7 +68,7 @@ reportes quedan ignorados por Git; no subirlos manualmente sin revisión.
 
 ## Qué falta fuera del trabajo local
 
-- Ejecutar GitHub Actions después del push y enlazar ejecución/artefactos reales.
+- Primera ejecución real verificada: [43457663931 y sus reportes](evidencia-actions-3.2.md). El resultado es bloqueado por hallazgos, no aprobado; falta revisión de Axel.
 - Revisar coincidencias de Gitleaks con Frander y resultados SCA con Axel.
 - Configurar este check como obligatorio en protección de ramas (responsabilidad
   del ítem 3.5 de Pablo): un workflow fallido por sí solo no impide un merge si
