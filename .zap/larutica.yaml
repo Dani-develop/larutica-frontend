@@ -1,0 +1,62 @@
+env:
+  contexts:
+    - name: "LaRutica isolated test"
+      urls:
+        - "${ZAP_TARGET_URL}"
+      includePaths:
+        - "${ZAP_TARGET_URL}/.*"
+      excludePaths:
+        - "${ZAP_TARGET_URL}/api/payments/onvopay/webhook.*"
+        - "${ZAP_TARGET_URL}/api/maps/.*"
+      authentication:
+        method: "browser"
+        parameters:
+          loginPageUrl: "${ZAP_TARGET_URL}/login"
+          loginPageWait: 3
+          browserId: "firefox-headless"
+        verification:
+          method: "autodetect"
+      sessionManagement:
+        method: "cookie"
+        parameters: {}
+      users:
+        - name: "zap-test-user"
+          credentials:
+            username: "${ZAP_USER}"
+            password: "${ZAP_PASSWORD}"
+
+jobs:
+  - type: "spider"
+    parameters:
+      context: "LaRutica isolated test"
+      user: "zap-test-user"
+      maxDuration: 2
+      url: "${ZAP_TARGET_URL}/"
+
+  - type: "spiderAjax"
+    parameters:
+      context: "LaRutica isolated test"
+      user: "zap-test-user"
+      maxDuration: 2
+      maxCrawlDepth: 3
+      url: "${ZAP_TARGET_URL}/"
+
+  - type: "passiveScan-wait"
+    parameters:
+      maxDuration: 2
+
+  - type: "activeScan"
+    parameters:
+      context: "LaRutica isolated test"
+      user: "zap-test-user"
+      maxScanDurationInMins: 3
+      maxRuleDurationInMins: 1
+      policyDefinition: "Default Policy"
+
+  - type: "report"
+    parameters:
+      template: "traditional-html-plus"
+      reportDir: "/zap/wrk/zap-reports"
+      reportFile: "larutica-zap-report.html"
+      reportTitle: "LaRutica isolated DAST"
+      reportDescription: "ZAP Automation Framework against an isolated test candidate."
