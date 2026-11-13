@@ -39,6 +39,7 @@ jobs:
 
   - type: "requestor"
     parameters:
+      context: "LaRutica isolated test"
       user: "zap-test-user"
     requests:
       - name: "authenticated session verification"
