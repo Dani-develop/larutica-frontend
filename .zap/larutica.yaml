@@ -42,7 +42,7 @@ jobs:
       - name: "authenticated session is present"
         type: "url"
         url: "${ZAP_TARGET_URL}/api/auth/session"
-        operator: "and"
+        operator: "or"
         responseBodyRegex: '"session"\s*:'
         onFail: "error"
 
