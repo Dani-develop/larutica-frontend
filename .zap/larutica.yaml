@@ -13,13 +13,15 @@ env:
         - "${ZAP_TARGET_URL}/api/payments/onvopay/webhook.*"
         - "${ZAP_TARGET_URL}/api/maps/.*"
       authentication:
-        method: "browser"
+        method: "json"
         parameters:
           loginPageUrl: "${ZAP_TARGET_URL}/login"
-          loginPageWait: 3
-          browserId: "firefox-headless"
+          loginRequestUrl: "${ZAP_TARGET_URL}/api/auth/login"
+          loginRequestBody: '{"email":"{%username%}","password":"{%password%}"}'
         verification:
-          method: "autodetect"
+          method: "response"
+          loggedInRegex: '\"session\"'
+          loggedOutRegex: '\"error\"'
       sessionManagement:
         method: "cookie"
         parameters: {}
