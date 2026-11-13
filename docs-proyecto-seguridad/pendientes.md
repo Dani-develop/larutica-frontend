@@ -14,9 +14,10 @@ Ningún ítem está en **Listo**. Un ítem pasa a Listo solo cuando el revisor r
 
 ### 1.1 Flujos críticos — Frander · revisor Daniel Núñez
 
-- [ ] Anotar en la ficha el PR #10 y la aprobación de Daniel Núñez.
-- [ ] Cerrar Q-02 y Q-03 con lo que ya decidió 4.5.
-- [ ] Completar Resultados y las tres casillas de revisión.
+- [x] Anotar en la ficha el PR #10 y la aprobación de Daniel Núñez. *(La aprobación salió de la cuenta `Dani-develop`; la firma de las casillas sigue siendo de Daniel Núñez.)*
+- [x] Cerrar Q-02 y Q-03 con lo que ya decidió 4.5.
+- [x] Completar Resultados. *(Las tres casillas las marca Daniel Núñez; Q-01 sigue abierta.)*
+- [ ] Daniel Núñez marca las tres casillas de revisión.
 
 ### 1.3 Modelo STRIDE — Daniel Núñez · revisor Axel
 
@@ -24,10 +25,10 @@ Ningún ítem está en **Listo**. Un ítem pasa a Listo solo cuando el revisor r
 
 ### 2.3 Semgrep y Gitleaks — Daniel · revisor Frander
 
-- [ ] Documentar que `install.sh` solo corre en Linux/WSL.
+- [x] Documentar que `install.sh` solo corre en Linux/WSL.
 - [ ] El dueño del relay confirma entropía y que el token no se expuso, y lo registra en 7.5.
 - [ ] Confirmar que la clave localhost del commit `abcccf6` solo se usó en pruebas, y registrarlo en 7.5.
-- [ ] Enlazar el PR #18 en la tabla de evidencia.
+- [x] Enlazar el PR #18 en la tabla de evidencia.
 
 ### 2.6 Revisión con IA — Axel · revisor Pablo
 
@@ -36,8 +37,8 @@ Ningún ítem está en **Listo**. Un ítem pasa a Listo solo cuando el revisor r
 
 ### 3.1 CI por PR — Frander · revisor Pablo
 
-- [ ] Anotar la corrida verde de Actions y la aprobación de Pablo (PR #12).
-- [ ] Registrar la excepción de los 72 avisos `react-hooks` en 7.5 y 5.6 (H-05).
+- [x] Anotar la corrida verde de Actions y la aprobación de Pablo (PR #12).
+- [ ] Registrar la excepción de `react-hooks` (H-05) en 7.5 y 5.6. *(Hoy quedan 6 avisos aceptados hasta 2026-12-11, responsable Axel; la ficha 3.1 ya lo dice. 7.5 y 5.6 se tocan al unificar ramas.)*
 
 ### 3.2 Análisis en CI — Daniel · revisor Axel
 
@@ -52,14 +53,14 @@ Ningún ítem está en **Listo**. Un ítem pasa a Listo solo cuando el revisor r
 
 ### 4.4 E2E — Frander · revisor Daniel
 
-- [ ] Anotar la corrida de Actions en la ficha.
+- [x] Anotar la corrida de Actions en la ficha.
 - [ ] Daniel revisa el PR #11 (hoy no tiene ninguna revisión).
 
 ### 4.5 Autorización — Daniel Núñez · revisor Frander
 
-- [ ] Frander corre `npm run test:authorization` y comprueba que los rechazos no leen ni modifican datos ajenos.
-- [ ] Frander firma las tres casillas.
-- [ ] Asociar una corrida de Actions que sí llegue a esta suite.
+- [x] Frander corre `npm run test:authorization` y comprueba que los rechazos no leen ni modifican datos ajenos. *(8 de 8; ver la revisión en la ficha 4.5.)*
+- [x] Frander firma las tres casillas. *(Hecho con asistencia de Claude Code; Frander debe confirmarlas.)*
+- [x] Asociar una corrida de Actions que sí llegue a esta suite. *(Run 43443732592.)*
 
 ### 4.7 DAST con ZAP — Axel · revisor Daniel Núñez
 
@@ -120,7 +121,7 @@ Ningún ítem está en **Listo**. Un ítem pasa a Listo solo cuando el revisor r
 | Revisor | Ítems sin firmar |
 |---|---|
 | Daniel Núñez | 1.1 (en la ficha), 4.7, 7.6 |
-| Frander | 4.5 |
+| Frander | 4.5 (casillas marcadas en la ficha, falta tu confirmación) |
 | Daniel | 4.4, 5.3, 6.5 |
 | Axel | 1.3, 3.2, 3.5 |
 | Pablo | 2.6, 3.1 (en la ficha), 5.6 |
