@@ -1,0 +1,19 @@
+# Código generado, dependencias y reportes. No se excluye código de aplicación.
+node_modules/
+.git/
+.next/
+.vinext/
+.output/
+.wrangler/
+dist/
+out/
+outputs/
+coverage/
+playwright-report/
+test-results/
+public/maplibre/
+*.min.js
+# Tipos de runtime de Cloudflare generados por Wrangler, no lógica de aplicación.
+/worker-env.d.ts
+.env.local
+.dev.vars
