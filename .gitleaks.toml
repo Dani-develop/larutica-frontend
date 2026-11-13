@@ -5,3 +5,24 @@ useDefault = true
 
 # Sin allowlist global, sin ignorar directorios de aplicación ni desactivar reglas.
 # El runner analiza los archivos versionados; los secretos locales ignorados no se copian.
+#
+# Las únicas excepciones son por hallazgo: cada una exige a la vez (condition = AND)
+# una regla concreta, un archivo concreto y la forma exacta del valor no sensible.
+# Cualquier otro valor en esos archivos, o el mismo valor en otro archivo, sigue
+# bloqueando. Justificación y evidencia: docs/security/hallazgos-h01-h07.md
+
+[[allowlists]]
+description = "H-02: AAGUID públicos de autenticadores passkey (identificadores de modelo, no secretos)"
+targetRules = ["generic-api-key"]
+condition = "AND"
+paths = ['''^lib/supabase/passkey-device-name\.ts$''']
+regexTarget = "secret"
+regexes = ['''^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$''']
+
+[[allowlists]]
+description = "H-03: huella SHA-256 del token del relay (verificador unidireccional, no el token)"
+targetRules = ["generic-api-key"]
+condition = "AND"
+paths = ['''^supabase/functions/mail-relay/relay-config\.mjs$''']
+regexTarget = "line"
+regexes = ['''^export const tokenHash = '[0-9a-f]{64}';$''']
