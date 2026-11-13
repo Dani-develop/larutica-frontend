@@ -26,7 +26,7 @@ jobs:
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
           node-version-file: .nvmrc
-      # No npm ci: los analizadores no necesitan ejecutar scripts de dependencias.
+      # Los analizadores no necesitan dependencias; npm ci va al final y sin scripts.
       - name: Instalar analizadores con versiones fijas
         id: install
         run: |
@@ -35,9 +35,6 @@ jobs:
       - name: Probar politica de bloqueo
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run test:security
-      - name: Verificar contexto de coincidencias del 2.3
-        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
-        run: npm run security:context
       - name: Semgrep CE (misma configuracion de 2.3)
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run security:code
@@ -47,6 +44,18 @@ jobs:
       - name: OSV-Scanner (incluye dependencias de desarrollo)
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run security:deps
+      # La prueba de H-04 genera el certificado efímero con @peculiar/x509 y
+      # reflect-metadata. Se instalan desde el lockfile sin ejecutar scripts de
+      # dependencias, para mantener la regla de no correr código de terceros.
+      # Va después de Semgrep, Gitleaks y OSV para que node_modules no entre en
+      # el árbol que analiza `gitleaks dir .`.
+      - name: Instalar dependencias de prueba sin scripts
+        id: deps
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Verificar contexto de coincidencias del 2.3
+        if: ${{ !cancelled() && steps.install.outcome == 'success' && steps.deps.outcome == 'success' }}
+        run: npm run security:context
       - name: Verificar integridad y completitud de los tres reportes
         if: ${{ !cancelled() }}
         run: npm run security:gate
