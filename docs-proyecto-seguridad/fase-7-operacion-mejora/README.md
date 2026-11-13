@@ -1,5 +1,7 @@
 # Fase 7. Operación y mejora continua
 
+**Integrantes de la fase:** Axel (7.5); Pablo (7.6)
+
 **Objetivo.** Observar, detectar, investigar y dar seguimiento a hallazgos hasta una mejora verificable.
 
 **Cierre de la fase (para el alcance elegido).** Un hallazgo se sigue desde su registro hasta una corrección comprobada y la mejora queda incorporada al proyecto.

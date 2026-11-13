@@ -1,5 +1,7 @@
 # Fase 5. Preparación de la versión
 
+**Integrantes de la fase:** Daniel Núñez (5.3); Daniel (5.6)
+
 **Objetivo.** Proceso reproducible para preparar y aprobar una versión, con evidencia y limitaciones claras.
 
 **Cierre de la fase (para el alcance elegido).** Se identifica la versión aprobada, su evidencia, limitaciones y excepciones abiertas.

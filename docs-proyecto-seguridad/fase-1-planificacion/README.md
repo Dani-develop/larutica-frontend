@@ -1,5 +1,7 @@
 # Fase 1. Planificación
 
+**Integrantes de la fase:** Frander (1.1); Daniel Núñez (1.3)
+
 **Objetivo.** Base de conocimiento breve y versionada: comportamiento esperado, permisos y principales riesgos.
 
 **Cierre de la fase (para el alcance elegido).** Los flujos seleccionados tienen comportamiento y permisos definidos y sus riesgos principales tienen una decisión de tratamiento.

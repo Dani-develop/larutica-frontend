@@ -1,5 +1,7 @@
 # Fase 6. Despliegue
 
+**Integrantes de la fase:** Pablo (6.5)
+
 **Objetivo.** Despliegue automático y reproducible a un ambiente de pruebas con configuración segura.
 
 **Cierre de la fase (para el alcance elegido).** Se verifica identidad y funcionamiento del despliegue y un check obligatorio fallido o incompleto impide marcarlo como satisfactorio.

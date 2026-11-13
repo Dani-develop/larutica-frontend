@@ -1,5 +1,7 @@
 # Fase 2. Desarrollo
 
+**Integrantes de la fase:** Daniel (2.3); Axel (2.6)
+
 **Objetivo.** Entorno de programación agéntica con comprobaciones de calidad y seguridad y revisión antes de integrar.
 
 **Cierre de la fase (para el alcance elegido).** Se reproduce el ciclo asistido por agente: un fallo se detecta, vuelve al agente y requiere intervención humana si no se resuelve.

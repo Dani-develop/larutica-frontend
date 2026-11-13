@@ -1,5 +1,7 @@
 # Fase 4. Pruebas
 
+**Integrantes de la fase:** Frander (4.4); Daniel Núñez (4.5); Axel (4.7)
+
 **Objetivo.** Suite reproducible de pruebas de calidad y seguridad basada en los requisitos y riesgos de planificación.
 
 **Cierre de la fase (para el alcance elegido).** Otro integrante reproduce las pruebas y ve qué requisitos y riesgos cubren. Una prueba omitida o incompleta se reporta como incompleta.

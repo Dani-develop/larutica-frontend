@@ -1,5 +1,7 @@
 # Fase 3. Construcción e integración
 
+**Integrantes de la fase:** Frander (3.1); Daniel (3.2); Pablo (3.5)
+
 **Objetivo.** Pipeline de CI que ejecuta comprobaciones, y bloquea la integración cuando no se cumplen.
 
 **Cierre de la fase (para el alcance elegido).** Se demuestra un PR bloqueado por un fallo, su corrección y posterior integración, con resultados asociados al commit fusionado.
