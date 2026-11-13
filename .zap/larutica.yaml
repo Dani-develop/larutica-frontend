@@ -12,36 +12,27 @@ env:
       excludePaths:
         - "${ZAP_TARGET_URL}/api/payments/onvopay/webhook.*"
         - "${ZAP_TARGET_URL}/api/maps/.*"
-      authentication:
-        method: "json"
-        parameters:
-          loginPageUrl: "${ZAP_TARGET_URL}/login"
-          loginRequestUrl: "${ZAP_TARGET_URL}/api/auth/login"
-          loginRequestBody: '{"email":"{%username%}","password":"{%password%}"}'
-        verification:
-          method: "response"
-          loggedInRegex: '\"session\"'
-          loggedOutRegex: '\"error\"'
-      sessionManagement:
-        method: "cookie"
-        parameters: {}
-      users:
-        - name: "zap-test-user"
-          credentials:
-            username: "${ZAP_USER}"
-            password: "${ZAP_PASSWORD}"
 
 jobs:
+  # La sesión se obtiene antes con el login real (workflow, solo cuenta ficticia) y
+  # se inyecta como cookie; el valor llega por ZAP_SESSION_COOKIE y no se imprime.
+  - type: "replacer"
+    parameters:
+      deleteAllRules: true
+    rules:
+      - description: "Sesion autenticada de la cuenta de prueba"
+        matchType: "req_header"
+        matchString: "Cookie"
+        matchRegex: false
+        replacementString: "${ZAP_SESSION_COOKIE}"
+
   - type: "spider"
     parameters:
       context: "LaRutica isolated test"
-      user: "zap-test-user"
       maxDuration: 2
       url: "${ZAP_TARGET_URL}/"
 
   - type: "requestor"
-    parameters:
-      user: "zap-test-user"
     requests:
       - name: "authenticated session verification"
         url: "${ZAP_TARGET_URL}/api/auth/session"
@@ -62,7 +53,6 @@ jobs:
   - type: "activeScan"
     parameters:
       context: "LaRutica isolated test"
-      user: "zap-test-user"
       maxScanDurationInMins: 3
       maxRuleDurationInMins: 1
 

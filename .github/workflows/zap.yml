@@ -64,6 +64,10 @@ jobs:
           echo "login HTTP $code"
           s=$(curl -sS -o /dev/null -w '%{http_code}' -b /tmp/jar "$ZAP_TARGET_URL/api/auth/session")
           echo "session con cookie HTTP $s"
+          cookie=$(awk '$6 ~ /larutica_session/ {print $6"="$7}' /tmp/jar | head -n1)
+          test -n "$cookie"
+          echo "::add-mask::${cookie#*=}"
+          echo "ZAP_SESSION_COOKIE=$cookie" >> "$GITHUB_ENV"
           rm -f /tmp/jar /tmp/login.json
           test "$code" = 200 && test "$s" = 200
 
@@ -73,8 +77,7 @@ jobs:
           plan: .zap/larutica.yaml
           docker_env_vars: |
             ZAP_TARGET_URL
-            ZAP_USER
-            ZAP_PASSWORD
+            ZAP_SESSION_COOKIE
 
       - name: Publicar reporte ZAP
         if: always()
