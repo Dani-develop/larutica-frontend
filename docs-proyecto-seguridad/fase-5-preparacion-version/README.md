@@ -10,7 +10,7 @@
 
 | Ítem | Descripción | Responsable | Revisor | Depende de | Estado |
 |---|---|---|---|---|---|
-| [5.3](5.3-resumen-cambios-limitaciones.md) | Resumen de cambios y limitaciones conocidas | Daniel Núñez | Daniel | PRs y resultados de CI | En revisión |
+| [5.3](5.3-resumen-cambios-limitaciones.md) | Resumen de cambios y limitaciones conocidas | Daniel Núñez | Daniel | PRs y resultados de CI | Pendiente |
 | [5.6](5.6-excepciones-seguridad.md) | Excepciones de seguridad abiertas | Daniel | Pablo | 7.5 (registro único) | Pendiente |
 
 Los demás ítems de esta fase son catálogo de referencia y no se evalúan (ver `../documento-proyecto.docx`).
