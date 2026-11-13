@@ -44,15 +44,16 @@ jobs:
   - type: "requestor"
     parameters:
       user: "zap-test-user"
-      requests:
-        - name: "authenticated session verification"
-          url: "${ZAP_TARGET_URL}/api/auth/session"
-          method: "GET"
-          responseCode: 200
+    requests:
+      - name: "authenticated session verification"
+        url: "${ZAP_TARGET_URL}/api/auth/session"
+        method: "GET"
+        responseCode: 200
     tests:
       - name: "authenticated session is present"
         type: "url"
         url: "${ZAP_TARGET_URL}/api/auth/session"
+        operator: "and"
         responseBodyRegex: '"session"\\s*:'
         onFail: "error"
 
@@ -66,7 +67,6 @@ jobs:
       user: "zap-test-user"
       maxScanDurationInMins: 3
       maxRuleDurationInMins: 1
-      policyDefinition: "Default Policy"
 
   - type: "report"
     parameters:
