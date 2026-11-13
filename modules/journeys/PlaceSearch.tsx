@@ -1,6 +1,6 @@
 "use client";
 import { usePreferences } from "@/lib/preferences/Preferences";
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from '@/components/ui/button';
 import { placeContext, placeTypeLabel, type JourneyPlace } from "./types";
@@ -13,14 +13,21 @@ export function PlaceSearch({label,value,onChange,disabled=false}:{
   const { t } = usePreferences();
   const id=useId();
   const [query,setQuery]=useState(value?.name ?? "");
-  const [options,setOptions]=useState<JourneyPlace[]>([]);
+  const [rawOptions,setOptions]=useState<JourneyPlace[]>([]);
   const [open,setOpen]=useState(false),[loading,setLoading]=useState(false),[error,setError]=useState("");
   const [active,setActive]=useState(-1);
   const [retry,setRetry]=useState(0);
-  const typing=useRef(false);
-  useEffect(()=>{if(value){setQuery(value.name);typing.current=false;}else if(!typing.current)setQuery("");},[value]);
+  const [typing,setTyping]=useState(false);
+  const [prevValue,setPrevValue]=useState(value);
+  if(value!==prevValue){
+    setPrevValue(value);
+    if(value){setQuery(value.name);setTyping(false);}
+    else if(!typing)setQuery("");
+  }
+  const searchable=open && !value && query.trim().length>=3;
+  const options=searchable?rawOptions:[];
   useEffect(()=>{
-    if(!open || value || query.trim().length<3) {setOptions([]);setLoading(false);return;}
+    if(!searchable) return;
     const controller=new AbortController();
     const timer=setTimeout(async()=>{
       const q=query.trim();setLoading(true);setError("");setActive(-1);
@@ -41,7 +48,7 @@ export function PlaceSearch({label,value,onChange,disabled=false}:{
       finally {if(!controller.signal.aborted)setLoading(false);}
     },400);
     return ()=>{clearTimeout(timer);controller.abort();};
-  },[query,value,open,retry]);
+  },[query,searchable,retry]);
   function choose(place:JourneyPlace) {setQuery(place.name);setOpen(false);setOptions([]);onChange(place);}
   return <div className="lr-place-search">
     <label htmlFor={id}>{label}</label>
@@ -50,7 +57,7 @@ export function PlaceSearch({label,value,onChange,disabled=false}:{
       aria-activedescendant={active>=0 && open ? id+"-option-"+active:undefined} aria-describedby={id+"-help"}
       placeholder={t("Busca un lugar de Costa Rica")}
       onFocus={()=>setOpen(true)} onBlur={()=>setOpen(false)}
-      onChange={e=>{typing.current=true;setQuery(e.target.value);setOpen(true);setError("");setActive(-1);setOptions([]);if(value)onChange(null);}}
+      onChange={e=>{setTyping(true);setQuery(e.target.value);setOpen(true);setError("");setActive(-1);setOptions([]);if(value)onChange(null);}}
       onKeyDown={e=>{
         if(e.key==="Escape"){setOpen(false);return;}
         if(e.key==="ArrowDown" && options.length){e.preventDefault();setOpen(true);setActive(n=>(n+1)%options.length);}
@@ -69,13 +76,13 @@ export function PlaceSearch({label,value,onChange,disabled=false}:{
       </li>)}
     </ul>}
     <p id={id+"-help"} className="lr-place-help" role="status">
-      {loading ? t("Buscando lugares…") : error ? t(error) : value
+      {searchable && loading ? t("Buscando lugares…") : error ? t(error) : value
         ? (value.adjusted ? t("Ubicación ajustada en el mapa.") : placeContext(value, t) || value.label)
         : open && query.trim().length >= 3 && !options.length
           ? t("Selecciona un resultado; si no aparece, precisa el nombre o la localidad.")
           : t("Escribe al menos 3 caracteres y selecciona una sugerencia.")}
     </p>
-    {error && !loading && <Button type="button" variant="outline" size="sm"
+    {error && !(searchable && loading) && <Button type="button" variant="outline" size="sm"
       onMouseDown={event=>event.preventDefault()}
       onClick={()=>{setOpen(true);setRetry(n=>n+1);}}>{t("Reintentar búsqueda")}</Button>}
   </div>;

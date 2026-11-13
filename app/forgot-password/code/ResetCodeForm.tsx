@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { readPasswordResetDraft, writePasswordResetDraft } from "@/lib/auth/password-reset-client";
+import { usePasswordResetDraft } from "@/lib/auth/use-password-reset-draft";
 
 export default function ResetCodeForm() {
   const { t } = usePreferences();
@@ -17,13 +18,12 @@ export default function ResetCodeForm() {
   const [notice, setNotice] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [resending, setResending] = useState(false);
-  const [email, setEmail] = useState<string | null>(null);
+  const draft = usePasswordResetDraft();
+  const email = draft ? (draft.displayEmail ?? draft.email) : null;
 
   useEffect(() => {
-    const draft = readPasswordResetDraft();
-    if (!draft) router.replace("/forgot-password");
-    else setEmail(draft.displayEmail ?? draft.email);
-  }, [router]);
+    if (draft === null) router.replace("/forgot-password");
+  }, [draft, router]);
 
   async function resend() {
     const draft = readPasswordResetDraft();
