@@ -1,13 +1,17 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { existsSync } from 'node:fs';
 import { createPrivateKey, createPublicKey, X509Certificate } from 'node:crypto';
+import { localhostTls } from '../mail/fixtures/localhost-tls.mjs';
 import { createMailRelay } from '../../supabase/functions/mail-relay/handler.mjs';
 import { tokenHash } from '../../supabase/functions/mail-relay/relay-config.mjs';
 
-test('la clave fixture corresponde al certificado de localhost', () => {
-  const cert = new X509Certificate(readFileSync(new URL('../mail/fixtures/localhost-cert.pem', import.meta.url)));
-  const key = createPrivateKey(readFileSync(new URL('../mail/fixtures/localhost-key.pem', import.meta.url)));
+test('H-04: no hay clave privada versionada; el material TLS de pruebas es efímero', async () => {
+  assert.equal(existsSync(new URL('../mail/fixtures/localhost-key.pem', import.meta.url)), false);
+  const material = await localhostTls();
+  const cert = new X509Certificate(material.cert);
+  const key = createPrivateKey(material.key);
+  assert.ok(Date.parse(cert.validTo) - Date.now() <= 24 * 60 * 60 * 1000, 'vigencia máxima de un día');
   assert.equal(cert.subject, 'CN=localhost');
   assert.equal(cert.subjectAltName, 'DNS:localhost, IP Address:127.0.0.1');
   assert.ok(cert.publicKey.export({ type: 'spki', format: 'der' }).equals(
