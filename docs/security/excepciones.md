@@ -4,17 +4,18 @@
 
 Fecha de preparación: **2026-11-13**. Revisor del ítem: **Pablo**.
 El registro único lo gestiona Axel en el [ítem 7.5](../../docs-proyecto-seguridad/fase-7-operacion-mejora/7.5-registro-unico-hallazgos.md),
-que figura **Pendiente en la copia local y en `origin/development` consultado**.
-Se inspeccionaron Issues públicos en modo de solo lectura; no se crearon Issues
-ni se realizaron aprobaciones.
+con registro operativo en [GitHub Issues](https://github.com/Dani-develop/larutica-frontend/issues).
+Se publicaron tres solicitudes a petición de Daniel, con asistencia de agente;
+**no se realizaron aprobaciones ni se cambiaron controles**. El documento local
+del 7.5 puede ir retrasado respecto de los Issues y la rama de Axel.
 
 | Pregunta | Respuesta verificable |
 |---|---|
 | ¿Este trabajo aprobó excepciones? | **No: cero aprobaciones y cero excepciones vigentes otorgadas por el agente.** |
-| ¿El equipo tiene cero excepciones abiertas? | **No verificable todavía**: falta consultar/confirmar el registro único con Axel. No confundir con la fila anterior. |
+| ¿Hay solicitudes abiertas? | Sí: #38, #39 y #40, todas **pendientes, no vigentes**. Axel debe completar la clasificación y asignar IDs E-NN. |
 | ¿Se silenciaron controles para aprobar? | No: no se añadieron allowlists, overrides SCA ni bypass al gate. |
-| ¿Se publicaron solicitudes? | No se crearon Issues. Se preparó la plantilla `.github/ISSUE_TEMPLATE/excepcion-seguridad.yml` para integrar mediante PR. |
-| ¿Puede cerrarse 5.6 ahora? | No: falta el registro único, confirmar sus excepciones abiertas y la revisión de Pablo. |
+| ¿Se publicaron solicitudes? | Sí: [relay #38](https://github.com/Dani-develop/larutica-frontend/issues/38), [fixture #39](https://github.com/Dani-develop/larutica-frontend/issues/39) y [OSV #40](https://github.com/Dani-develop/larutica-frontend/issues/40). |
+| ¿Puede cerrarse 5.6 ahora? | No: faltan decisiones sobre las solicitudes, responsables, plazos, aprobaciones y revisión de Pablo. |
 
 Este documento **no es otro registro de excepciones**: explica el procedimiento.
 La información de cada E-NN vive una sola vez como Issue del registro único;
@@ -26,6 +27,8 @@ la rama predeterminada; subirla en una rama de PR no la habilita allí todavía.
 
 - Coincidencias del análisis de secretos: [clasificación inicial 2.3](triage-local-2.3.md).
 - Resultados SCA y estado del gate: [evidencia real de Actions 3.2](evidencia-actions-3.2.md).
+- Solicitudes ya registradas y enlazadas en ambos sentidos con sus hallazgos:
+  [índice de enlaces al registro único](solicitudes-excepciones.md).
 
 ## Consulta verificable del repositorio
 
@@ -34,6 +37,11 @@ abiertos y cerrados, de `Dani-develop/larutica-frontend` devolvió **0 Issues y
 0 candidatos a excepción** (los Pull Requests se excluyen). Eso no confirma que
 ese repositorio sea el registro único acordado ni descarta otro registro del
 equipo. **Axel debe confirmar su ubicación y las excepciones de la versión.**
+
+**Actualización posterior del mismo día:** el registro 7.5 ya contiene H-03
+(#29), H-04 (#30) y H-06 (#33). Se publicaron solicitudes #38, #39 y #40 y
+comentarios de enlace de vuelta en los hallazgos. La consulta de las 16:16 UTC
+se conserva solo como evidencia histórica, no describe el estado actual.
 
 ```bash
 npm run security:exceptions
@@ -61,7 +69,8 @@ puede declararse falso positivo por conveniencia.
 1. **Registrar/investigar H-NN con Axel.** Debe existir evidencia sanitizada,
    versión/commit y alcance, severidad justificada y responsable. Hasta entonces,
     los controles siguen bloqueando. Abrir Issues solo después de coordinar
-    el registro con Axel y la autorización de Daniel; este trabajo no los crea.
+    el registro con Axel y la autorización de Daniel. Las tres solicitudes
+    actuales fueron publicadas por petición de Daniel, no aprobadas por el agente.
 2. **Preferir corrección.** Evaluar actualizar, eliminar o reemplazar el componente;
    comprobar compatibilidad y volver a ejecutar controles. No ejecutar arreglos
    masivos ni aceptar riesgo automáticamente.
@@ -118,13 +127,13 @@ del relay con su propietario antes de resolver la clasificación.
 
 Si el registro confirma que no hay excepciones abiertas, registrar esa
 confirmación con enlace/fecha y commit candidato; no crear excepciones ficticias
-solo para llenar la tabla. Esa confirmación aún está pendiente.
+solo para llenar la tabla. Actualmente existen tres solicitudes pendientes;
+no deben presentarse como excepciones vigentes.
 
 ## Solicitud concreta de coordinación
 
-Daniel debe pedir a **Axel** el enlace del registro único y confirmar si hay
-excepciones abiertas aplicables al commit candidato. Si hay alguna, enlazar su
-ficha real aquí y en 5.6 después de comprobar sus campos y vigencia; no copiarla.
-Si no hay, conservar la confirmación humana con fecha, alcance y enlace.
-Después **Pablo** revisa la trazabilidad y registra su aprobación del ítem.
+**Axel** debe asignar IDs E-NN y coordinar la clasificación y los propietarios
+de las solicitudes #38, #39 y #40. Los responsables designados deben definir
+tratamiento y plazo; otro integrante debe revisarlos. **Pablo** revisa la
+trazabilidad del 5.6 y registra su decisión. No se ha firmado por ninguno.
 Los bloqueos del 3.2 siguen activos mientras tanto; no son excepciones implícitas.
