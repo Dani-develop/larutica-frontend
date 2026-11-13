@@ -1,0 +1,7 @@
+title = "LaRutica: reglas oficiales de Gitleaks"
+
+[extend]
+useDefault = true
+
+# Sin allowlist global, sin ignorar directorios de aplicación ni desactivar reglas.
+# El runner analiza los archivos versionados; los secretos locales ignorados no se copian.

@@ -10,7 +10,7 @@
 
 | Ítem | Descripción | Responsable | Revisor | Depende de | Estado |
 |---|---|---|---|---|---|
-| [2.3](2.3-semgrep-gitleaks-local.md) | Semgrep CE y Gitleaks en el entorno de desarrollo | Daniel | Frander | — | Pendiente |
+| [2.3](2.3-semgrep-gitleaks-local.md) | Semgrep CE y Gitleaks en el entorno de desarrollo | Daniel | Frander | — | En revisión (evidencia local; validación humana pendiente) |
 | [2.6](2.6-revision-codigo-ia.md) | Revisión de código asistida por IA | Axel | Pablo | 1.1, 1.3 (contexto de riesgos) | Pendiente |
 
 Los demás ítems de esta fase son catálogo de referencia y no se evalúan (ver `../documento-proyecto.docx`).
