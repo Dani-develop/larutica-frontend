@@ -17,7 +17,7 @@ test.describe('F-02 compra y pago', () => {
     expect(reservations[0]).toMatchObject({ status: 'CONFIRMED', number_of_people: 2 });
   });
 
-  test('F02-E1 tarjeta rechazada: sin reserva y se puede reintentar sin duplicar el intento', async ({ page, qa }) => {
+  test('F02-E1 tarjeta rechazada: sin reserva y se puede reintentar sin duplicar reservas ni cobros', async ({ page, qa }) => {
     await openPayment(page);
     await page.evaluate(() => { (window as unknown as { qaDecline: boolean }).qaDecline = true; });
     await page.getByRole('button', { name: /^Pagar USD/ }).click();
