@@ -37,10 +37,13 @@ revisión del reporte.
 | Evidencia | 3 coincidencias asociadas a valores AAGUID de passkeys |
 | Issue oficial | [H-02](https://github.com/Dani-develop/larutica-frontend/issues/31) |
 
-No se reproducen valores sensibles en el registro. Falta la decisión humana que confirme la justificación del falso positivo.
+No se reproducen valores sensibles en el registro.
 
-Decisión humana: las 3 coincidencias son AAGUID de passkeys; identifican autenticadores y no son
-credenciales ni secretos utilizables. El Issue fue cerrado como falso positivo informativo.
+Decisión humana (Frander, 2026-11-13): las 3 coincidencias son AAGUID de passkeys; identifican
+modelos de autenticador y no son credenciales ni secretos utilizables. Falso positivo informativo,
+**cerrado**. La excepción de `.gitleaks.toml` es acotada (regla + ruta exacta + forma UUID); la
+prueba negativa sigue bloqueando otros valores. Detalle en
+[2.6 decisión humana](2.6-decision-humana.md).
 
 ## H-03 — Coincidencia Gitleaks del token del relay
 
@@ -101,15 +104,23 @@ El resultado local no sustituye el artefacto del análisis SCA en CI.
 | Campo | Valor |
 |---|---|
 | Origen | 2.6 / revisión asistida por IA |
-| Estado | Cerrado con limitación aceptada |
+| Estado | Abierto: AI-01 resuelta, AI-02 limitación aceptada, AI-03 pendiente de verificación manual |
 | Severidad | Informativa |
 | Responsable | Axel |
 | Tratamiento | Investigar / validar |
 | Evidencia | AI-01, AI-02 y AI-03 en la evidencia de 2.6 |
 | Issue oficial | [H-07](https://github.com/Dani-develop/larutica-frontend/issues/32) |
 
-Pablo decidió AI-01 y AI-03 como cerrados y aceptó AI-02 como limitación pendiente. La salida de IA
-no sustituyó la decisión humana; el Issue fue cerrado con esa decisión registrada.
+Decisión humana (Frander, 2026-11-13; la revisión de Pablo sigue pendiente):
+
+- **AI-01:** resuelta; los controles de 1.3 se mantienen como propuesta hasta tener evidencia.
+- **AI-02:** limitación aceptada; el frontend no persiste quién cancela, T-07 se verifica en el
+  backend y se registra en 5.3.
+- **AI-03:** **abierta**; falta abrir el JSON en Threat Dragon 2.6.2, comprobar T-01 a T-07 y
+  regenerar el PNG.
+
+La salida de IA no sustituyó la decisión humana. Detalle en
+[2.6 decisión humana](2.6-decision-humana.md). El Issue #32 no debe cerrarse mientras AI-03 siga abierta.
 
 ## Regla de numeración
 

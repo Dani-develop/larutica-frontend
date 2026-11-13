@@ -1,126 +1,67 @@
 # Pendientes de la entrega
 
-Corte: **2026-11-13, 14:29 (hora de Costa Rica)**. Entrega: hoy, 23:59.
+Corte: **2026-11-13, tarde (hora de Costa Rica)**. Entrega: hoy, 23:59.
 Ningún ítem está en **Listo**. Un ítem pasa a Listo solo cuando el revisor reprodujo la evidencia.
+Los ítems restantes los completó Frander en la ventana final; las revisiones y firmas siguen siendo de cada revisor.
 
-## Juntar el candidato
+## Hecho en esta ventana
 
-`main` y `development` se separaron después del PR #28. Hay que volver a unirlas antes de entregar.
+- Ramas unidas: `main` incluye `seg/entrega-unificada` (PR #55). Ya no existe `development`.
+- Verificación local sobre `10e90b8` (Node 24.22.0): `runtime:check`, `design:check`, TypeScript, lint (0 avisos `react-hooks`), build, `npm test` (autorización 8/8) y E2E 19/19, todo en verde.
+- CI en `FranderCT/larutica-frontend-entrega`, SHA `981b084`:
+  - [Seguridad 43522557908](https://github.com/FranderCT/larutica-frontend-entrega/actions/runs/43522557908): éxito; OSV 0, Semgrep 0, Gitleaks 0 (cierra la evidencia de H-06).
+  - [Validar proyecto 43522569864](https://github.com/FranderCT/larutica-frontend-entrega/actions/runs/43522569864): éxito en Ubuntu, Windows y E2E (19 pruebas); incluye `test:authorization` 8/8.
+  - [ZAP 43522573780](https://github.com/FranderCT/larutica-frontend-entrega/actions/runs/43522573780): **incompleta**, sin secrets `ZAP_USER` y `ZAP_PASSWORD`; no hay reporte.
+- Decisiones humanas de Frander (2026-11-13): H-02 falso positivo cerrado; AI-01 resuelta; AI-02 limitación aceptada.
+- Fichas actualizadas: 1.1, 1.3, 2.3, 2.6, 3.1, 3.5, 4.4, 4.5, 5.6, 6.5, 7.5, 7.6 y `entrega-profelink.md`.
 
-- [ ] Traer a la rama de entrega lo que está solo en `development`: 3.2, 5.6, 7.6 y el parche del PR #41 (H-02 a H-05 y el RCE de React).
-- [ ] Traer a la rama de entrega lo que está solo en `main`: 4.7, 7.5 y los PR de Renovate ya fusionados. En `development` esas fichas quedaron vacías.
+## Por ítem (lo que falta)
 
-## Por ítem
+- **1.1** — Daniel Núñez revisa y firma. Q-01 sigue abierta. Verificar los tres ajustes pedidos en la primera revisión del PR #10.
+- **1.3** — Axel revisa y firma.
+- **2.3** — Frander revisa. El dueño del relay confirma entropía y que el token no se expuso (H-03); confirmar que la clave de `abcccf6` solo fue de pruebas (H-04).
+- **2.6** — Pablo revisa. AI-03: abrir el JSON en Threat Dragon 2.6.2, comprobar T-01 a T-07 y regenerar el PNG.
+- **3.1** — Pablo revisa y firma. Enlazar la corrida de Actions sobre el SHA final.
+- **3.2** — Axel reproduce y firma.
+- **3.5** — El dueño del repositorio activa el ruleset (existe, pero está en `enforcement: disabled`); guardar evidencia de un PR bloqueado; Axel firma. Fijar por SHA las acciones de `zap.yml`.
+- **4.4** — Daniel revisa el PR #11 (sin revisión) y firma.
+- **4.5** — Frander reproduce `npm run test:authorization` y firma las casillas.
+- **4.7** — Crear los secrets `ZAP_USER` y `ZAP_PASSWORD` con una cuenta de prueba, ejecutar ZAP y guardar el reporte HTML (H-01). Daniel Núñez revisa.
+- **5.3** — Rehacer sobre el SHA final de entrega; Daniel confirma y firma.
+- **5.6** — Pablo firma. Las solicitudes #38 (H-03) y #39 (H-04) siguen sin aprobación humana, responsable ni fecha. Retirar la #40 (H-06 ya corregido).
+- **6.5** — El smoke test falla en `main` (`tests/vercel/navigation.spec.ts` busca «← Volver a LaRutica»; el PR #56 lo corregía). Confirmar el SHA desplegado en Vercel, lanzar el workflow y conservar artefactos. Solo con cuentas de prueba. Daniel revisa.
+- **7.5** — Frander marca «afirmaciones respaldadas» y «observaciones resueltas» al revisar.
+- **7.6** — Falta el reescaneo programado (`cron`): no existe en ningún workflow; el PR #56 traía la propuesta. Daniel Núñez firma.
 
-### 1.1 Flujos críticos — Frander · revisor Daniel Núñez
+## Hallazgos
 
-- [ ] Anotar en la ficha el PR #10 y la aprobación de Daniel Núñez.
-- [ ] Cerrar Q-02 y Q-03 con lo que ya decidió 4.5.
-- [ ] Completar Resultados y las tres casillas de revisión.
+- [ ] **H-01.** Abierto: ZAP autenticado sin ejecución exitosa (faltan secrets de prueba).
+- [x] **H-02.** Cerrado: falso positivo, decisión de Frander.
+- [ ] **H-03.** Abierto: el dueño confirma la entropía del token o se rota.
+- [ ] **H-04.** Corregido en código; falta confirmar que la clave del historial solo era de pruebas.
+- [x] **H-05.** Corregido (0 avisos, reglas en *error*; lint verde en CI). Axel cierra el Issue #34.
+- [x] **H-06.** Corregido con evidencia de CI (OSV 0 sobre `981b084`). Axel cierra el Issue #33.
+- [ ] **H-07.** Abierto parcial: AI-03 pendiente de verificación manual y revisión de Pablo.
 
-### 1.3 Modelo STRIDE — Daniel Núñez · revisor Axel
+## Decisiones abiertas (Frander)
 
-- [ ] Axel abre el modelo, revisa impacto y mitigaciones, y firma la ficha.
-
-### 2.3 Semgrep y Gitleaks — Daniel · revisor Frander
-
-- [ ] Documentar que `install.sh` solo corre en Linux/WSL.
-- [ ] El dueño del relay confirma entropía y que el token no se expuso, y lo registra en 7.5.
-- [ ] Confirmar que la clave localhost del commit `abcccf6` solo se usó en pruebas, y registrarlo en 7.5.
-- [ ] Enlazar el PR #18 en la tabla de evidencia.
-
-### 2.6 Revisión con IA — Axel · revisor Pablo
-
-- [ ] Pablo decide AI-01, AI-02 y AI-03 (H-07) con evidencia.
-- [ ] Marcar los requisitos y la revisión en la ficha.
-
-### 3.1 CI por PR — Frander · revisor Pablo
-
-- [ ] Anotar la corrida verde de Actions y la aprobación de Pablo (PR #12).
-- [ ] Registrar la excepción de los 72 avisos `react-hooks` en 7.5 y 5.6 (H-05).
-
-### 3.2 Análisis en CI — Daniel · revisor Axel
-
-- [ ] Llevar el ítem a la rama de entrega (hoy solo está en `development`).
-- [ ] Axel reproduce la evidencia y firma. El PR quedó en borrador.
-
-### 3.5 Protección de ramas — Pablo · revisor Axel
-
-- [ ] El dueño del repositorio activa los rulesets de `main` y `development`: PR obligatorio, aprobación de otra persona, revisión de CODEOWNERS y estos checks: `Node 24 / ubuntu-latest`, `Node 24 / windows-latest`, `E2E flujos críticos`.
-- [ ] Guardar evidencia de un PR bloqueado.
-- [ ] Axel firma.
-
-### 4.4 E2E — Frander · revisor Daniel
-
-- [ ] Anotar la corrida de Actions en la ficha.
-- [ ] Daniel revisa el PR #11 (hoy no tiene ninguna revisión).
-
-### 4.5 Autorización — Daniel Núñez · revisor Frander
-
-- [ ] Frander corre `npm run test:authorization` y comprueba que los rechazos no leen ni modifican datos ajenos.
-- [ ] Frander firma las tres casillas.
-- [ ] Asociar una corrida de Actions que sí llegue a esta suite.
-
-### 4.7 DAST con ZAP — Axel · revisor Daniel Núñez
-
-- [ ] Ejecutar el workflow en Actions contra el ambiente aislado y guardar el reporte HTML (H-01).
-- [ ] Daniel Núñez revisa.
-- [ ] Llevar la ficha completa a la rama unificada.
-
-### 5.3 Resumen de la versión — Daniel Núñez · revisor Daniel
-
-- [ ] Rehacer el resumen sobre el commit final, ya unidas las ramas.
-- [ ] Daniel confirma que cada PR y cada corrida citada pertenecen a ese SHA, y firma.
-
-### 5.6 Excepciones — Daniel · revisor Pablo
-
-- [ ] Llevar el ítem a la rama de entrega (hoy solo está en `development`).
-- [ ] Cada excepción abierta existe en el registro 7.5, con hallazgo, versión, evidencia, justificación, responsable, aprobación humana y fecha de revisión.
-- [ ] Pablo firma.
-- [ ] Una credencial real se rota; no basta con borrarla.
-
-### 6.5 Post-despliegue — Pablo · revisor Daniel
-
-- [ ] Ejecutar el workflow contra Vercel con la URL y el commit desplegado.
-- [ ] Conservar health check, smoke test y artefactos.
-- [ ] Daniel revisa.
-- [ ] E2E, autorización y ZAP sobre ese destino solo con cuentas de prueba.
-
-### 7.5 Registro único — Axel · revisor Frander
-
-- [ ] Dejar una sola ficha en la rama unificada.
-- [ ] Cerrar o dejar con estado explícito H-01 a H-07.
-- [ ] Frander marca «afirmaciones respaldadas» y «observaciones resueltas».
-- [ ] Adjuntar la evidencia de CI de ZAP cuando exista.
-
-### 7.6 Renovate — Pablo · revisor Daniel Núñez
-
-- [ ] Dejar la ficha completa en la rama unificada: configuración, un PR real de actualización sujeto a los mismos checks, reescaneo programado de dependencias y cómo ese resultado crea o actualiza un hallazgo.
-- [ ] Daniel Núñez firma.
-
-## Hallazgos aún abiertos
-
-- [ ] **H-01.** ZAP autenticado sin ejecución exitosa.
-- [ ] **H-02.** Falso positivo de AAGUID; falta la decisión humana.
-- [ ] **H-03.** Token del relay; el dueño confirma o se rota.
-- [ ] **H-04.** Clave localhost; confirmar que solo es de pruebas.
-- [x] **H-05.** Corregido en la rama `seg/entrega-unificada`: 0 avisos de `react-hooks` y reglas otra vez en *error*. Axel cierra el Issue #34 al integrar.
-- [ ] **H-06.** Avisos corregidos en la rama (OSV local 78 → 0, `npm audit` 0). Falta la corrida de OSV en CI sobre el SHA final para adjuntarla.
-- [ ] **H-07.** AI-01, AI-02 y AI-03 sin decisión de Pablo.
+- Repositorio de entrega: `FranderCT/larutica-frontend-entrega` (su `main` está en `981b084`) o `Dani-develop/larutica-frontend` (`10e90b8`). El código difiere solo en `lib/preferences/messages.ts`.
+- Subir la rama `seg/cierre-entrega` y abrir PR.
+- Llevar a la rama el arreglo del smoke y el `cron` del PR #56.
 
 ## Entrega en Profelink
 
 - [ ] Enlace al repositorio público.
-- [ ] Alcance y responsabilidades de cada integrante.
-- [ ] Cómo se repartió el trabajo.
-- [ ] Evidencias enlazadas desde cada ítem.
+- [x] Alcance y responsabilidades (borrador en [entrega-profelink.md](entrega-profelink.md)).
+- [x] Cómo se repartió el trabajo (borrador).
+- [ ] Evidencias enlazadas desde cada ítem: enlazadas; faltan las de ZAP, post-despliegue y ruleset.
 
 ## Firmas que faltan
 
 | Revisor | Ítems sin firmar |
 |---|---|
-| Daniel Núñez | 1.1 (en la ficha), 4.7, 7.6 |
-| Frander | 4.5 |
+| Daniel Núñez | 1.1, 4.7, 7.6 |
+| Frander | 2.3, 4.5, 7.5 |
 | Daniel | 4.4, 5.3, 6.5 |
 | Axel | 1.3, 3.2, 3.5 |
-| Pablo | 2.6, 3.1 (en la ficha), 5.6 |
+| Pablo | 2.6, 3.1, 5.6 |
