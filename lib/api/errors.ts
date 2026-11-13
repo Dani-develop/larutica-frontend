@@ -20,9 +20,25 @@ export function apiErrorResponse(error: unknown): Response {
   );
 }
 
+function requestOrigin(request: Request): string {
+  const fallback = new URL(request.url).origin;
+  const configuredOrigin = process.env.LARUTICA_PUBLIC_ORIGIN ?? process.env.RENDER_EXTERNAL_URL;
+
+  if (configuredOrigin) {
+    try {
+      return new URL(configuredOrigin).origin;
+    } catch {
+      // Continúa con los headers del proxy si la configuración es inválida.
+    }
+  }
+
+  // No se confía en X-Forwarded-* porque pueden ser enviados por el cliente.
+  return fallback;
+}
+
 export function assertSameOrigin(request: Request): void {
   const origin = request.headers.get("origin");
-  if (origin && origin !== new URL(request.url).origin) {
+  if (origin && origin !== requestOrigin(request)) {
     throw new ApiError("Origen de la solicitud no permitido.", 403);
   }
 
