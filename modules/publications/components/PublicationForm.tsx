@@ -18,7 +18,6 @@ import {
   DollarSign,
   ImageIcon,
   Languages,
-  MapPin,
   Mountain,
   Users,
 } from "lucide-react";
@@ -348,9 +347,6 @@ export function PublicationForm({
       setSubmitting(false);
     }
   }
-
-  const progress =
-    activeStep * 20;
 
   return (
     <div
