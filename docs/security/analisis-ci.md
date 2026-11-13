@@ -1,7 +1,9 @@
 # Análisis de seguridad en CI — 3.2 (Daniel)
 
 Workflow: `.github/workflows/security.yml`. No modifica el workflow 3.1 de
-Frander. Se activa en PR a `main`/`development`, push a esas ramas o manualmente.
+Frander. Se activa en PR a `main`/`development` o a la rama base del PR encadenado
+`seg/2.3-semgrep-gitleaks`, push a `main`/`development` o a la rama del 3.2,
+y manualmente. El push del 3.2 permite ejecutar también mientras el PR es Draft.
 Las acciones están fijadas a commits de sus releases v7, con `contents: read`,
 sin credenciales persistentes, sin `pull_request_target` ni secretos.
 

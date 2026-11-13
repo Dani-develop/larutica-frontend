@@ -2,9 +2,9 @@ name: Analisis de seguridad (3.2)
 
 on:
   pull_request:
-    branches: [main, development]
+    branches: [main, development, seg/2.3-semgrep-gitleaks]
   push:
-    branches: [main, development]
+    branches: [main, development, seg/3.2-analisis-seguridad-ci]
   workflow_dispatch:
 
 permissions:
@@ -35,6 +35,9 @@ jobs:
       - name: Probar politica de bloqueo
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run test:security
+      - name: Verificar contexto de coincidencias del 2.3
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: npm run security:context
       - name: Semgrep CE (misma configuracion de 2.3)
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: npm run security:code
