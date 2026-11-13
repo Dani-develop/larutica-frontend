@@ -104,8 +104,8 @@ Ningún ítem está en **Listo**. Un ítem pasa a Listo solo cuando el revisor r
 - [ ] **H-02.** Falso positivo de AAGUID; falta la decisión humana.
 - [ ] **H-03.** Token del relay; el dueño confirma o se rota.
 - [ ] **H-04.** Clave localhost; confirmar que solo es de pruebas.
-- [ ] **H-05.** 72 avisos de `react-hooks`; corregir o aceptar con fecha de revisión.
-- [ ] **H-06.** Falta el artefacto de SCA en CI. El parche del RCE está en `development`.
+- [x] **H-05.** Corregido en la rama `seg/entrega-unificada`: 0 avisos de `react-hooks` y reglas otra vez en *error*. Axel cierra el Issue #34 al integrar.
+- [ ] **H-06.** Avisos corregidos en la rama (OSV local 78 → 0, `npm audit` 0). Falta la corrida de OSV en CI sobre el SHA final para adjuntarla.
 - [ ] **H-07.** AI-01, AI-02 y AI-03 sin decisión de Pablo.
 
 ## Entrega en Profelink
