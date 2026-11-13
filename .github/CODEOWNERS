@@ -1,0 +1,6 @@
+/.github/workflows/ @11Axel11
+/.github/CODEOWNERS @11Axel11
+/tests/ @11Axel11
+/eslint.config.mjs @11Axel11
+/package.json @11Axel11
+/package-lock.json @11Axel11

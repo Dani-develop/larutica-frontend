@@ -1,0 +1,1242 @@
+{
+  "version": "2.6.2",
+  "summary": {
+    "title": "LaRutica: acceso, compra y reservas",
+    "owner": "Daniel Núñez",
+    "description": "Modelo de amenazas de los flujos F-01, F-02 y F-03. Estado de los controles pendiente de revisión.",
+    "id": 0
+  },
+  "detail": {
+    "diagramTop": 0,
+    "threatTop": 7,
+    "contributors": [
+      {
+        "name": "Daniel Núñez"
+      }
+    ],
+    "reviewer": "Axel",
+    "diagrams": [
+      {
+        "id": 0,
+        "title": "Flujos críticos de LaRutica",
+        "diagramType": "STRIDE",
+        "version": "2.4.0",
+        "placeholder": "LaRutica, Supabase y OnvoPAY",
+        "thumbnail": "./public/content/images/thumbnail.stride.jpg",
+        "description": "F-01 Inicio de sesión y acceso; F-02 compra y pago; F-03 consulta y cancelación de reservas.",
+        "cells": [
+          {
+            "position": {
+              "x": 25,
+              "y": 125
+            },
+            "size": {
+              "width": 250,
+              "height": 225
+            },
+            "attrs": {
+              "label": {
+                "text": "Navegador / no confiable"
+              }
+            },
+            "visible": true,
+            "shape": "trust-boundary-box",
+            "id": "0823dd8f-338c-4dd6-b85a-fa80fb0a56d5",
+            "zIndex": -1,
+            "data": {
+              "type": "tm.BoundaryBox",
+              "description": "",
+              "isTrustBoundary": true,
+              "hasOpenThreats": false
+            }
+          },
+          {
+            "position": {
+              "x": 433,
+              "y": 95
+            },
+            "size": {
+              "width": 290,
+              "height": 280
+            },
+            "attrs": {
+              "label": {
+                "text": "Servidor LaRutica"
+              }
+            },
+            "visible": true,
+            "shape": "trust-boundary-box",
+            "id": "a4995d83-9ac2-4e50-a2f4-1617d0e74d72",
+            "zIndex": -1,
+            "data": {
+              "type": "tm.BoundaryBox",
+              "description": "",
+              "isTrustBoundary": true,
+              "hasOpenThreats": false
+            }
+          },
+          {
+            "position": {
+              "x": 834,
+              "y": 28
+            },
+            "size": {
+              "width": 290,
+              "height": 360
+            },
+            "attrs": {
+              "label": {
+                "text": "Supabase / acceso privilegiado"
+              }
+            },
+            "visible": true,
+            "shape": "trust-boundary-box",
+            "id": "5f51c072-99b7-432e-969a-9e5dc9bd37f0",
+            "zIndex": -1,
+            "data": {
+              "type": "tm.BoundaryBox",
+              "description": "",
+              "isTrustBoundary": true,
+              "hasOpenThreats": false
+            }
+          },
+          {
+            "position": {
+              "x": 834,
+              "y": 455
+            },
+            "size": {
+              "width": 290,
+              "height": 165
+            },
+            "attrs": {
+              "label": {
+                "text": "OnvoPAY / proveedor externo"
+              }
+            },
+            "visible": true,
+            "shape": "trust-boundary-box",
+            "id": "d19cc899-928d-45db-9df7-8812154fbe10",
+            "zIndex": -1,
+            "data": {
+              "type": "tm.BoundaryBox",
+              "description": "",
+              "isTrustBoundary": true,
+              "hasOpenThreats": false
+            }
+          },
+          {
+            "position": {
+              "x": 65,
+              "y": 195
+            },
+            "size": {
+              "width": 170,
+              "height": 80
+            },
+            "attrs": {
+              "text": {
+                "text": "Personas usuarias"
+              },
+              "body": {
+                "stroke": "#333333",
+                "strokeWidth": 1.5,
+                "strokeDasharray": ""
+              }
+            },
+            "visible": true,
+            "shape": "actor",
+            "ports": {
+              "groups": {
+                "top": {
+                  "position": "top",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                },
+                "right": {
+                  "position": "right",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                },
+                "bottom": {
+                  "position": "bottom",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                },
+                "left": {
+                  "position": "left",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                }
+              },
+              "items": [
+                {
+                  "group": "top",
+                  "id": "406bb623-0c56-499a-aca4-f404c6d14f26"
+                },
+                {
+                  "group": "right",
+                  "id": "713e5e9c-c5c5-49d3-b980-62f07249140e"
+                },
+                {
+                  "group": "bottom",
+                  "id": "fe551789-db46-4b33-b8bb-3db9b29bc574"
+                },
+                {
+                  "group": "left",
+                  "id": "aae92f87-0177-4207-a14b-f3022ccba0ae"
+                }
+              ]
+            },
+            "id": "83556adb-32d1-42bd-9819-35b4a4fc3b8b",
+            "zIndex": 3,
+            "data": {
+              "type": "tm.Actor",
+              "name": "Personas usuarias",
+              "description": "Viajero, Agencia, Transporte o Admin. El navegador, los parámetros y los IDs no son una fuente de autorización.",
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": false,
+              "threats": [],
+              "providesAuthentication": false
+            }
+          },
+          {
+            "position": {
+              "x": 483,
+              "y": 140
+            },
+            "size": {
+              "width": 190,
+              "height": 190
+            },
+            "attrs": {
+              "text": {
+                "text": "API LaRutica"
+              },
+              "body": {
+                "stroke": "#333333",
+                "strokeWidth": 1.5,
+                "strokeDasharray": ""
+              }
+            },
+            "visible": true,
+            "shape": "process",
+            "ports": {
+              "groups": {
+                "top": {
+                  "position": "top",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                },
+                "right": {
+                  "position": "right",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                },
+                "bottom": {
+                  "position": "bottom",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                },
+                "left": {
+                  "position": "left",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                }
+              },
+              "items": [
+                {
+                  "group": "top",
+                  "id": "8aee7c56-e388-492a-9219-767f496e96ab"
+                },
+                {
+                  "group": "right",
+                  "id": "070283b8-e028-4aba-b4b7-009e4c9cb15a"
+                },
+                {
+                  "group": "bottom",
+                  "id": "ea230f4c-0e20-4647-816a-18e59b6e5f45"
+                },
+                {
+                  "group": "left",
+                  "id": "77221ec7-4c61-490f-b32f-82f0b49de32b"
+                }
+              ]
+            },
+            "id": "3fc28672-cd25-41d9-9d1b-4ef093575c15",
+            "zIndex": 3,
+            "data": {
+              "type": "tm.Process",
+              "name": "API LaRutica",
+              "description": "Rutas del servidor: inicio de sesión, checkout, pago, perfil y reservas. Decide por sesión, rol y propiedad; usa credenciales separadas para Supabase y Onvo.",
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": true,
+              "threats": [
+                {
+                  "id": "df10f8f4-4c28-432c-ad1a-0b983c8ef86c",
+                  "title": "T-02 Manipulación de pasajero, precio o importe",
+                  "status": "Open",
+                  "severity": "High",
+                  "type": "Tampering",
+                  "description": "F-02: Un checkout adulterado permite comprar para otra identidad o confirmar una reserva por menos. Alta: afecta ingresos y disponibilidad.",
+                  "mitigation": "Fijar pasajero desde la sesión, recalcular importe en servidor y verificar estado, importe y moneda de Onvo antes de confirmar.",
+                  "modelType": "STRIDE",
+                  "new": false,
+                  "number": 2,
+                  "score": ""
+                },
+                {
+                  "id": "2c277f02-cbfc-4e34-95cc-90e98d13ae3f",
+                  "title": "T-06 Acceso a API Admin por un rol de menor privilegio",
+                  "status": "Open",
+                  "severity": "High",
+                  "type": "Elevation of privilege",
+                  "description": "F-01/F-03: Un Viajero o Agencia podría leer pagos o acceder a operaciones privilegiadas. Alta: afecta a todo el sistema.",
+                  "mitigation": "Resolver rol del perfil en servidor, denegar por defecto y validar por ruta. Nunca confiar en el rol enviado en el cuerpo ni solo en ocultar controles de la interfaz.",
+                  "modelType": "STRIDE",
+                  "new": false,
+                  "number": 6,
+                  "score": ""
+                }
+              ],
+              "handlesCardPayment": false,
+              "handlesGoodsOrServices": true,
+              "isWebApplication": true,
+              "privilegeLevel": ""
+            }
+          },
+          {
+            "position": {
+              "x": 904,
+              "y": 69
+            },
+            "size": {
+              "width": 150,
+              "height": 120
+            },
+            "attrs": {
+              "text": {
+                "text": "Supabase Auth"
+              },
+              "body": {
+                "stroke": "#333333",
+                "strokeWidth": 1.5,
+                "strokeDasharray": ""
+              }
+            },
+            "visible": true,
+            "shape": "process",
+            "ports": {
+              "groups": {
+                "top": {
+                  "position": "top",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                },
+                "right": {
+                  "position": "right",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                },
+                "bottom": {
+                  "position": "bottom",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                },
+                "left": {
+                  "position": "left",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                }
+              },
+              "items": [
+                {
+                  "group": "top",
+                  "id": "0c951259-8665-4410-a83d-3cc8f882d845"
+                },
+                {
+                  "group": "right",
+                  "id": "03e126d2-0e9b-4ee6-98dd-858739178544"
+                },
+                {
+                  "group": "bottom",
+                  "id": "3c86864a-b31d-431b-a6f3-334179daf12b"
+                },
+                {
+                  "group": "left",
+                  "id": "113b9d36-00be-4209-b53e-45f0278aec67"
+                }
+              ]
+            },
+            "id": "3e2e8610-c354-4d36-9d1d-6138704f82bf",
+            "zIndex": 3,
+            "data": {
+              "type": "tm.Process",
+              "name": "Supabase Auth",
+              "description": "Comprueba las credenciales en F-01. Su sesión no se entrega al navegador; LaRutica emite una sesión opaca.",
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": false,
+              "threats": [],
+              "handlesCardPayment": false,
+              "handlesGoodsOrServices": false,
+              "isWebApplication": false,
+              "privilegeLevel": ""
+            }
+          },
+          {
+            "position": {
+              "x": 883,
+              "y": 284
+            },
+            "size": {
+              "width": 195,
+              "height": 67
+            },
+            "attrs": {
+              "text": {
+                "text": "PostgreSQL"
+              },
+              "topLine": {
+                "stroke": "#333333",
+                "strokeWidth": 1.5,
+                "strokeDasharray": ""
+              },
+              "bottomLine": {
+                "stroke": "#333333",
+                "strokeWidth": 1.5,
+                "strokeDasharray": ""
+              }
+            },
+            "visible": true,
+            "shape": "store",
+            "ports": {
+              "groups": {
+                "top": {
+                  "position": "top",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                },
+                "right": {
+                  "position": "right",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                },
+                "bottom": {
+                  "position": "bottom",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                },
+                "left": {
+                  "position": "left",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                }
+              },
+              "items": [
+                {
+                  "group": "top",
+                  "id": "bea8b2fb-c9ef-4dc9-8525-32533748e657"
+                },
+                {
+                  "group": "right",
+                  "id": "27270ebb-dd3a-42da-876e-154484466fef"
+                },
+                {
+                  "group": "bottom",
+                  "id": "01599620-3226-4cfc-a1b6-7d7937d537be"
+                },
+                {
+                  "group": "left",
+                  "id": "ca7a6ce4-802f-444f-b21e-07f48f1b930b"
+                }
+              ]
+            },
+            "id": "6f0757f2-f883-4efc-8a49-f22fec27f77f",
+            "zIndex": 3,
+            "data": {
+              "type": "tm.Store",
+              "name": "PostgreSQL",
+              "description": "Perfiles, hash de sesiones, salidas, cupos, checkouts, reservas, pagos y contactos. SQL conserva estado y los vínculos entre recursos.",
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": false,
+              "threats": [],
+              "isALog": false,
+              "isEncrypted": false,
+              "isSigned": false,
+              "storesCredentials": true,
+              "storesInventory": false
+            }
+          },
+          {
+            "position": {
+              "x": 906,
+              "y": 486
+            },
+            "size": {
+              "width": 145,
+              "height": 115
+            },
+            "attrs": {
+              "text": {
+                "text": "OnvoPAY"
+              },
+              "body": {
+                "stroke": "#333333",
+                "strokeWidth": 1.5,
+                "strokeDasharray": ""
+              }
+            },
+            "visible": true,
+            "shape": "process",
+            "ports": {
+              "groups": {
+                "top": {
+                  "position": "top",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                },
+                "right": {
+                  "position": "right",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                },
+                "bottom": {
+                  "position": "bottom",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                },
+                "left": {
+                  "position": "left",
+                  "attrs": {
+                    "circle": {
+                      "r": 4,
+                      "magnet": true,
+                      "stroke": "#5F95FF",
+                      "strokeWidth": 1,
+                      "fill": "#fff",
+                      "style": {
+                        "visibility": "hidden"
+                      }
+                    }
+                  }
+                }
+              },
+              "items": [
+                {
+                  "group": "top",
+                  "id": "d0c62f62-d8b7-47c1-82d7-412646496404"
+                },
+                {
+                  "group": "right",
+                  "id": "039ea0d6-3499-47be-a786-9a472ac15246"
+                },
+                {
+                  "group": "bottom",
+                  "id": "9de5beda-6321-4ed6-a228-06453a259dc6"
+                },
+                {
+                  "group": "left",
+                  "id": "11e2df45-83ae-44de-a1c1-b41019ea306f"
+                }
+              ]
+            },
+            "id": "9b98a248-724c-42fa-8bca-3641bd29e1b9",
+            "zIndex": 3,
+            "data": {
+              "type": "tm.Process",
+              "name": "OnvoPAY",
+              "description": "SDK de tarjeta, intentos de pago y devoluciones. El servidor Larutica no recibe los datos de tarjeta.",
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": false,
+              "threats": [],
+              "handlesCardPayment": true,
+              "handlesGoodsOrServices": false,
+              "isWebApplication": false,
+              "privilegeLevel": ""
+            }
+          },
+          {
+            "shape": "flow",
+            "attrs": {
+              "line": {
+                "stroke": "#333333",
+                "targetMarker": {
+                  "name": "block"
+                },
+                "sourceMarker": {
+                  "name": "block"
+                },
+                "strokeDasharray": ""
+              }
+            },
+            "width": 200,
+            "height": 100,
+            "zIndex": 10,
+            "labels": [
+              {
+                "markup": [
+                  {
+                    "tagName": "ellipse",
+                    "selector": "labelBody"
+                  },
+                  {
+                    "tagName": "text",
+                    "selector": "labelText"
+                  }
+                ],
+                "attrs": {
+                  "labelText": {
+                    "text": "1 · Acceso / compra / reservas",
+                    "textAnchor": "middle",
+                    "textVerticalAnchor": "middle"
+                  },
+                  "labelBody": {
+                    "ref": "labelText",
+                    "refRx": "50%",
+                    "refRy": "60%",
+                    "fill": "#fff",
+                    "strokeWidth": 0
+                  }
+                },
+                "position": {
+                  "distance": 0.5,
+                  "args": {
+                    "keepGradient": true,
+                    "ensureLegibility": true
+                  }
+                }
+              }
+            ],
+            "connector": "normal",
+            "data": {
+              "type": "tm.Flow",
+              "name": "1 · Acceso / compra / reservas",
+              "description": "F-01: credenciales y cookie; F-02: salida y cantidad; F-03: consulta/cancelación. Devuelve solo los datos permitidos.",
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": true,
+              "isBidirectional": true,
+              "isEncrypted": true,
+              "isPublicNetwork": true,
+              "protocol": "HTTPS",
+              "threats": [
+                {
+                  "id": "24c65a30-4ecc-46cc-865c-a3734cad0ba5",
+                  "title": "T-01 Suplantación con cookie de sesión robada",
+                  "status": "Open",
+                  "severity": "High",
+                  "type": "Spoofing",
+                  "description": "F-01: Una cookie válida permite actuar con el rol de la víctima. Alta: si es Admin, expone usuarios y pagos.",
+                  "mitigation": "Cookie HttpOnly/Secure en producción, hash en servidor, caducidad y revocación. Probar cookie ausente, vencida y revocada.",
+                  "modelType": "STRIDE",
+                  "new": false,
+                  "number": 1,
+                  "score": ""
+                }
+              ]
+            },
+            "id": "e98b00ee-b2a5-482f-b80f-ddbd2043a8c3",
+            "source": {
+              "cell": "83556adb-32d1-42bd-9819-35b4a4fc3b8b",
+              "port": "713e5e9c-c5c5-49d3-b980-62f07249140e"
+            },
+            "target": {
+              "cell": "3fc28672-cd25-41d9-9d1b-4ef093575c15",
+              "port": "77221ec7-4c61-490f-b32f-82f0b49de32b"
+            },
+            "vertices": []
+          },
+          {
+            "shape": "flow",
+            "attrs": {
+              "line": {
+                "stroke": "#333333",
+                "targetMarker": {
+                  "name": "block"
+                },
+                "sourceMarker": {
+                  "name": "block"
+                },
+                "strokeDasharray": ""
+              }
+            },
+            "width": 200,
+            "height": 100,
+            "zIndex": 10,
+            "labels": [
+              {
+                "markup": [
+                  {
+                    "tagName": "ellipse",
+                    "selector": "labelBody"
+                  },
+                  {
+                    "tagName": "text",
+                    "selector": "labelText"
+                  }
+                ],
+                "attrs": {
+                  "labelText": {
+                    "text": "2 · Autenticación",
+                    "textAnchor": "middle",
+                    "textVerticalAnchor": "middle"
+                  },
+                  "labelBody": {
+                    "ref": "labelText",
+                    "refRx": "50%",
+                    "refRy": "60%",
+                    "fill": "#fff",
+                    "strokeWidth": 0
+                  }
+                },
+                "position": {
+                  "distance": 0.72,
+                  "args": {
+                    "keepGradient": true,
+                    "ensureLegibility": true
+                  }
+                }
+              }
+            ],
+            "connector": "normal",
+            "data": {
+              "type": "tm.Flow",
+              "name": "2 · Autenticación",
+              "description": "F-01: API valida contraseña con Supabase Auth y descarta la sesión del proveedor.",
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": false,
+              "isBidirectional": true,
+              "isEncrypted": true,
+              "isPublicNetwork": true,
+              "protocol": "HTTPS",
+              "threats": []
+            },
+            "id": "c9e77e00-a4c6-4172-bfae-cd0f64bf8e86",
+            "source": {
+              "cell": "3fc28672-cd25-41d9-9d1b-4ef093575c15",
+              "port": "070283b8-e028-4aba-b4b7-009e4c9cb15a"
+            },
+            "target": {
+              "cell": "3e2e8610-c354-4d36-9d1d-6138704f82bf",
+              "port": "113b9d36-00be-4209-b53e-45f0278aec67"
+            },
+            "vertices": [
+              {
+                "x": 782,
+                "y": 235
+              },
+              {
+                "x": 782,
+                "y": 129
+              }
+            ]
+          },
+          {
+            "shape": "flow",
+            "attrs": {
+              "line": {
+                "stroke": "#333333",
+                "targetMarker": {
+                  "name": "block"
+                },
+                "sourceMarker": {
+                  "name": "block"
+                },
+                "strokeDasharray": ""
+              }
+            },
+            "width": 200,
+            "height": 100,
+            "zIndex": 10,
+            "labels": [
+              {
+                "markup": [
+                  {
+                    "tagName": "ellipse",
+                    "selector": "labelBody"
+                  },
+                  {
+                    "tagName": "text",
+                    "selector": "labelText"
+                  }
+                ],
+                "attrs": {
+                  "labelText": {
+                    "text": "3 · Datos / RPC",
+                    "textAnchor": "middle",
+                    "textVerticalAnchor": "middle"
+                  },
+                  "labelBody": {
+                    "ref": "labelText",
+                    "refRx": "50%",
+                    "refRy": "60%",
+                    "fill": "#fff",
+                    "strokeWidth": 0
+                  }
+                },
+                "position": {
+                  "distance": 0.74,
+                  "args": {
+                    "keepGradient": true,
+                    "ensureLegibility": true
+                  }
+                }
+              }
+            ],
+            "connector": "normal",
+            "data": {
+              "type": "tm.Flow",
+              "name": "3 · Datos / RPC",
+              "description": "F-01: hash y perfil; F-02: retención y conciliación; F-03: reservas, permisos y cambio de estado.",
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": true,
+              "isBidirectional": true,
+              "isEncrypted": true,
+              "isPublicNetwork": true,
+              "protocol": "HTTPS",
+              "threats": [
+                {
+                  "id": "4c2da0c9-851d-41d9-b15a-4d886a340b01",
+                  "title": "T-04 Agotamiento de cupos mediante checkouts",
+                  "status": "Open",
+                  "severity": "Medium",
+                  "type": "Denial of service",
+                  "description": "F-02: Una cuenta o varias pueden retener plazas sin pagar. Media: la retención expira, pero puede repetirse y reducir disponibilidad.",
+                  "mitigation": "Mantener retención con plazo y exclusión transaccional. Evaluar cuotas por cuenta/salida y alertas sobre retenciones que vencen en volumen.",
+                  "modelType": "STRIDE",
+                  "new": false,
+                  "number": 4,
+                  "score": ""
+                },
+                {
+                  "id": "2318b2d0-9265-4a04-be7c-f2c0fc7d5f2f",
+                  "title": "T-05 Consulta o cancelación de reserva ajena por ID",
+                  "status": "Open",
+                  "severity": "High",
+                  "type": "Information disclosure",
+                  "description": "F-03: Cambiar el ID podría exponer contactos; una escritura indebida podría cancelar y devolver dinero. Alta: impacto sobre datos personales y operaciones.",
+                  "mitigation": "Verificar pasajero, organizador o Admin antes de responder o escribir. Probar dos viajeros y dos agencias, con comprobación del estado persistido.",
+                  "modelType": "STRIDE",
+                  "new": false,
+                  "number": 5,
+                  "score": ""
+                }
+              ]
+            },
+            "id": "c305806a-f5ed-44a9-bc20-19aa064c3233",
+            "source": {
+              "cell": "3fc28672-cd25-41d9-9d1b-4ef093575c15",
+              "port": "070283b8-e028-4aba-b4b7-009e4c9cb15a"
+            },
+            "target": {
+              "cell": "6f0757f2-f883-4efc-8a49-f22fec27f77f",
+              "port": "ca7a6ce4-802f-444f-b21e-07f48f1b930b"
+            },
+            "vertices": [
+              {
+                "x": 742,
+                "y": 235
+              },
+              {
+                "x": 742,
+                "y": 318
+              }
+            ]
+          },
+          {
+            "shape": "flow",
+            "attrs": {
+              "line": {
+                "stroke": "#333333",
+                "targetMarker": {
+                  "name": "block"
+                },
+                "sourceMarker": {
+                  "name": "block"
+                },
+                "strokeDasharray": ""
+              }
+            },
+            "width": 200,
+            "height": 100,
+            "zIndex": 10,
+            "labels": [
+              {
+                "markup": [
+                  {
+                    "tagName": "ellipse",
+                    "selector": "labelBody"
+                  },
+                  {
+                    "tagName": "text",
+                    "selector": "labelText"
+                  }
+                ],
+                "attrs": {
+                  "labelText": {
+                    "text": "4 · Pago / webhook / devolución",
+                    "textAnchor": "middle",
+                    "textVerticalAnchor": "middle"
+                  },
+                  "labelBody": {
+                    "ref": "labelText",
+                    "refRx": "50%",
+                    "refRy": "60%",
+                    "fill": "#fff",
+                    "strokeWidth": 0
+                  }
+                },
+                "position": {
+                  "distance": 0.72,
+                  "args": {
+                    "keepGradient": true,
+                    "ensureLegibility": true
+                  }
+                }
+              }
+            ],
+            "connector": "normal",
+            "data": {
+              "type": "tm.Flow",
+              "name": "4 · Pago / webhook / devolución",
+              "description": "F-02 y F-03: API de Onvo con credencial del servidor; webhook hacia LaRutica con secreto compartido; consulta del proveedor y conciliación.",
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": true,
+              "isBidirectional": true,
+              "isEncrypted": true,
+              "isPublicNetwork": true,
+              "protocol": "HTTPS",
+              "threats": [
+                {
+                  "id": "dc6b4e02-8135-425c-bac1-d1345a76df13",
+                  "title": "T-03 Webhook falso de pago o devolución",
+                  "status": "Open",
+                  "severity": "High",
+                  "type": "Spoofing",
+                  "description": "F-02/F-03: Un emisor externo podría intentar modificar el estado financiero. Alta: afecta reservas, ingresos y devoluciones.",
+                  "mitigation": "Validar el secreto antes de procesar, conciliar pagos con Onvo, deduplicar y comprobar también reenvíos y eventos de devolución fuera de orden.",
+                  "modelType": "STRIDE",
+                  "new": false,
+                  "number": 3,
+                  "score": ""
+                },
+                {
+                  "id": "8a6e0daf-3984-4b6a-a427-e2b8f41726fe",
+                  "title": "T-07 Disputa de cobro o devolución sin trazabilidad",
+                  "status": "Open",
+                  "severity": "Medium",
+                  "type": "Repudiation",
+                  "description": "F-02/F-03: Un incidente de soporte puede quedar sin relación entre checkout, reserva y operación de Onvo. Media: dificulta conciliación incluso si se preserva el dinero.",
+                  "mitigation": "Correlacionar IDs de pago/devolución y estados con la reserva; comprobar repetición segura de eventos y registrar quién inició cancelaciones sin guardar datos de tarjeta.",
+                  "modelType": "STRIDE",
+                  "new": false,
+                  "number": 7,
+                  "score": ""
+                }
+              ]
+            },
+            "id": "74a96746-eabf-413d-ae1b-b94710f96b2b",
+            "source": {
+              "cell": "3fc28672-cd25-41d9-9d1b-4ef093575c15",
+              "port": "ea230f4c-0e20-4647-816a-18e59b6e5f45"
+            },
+            "target": {
+              "cell": "9b98a248-724c-42fa-8bca-3641bd29e1b9",
+              "port": "11e2df45-83ae-44de-a1c1-b41019ea306f"
+            },
+            "vertices": [
+              {
+                "x": 578,
+                "y": 544
+              }
+            ]
+          },
+          {
+            "shape": "flow",
+            "attrs": {
+              "line": {
+                "stroke": "#333333",
+                "targetMarker": {
+                  "name": "block"
+                },
+                "sourceMarker": {
+                  "name": "block"
+                },
+                "strokeDasharray": ""
+              }
+            },
+            "width": 200,
+            "height": 100,
+            "zIndex": 10,
+            "labels": [
+              {
+                "markup": [
+                  {
+                    "tagName": "ellipse",
+                    "selector": "labelBody"
+                  },
+                  {
+                    "tagName": "text",
+                    "selector": "labelText"
+                  }
+                ],
+                "attrs": {
+                  "labelText": {
+                    "text": "5 · Tarjeta vía SDK",
+                    "textAnchor": "middle",
+                    "textVerticalAnchor": "middle"
+                  },
+                  "labelBody": {
+                    "ref": "labelText",
+                    "refRx": "50%",
+                    "refRy": "60%",
+                    "fill": "#fff",
+                    "strokeWidth": 0
+                  }
+                },
+                "position": {
+                  "distance": 0.65,
+                  "args": {
+                    "keepGradient": true,
+                    "ensureLegibility": true
+                  }
+                }
+              }
+            ],
+            "connector": "normal",
+            "data": {
+              "type": "tm.Flow",
+              "name": "5 · Tarjeta vía SDK",
+              "description": "F-02: el navegador entrega la tarjeta al SDK de Onvo; la API LaRutica no recibe número ni CVV.",
+              "outOfScope": false,
+              "reasonOutOfScope": "",
+              "hasOpenThreats": false,
+              "isBidirectional": true,
+              "isEncrypted": true,
+              "isPublicNetwork": true,
+              "protocol": "HTTPS",
+              "threats": []
+            },
+            "id": "08e1429e-b7ab-4748-8fad-3676a0a80368",
+            "source": {
+              "cell": "83556adb-32d1-42bd-9819-35b4a4fc3b8b",
+              "port": "fe551789-db46-4b33-b8bb-3db9b29bc574"
+            },
+            "target": {
+              "cell": "9b98a248-724c-42fa-8bca-3641bd29e1b9",
+              "port": "9de5beda-6321-4ed6-a228-06453a259dc6"
+            },
+            "vertices": [
+              {
+                "x": 150,
+                "y": 667
+              },
+              {
+                "x": 978,
+                "y": 667
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
