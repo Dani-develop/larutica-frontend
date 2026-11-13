@@ -4,7 +4,14 @@ import { readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import ts from 'typescript';
 const root = fileURLToPath(new URL('../../', import.meta.url));
+let useRealSession = false;
+export function initialize(options) {
+  useRealSession = options?.useRealSession === true;
+}
 export function resolve(specifier, context, next) {
+  if (useRealSession && specifier === 'next/server') {
+    return { url: new URL('../../node_modules/vinext/dist/shims/server.js', import.meta.url).href, shortCircuit: true };
+  }
   if (specifier.startsWith('@/')) specifier = pathToFileURL(root + specifier.slice(2)).href;
   if (specifier.startsWith('file:') || specifier.startsWith('.')) {
     let url = new URL(specifier, context.parentURL);
@@ -12,7 +19,7 @@ export function resolve(specifier, context, next) {
       if (existsSync(fileURLToPath(url) + extension)) { url = new URL(url.href + extension); break; }
     }
     if (url.href.endsWith('/lib/supabase/admin-client.ts')) return { url: new URL('./admin.mjs', import.meta.url).href, shortCircuit: true };
-    if (url.href.endsWith('/lib/supabase/session.ts')) return { url: new URL('./session.mjs', import.meta.url).href, shortCircuit: true };
+    if (!useRealSession && url.href.endsWith('/lib/supabase/session.ts')) return { url: new URL('./session.mjs', import.meta.url).href, shortCircuit: true };
     if (existsSync(fileURLToPath(url))) return { url: url.href, shortCircuit: true };
   }
   return next(specifier, context);
