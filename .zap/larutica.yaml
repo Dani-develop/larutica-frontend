@@ -52,7 +52,7 @@ jobs:
         type: "url"
         url: "${ZAP_TARGET_URL}/api/auth/session"
         operator: "and"
-        responseBodyRegex: '"session"\\s*:'
+        responseBodyRegex: '"session"\s*:'
         onFail: "error"
 
   - type: "passiveScan-wait"
