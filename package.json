@@ -12,7 +12,8 @@
     "prebuild": "node scripts/check-runtime.mjs && node scripts/prepare-map-worker.mjs",
     "build": "vinext build",
     "start": "vinext start",
-    "test": "npm run build && node --experimental-strip-types --test tests/rendered-html.test.mjs tests/auth-contract.test.mjs tests/password-reset.test.mjs tests/privacy-consent.test.mjs tests/privacy-api.test.mjs tests/remote-proxy.test.mjs tests/reservations-contract.test.mjs tests/booking-return.test.mjs tests/traveler-saved-rating.test.mjs tests/browser-fetch.test.mjs tests/analytics-reservations.test.mjs && npm run test:payments && npm run test:mail",
+    "test": "npm run build && node --experimental-strip-types --test tests/rendered-html.test.mjs tests/auth-contract.test.mjs tests/password-reset.test.mjs tests/privacy-consent.test.mjs tests/privacy-api.test.mjs tests/remote-proxy.test.mjs tests/reservations-contract.test.mjs tests/booking-return.test.mjs tests/traveler-saved-rating.test.mjs tests/browser-fetch.test.mjs tests/analytics-reservations.test.mjs && npm run test:payments && npm run test:mail && npm run test:authorization",
+    "test:authorization": "node --import ./tests/authorization/register.mjs --test tests/authorization/api.test.mjs",
     "test:payments": "node --import ./tests/mail/register.mjs --test tests/payments.test.mjs",
     "test:mail": "node --experimental-strip-types --test tests/trip-email.test.mjs tests/mail/transport.test.mjs tests/mail/cli.test.mjs tests/mail/relay.test.mjs && node --import ./tests/mail/register.mjs --test tests/mail/flows.test.mjs tests/mail/diagnostic.test.mjs tests/mail/payments-flow.test.mjs tests/mail/admin-payments.test.mjs tests/mail/reservation-management.test.mjs",
     "design:check": "node scripts/check-design.mjs",
@@ -29,7 +30,8 @@
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next",
     "db:generate": "drizzle-kit generate",
     "build:vercel": "node scripts/build-vercel.mjs",
-    "test:vercel": "playwright test --config playwright.vercel.config.ts"
+    "test:vercel": "playwright test --config playwright.vercel.config.ts",
+    "test:e2e": "playwright test --config playwright.e2e.config.ts"
   },
   "dependencies": {
     "@radix-ui/react-dropdown-menu": "^2.1.24",
