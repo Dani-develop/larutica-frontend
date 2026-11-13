@@ -27,6 +27,8 @@ const productionHosts = new Set([
 
 const repositoryAllowedHosts = new Set([
   'larutica-frontend-pruebas4-7.onrender.com',
+  // Candidato aislado propio (Render Free): Supabase de pruebas y cuenta ficticia, sin proxy a producción.
+  'larutica-frontend-entrega.onrender.com',
 ]);
 
 const normalizeHost = value => value.toLowerCase().replace(/\.+$/, '');

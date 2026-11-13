@@ -54,6 +54,19 @@ jobs:
           test -n "$ZAP_USER"
           test -n "$ZAP_PASSWORD"
 
+      - name: Verificar el login de la cuenta de prueba (solo código HTTP)
+        shell: bash
+        run: |
+          body=$(jq -nc --arg e "$ZAP_USER" --arg p "$ZAP_PASSWORD" '{email:$e,password:$p}')
+          code=$(curl -sS -o /tmp/login.json -w '%{http_code}' -X POST \
+            -H 'content-type: application/json' -H "origin: $ZAP_TARGET_URL" --data "$body" \
+            -c /tmp/jar "$ZAP_TARGET_URL/api/auth/login")
+          echo "login HTTP $code"
+          s=$(curl -sS -o /dev/null -w '%{http_code}' -b /tmp/jar "$ZAP_TARGET_URL/api/auth/session")
+          echo "session con cookie HTTP $s"
+          rm -f /tmp/jar /tmp/login.json
+          test "$code" = 200 && test "$s" = 200
+
       - name: Ejecutar plan ZAP
         uses: zaproxy/action-af@d186d5d9536d0f1380e5eaa58168432fefc8ed6d # v0.3.0
         with:

@@ -2,7 +2,7 @@ env:
   parameters:
     failOnError: true
     failOnWarning: false
-    continueOnFailure: true
+    progressToStdout: true
   contexts:
     - name: "LaRutica isolated test"
       urls:
@@ -13,13 +13,15 @@ env:
         - "${ZAP_TARGET_URL}/api/payments/onvopay/webhook.*"
         - "${ZAP_TARGET_URL}/api/maps/.*"
       authentication:
-        method: "browser"
+        method: "json"
         parameters:
           loginPageUrl: "${ZAP_TARGET_URL}/login"
-          loginPageWait: 3
-          browserId: "firefox-headless"
+          loginRequestUrl: "${ZAP_TARGET_URL}/api/auth/login"
+          loginRequestBody: '{"email":"{%username%}","password":"{%password%}"}'
         verification:
-          method: "autodetect"
+          method: "response"
+          loggedInRegex: '\"session\"'
+          loggedOutRegex: '\"error\"'
       sessionManagement:
         method: "cookie"
         parameters: {}
@@ -39,7 +41,6 @@ jobs:
 
   - type: "requestor"
     parameters:
-      context: "LaRutica isolated test"
       user: "zap-test-user"
     requests:
       - name: "authenticated session verification"
@@ -51,7 +52,7 @@ jobs:
         type: "url"
         url: "${ZAP_TARGET_URL}/api/auth/session"
         operator: "and"
-        responseBodyRegex: '"session"\\s*:'
+        responseBodyRegex: '"session"\s*:'
         onFail: "error"
 
   - type: "passiveScan-wait"
