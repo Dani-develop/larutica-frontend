@@ -31,7 +31,9 @@ function PromotionCheckout({ publicationId }: { publicationId: string }) {
   const formatDate = dateFormatter(language);
   const [paid, setPaid] = useState(false);
   const publication = publications.find((item) => item.id === publicationId);
-  const active = publication?.promotedUntil && isPromotionActive(publication.promotedUntil, Date.now());
+  // Instante de referencia fijado al montar: el render debe ser puro.
+  const [now] = useState(() => Date.now());
+  const active = publication?.promotedUntil && isPromotionActive(publication.promotedUntil, now);
   const start = useCallback(() => startPromotionPayment(publicationId), [publicationId]);
   const confirm = useCallback(
     (paymentIntentId: string) => confirmPromotionPayment(publicationId, paymentIntentId),

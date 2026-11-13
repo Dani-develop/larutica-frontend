@@ -1,6 +1,6 @@
 "use client";
 import { usePreferences } from "@/lib/preferences/Preferences";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { ArrowDown, ArrowUp, Plus, Trash2, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,10 +18,14 @@ export function JourneyEditor({value,onChange,meetingPoint,onMeetingPointChange,
   meetingPoint:string;onMeetingPointChange:(text:string)=>void;allowLegacy?:boolean;isExcursion?:boolean;
 }) {
   const { t, language } = usePreferences();
-  const initialEmpty=useRef(emptyJourney());
-  const journey=value ?? initialEmpty.current;
-  const current=useRef(journey); current.current=journey;
-  const change=useRef(onChange);change.current=onChange;
+  // Recorrido vacío estable entre renders, sin leer refs durante el render.
+  const [initialEmpty]=useState(emptyJourney);
+  const journey=value ?? initialEmpty;
+  // Últimos valores para callbacks asíncronos; se actualizan tras el commit
+  // (antes de los efectos pasivos y de cualquier evento), no durante el render.
+  const current=useRef(journey);
+  const change=useRef(onChange);
+  useLayoutEffect(()=>{current.current=journey;change.current=onChange;});
   const reverseRequests=useRef(new Map<string,{controller:AbortController;lat:number;lon:number}>());
   const [editing,setEditing]=useState(false),[mapAction,setMapAction]=useState<"stop"|"origin"|"destination">("stop");
   const [mapNotice,setMapNotice]=useState("");
