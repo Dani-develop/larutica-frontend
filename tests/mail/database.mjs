@@ -53,6 +53,7 @@ export async function createDatabase({checkoutFlow=true}={}) {
     limit(end) { this.end = end; return this; }
     update(values) { this.values = values; return this; }
     insert(values) { this.inserted = values; return this; }
+    delete() { this.deleting = true; return this; }
     maybeSingle() { this.singleRow = true; return this; }
     single() { this.singleRow = true; return this; }
     then(resolve, reject) { return this.run().then(resolve, reject); }
@@ -65,7 +66,9 @@ export async function createDatabase({checkoutFlow=true}={}) {
           return { data: this.singleRow ? result.rows[0] ?? null : result.rows, error: null };
         }
         const tables = {};
-        for (const table of ['profiles', 'agencies', 'publications', 'publication_departures', 'reservations', 'reservation_payments', 'agency_settlements', 'reservation_checkouts']) {
+        const tablesToLoad = new Set(['profiles', 'agencies', 'publications', 'publication_departures', 'reservations', 'reservation_payments', 'agency_settlements', 'reservation_checkouts']);
+        if (['app_sessions', 'saved_publications'].includes(this.table)) tablesToLoad.add(this.table);
+        for (const table of tablesToLoad) {
           tables[table] = (await db.query(`select * from public.${table}`)).rows;
         }
         const publication = row => row ? { ...row, agencies: tables.agencies.find(a => a.id === row.agency_id) } : null;
@@ -86,6 +89,10 @@ export async function createDatabase({checkoutFlow=true}={}) {
           if (x > y) return asc ? 1 : -1;
         } return 0; });
         rows = rows.slice(this.offset, this.end);
+        if (this.deleting) {
+          if (this.table !== 'app_sessions') throw new Error('Unexpected delete');
+          for (const row of rows) await db.query('delete from app_sessions where session_hash=$1', [row.session_hash]);
+        }
         if (this.values) {
           if (admin.failUpdate === this.table) return { data: null, error: new Error('Injected database failure') };
           const keys = Object.keys(this.values);
