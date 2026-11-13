@@ -34,6 +34,7 @@
     "security:deps": "node scripts/security/run.mjs osv",
     "security:gate": "node scripts/security/gate.mjs",
     "test:security": "node --test tests/security/gate.test.mjs",
+    "security:context": "node --test tests/security/local-context.test.mjs",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next",
     "db:generate": "drizzle-kit generate",
     "build:vercel": "node scripts/build-vercel.mjs",

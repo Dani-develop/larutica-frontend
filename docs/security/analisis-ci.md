@@ -1,7 +1,9 @@
 # Análisis de seguridad en CI — 3.2 (Daniel)
 
 Workflow: `.github/workflows/security.yml`. No modifica el workflow 3.1 de
-Frander. Se activa en PR a `main`/`development`, push a esas ramas o manualmente.
+Frander. Se activa en PR a `main`/`development` o a la rama base del PR encadenado
+`seg/2.3-semgrep-gitleaks`, push a `main`/`development` o a la rama del 3.2,
+y manualmente. El push del 3.2 permite ejecutar también mientras el PR es Draft.
 Las acciones están fijadas a commits de sus releases v7, con `contents: read`,
 sin credenciales persistentes, sin `pull_request_target` ni secretos.
 
@@ -66,7 +68,7 @@ reportes quedan ignorados por Git; no subirlos manualmente sin revisión.
 
 ## Qué falta fuera del trabajo local
 
-- Ejecutar GitHub Actions después del push y enlazar ejecución/artefactos reales.
+- Primera ejecución real verificada: [43457663931 y sus reportes](evidencia-actions-3.2.md). El resultado es bloqueado por hallazgos, no aprobado; falta revisión de Axel.
 - Revisar coincidencias de Gitleaks con Frander y resultados SCA con Axel.
 - Configurar este check como obligatorio en protección de ramas (responsabilidad
   del ítem 3.5 de Pablo): un workflow fallido por sí solo no impide un merge si
