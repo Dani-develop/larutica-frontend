@@ -1,0 +1,28 @@
+diff --git a/docs-proyecto-seguridad/fase-1-planificacion/1.3-modelo-amenazas-stride.md b/docs-proyecto-seguridad/fase-1-planificacion/1.3-modelo-amenazas-stride.md
+--- a/docs-proyecto-seguridad/fase-1-planificacion/1.3-modelo-amenazas-stride.md
++++ b/docs-proyecto-seguridad/fase-1-planificacion/1.3-modelo-amenazas-stride.md
+@@ -2,70 +2,38 @@
+ **Responsable:** Daniel Núñez · **Revisor:** Axel
+
+-| Campo | Valor |
+-|---|---|
+-| Fase | 1 |
+-| Responsable principal | Daniel Núñez |
+-| Revisor | Axel |
+-| Depende de | 1.1 |
+-| Estado | Pendiente |
+-| Última actualización | AAAA-MM-DD |
++**Estado:** En revisión · **Fecha:** 2026-11-12 · **Depende de:** 1.1
+
+-Resumen del lineamiento (el texto completo está en `documento-proyecto.docx`).
++El diagrama sigue tres operaciones: **F-01** inicio de sesión y acceso por rol, **F-02** compra y pago, y **F-03** consulta y cancelación.
+
+- [ ] Mínimo 3 amenazas (STRIDE), cada una con recurso o flujo afectado, impacto y prioridad justificada.
++| ID | STRIDE / Flujo | Riesgo y prioridad | Control o verificación |
++|---|---|---|---|
++| T-01 | Suplantación · F-01 | **Alta.** Cookie de sesión robada. | Caducidad, revocación y comprobación de sesión. |
++| T-02 | Manipulación · F-02 | **Alta.** Alteración de pasajero, precio o importe. | Validación en servidor y conciliación de pago. |
++| T-05 | Divulgación · F-03 | **Alta.** Consulta o cancelación de reserva ajena. | Verificación de rol y propiedad. |
+
+El PR completo también incluye `larutica-threat-dragon.json` y `larutica-diagrama.png`; este
+archivo conserva el fragmento textual que se utilizó para la revisión asistida por IA.

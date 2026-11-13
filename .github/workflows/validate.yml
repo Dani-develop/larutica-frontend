@@ -2,8 +2,9 @@ name: Validar proyecto
 
 on:
   pull_request:
+    branches: [main, development]
   push:
-    branches: [main]
+    branches: [main, development]
   workflow_dispatch:
 
 permissions:
@@ -25,15 +26,48 @@ jobs:
     env:
       WRANGLER_SEND_METRICS: 'false'
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           persist-credentials: false
-      - uses: actions/setup-node@v7
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
       - run: npm run runtime:check
       - run: npm run design:check
+      - run: npm run lint
       - run: npx --no-install tsc --noEmit
       - run: npm test
+
+  # Ítem 4.4: E2E de los tres flujos críticos (F-01, F-02, F-03) en un ambiente aislado.
+  # API con PostgreSQL embebido y datos ficticios, Onvo simulado, sin red externa ni secretos.
+  e2e:
+    name: E2E flujos críticos
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      WRANGLER_SEND_METRICS: 'false'
+      CI: 'true'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npx --no-install playwright install --with-deps chromium
+      - run: npm run build:vercel
+      - run: npm run test:e2e
+      # Se conservan siempre: un E2E que no corrió o no dejó reporte no cuenta como aprobado.
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        if: always()
+        with:
+          name: e2e-flujos-criticos-${{ github.sha }}
+          path: |
+            playwright-report
+            test-results/e2e
+          if-no-files-found: error
+          retention-days: 14

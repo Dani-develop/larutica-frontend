@@ -4,7 +4,7 @@ import {startCheckoutPayment,confirmCheckoutPayment} from '../../lib/payments/ch
 import { test, before, beforeEach, after } from 'node:test';
 import { createDatabase, ids } from './database.mjs';
 import { getReservationRecord } from '../../lib/reservations/repository.ts';
-import { applyPaymentStatus, refundReservationPayment, startReservationPayment } from '../../lib/payments/repository.ts';
+import { refundReservationPayment } from '../../lib/payments/repository.ts';
 import {
   createSettlement, listAgencyBalances, listPaymentRows, listSettlements, parseCommissionBody, parsePaymentFilters,
   parseSettlementBody, setAgencyCommission,
